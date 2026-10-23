@@ -2,10 +2,35 @@
   "id": "night_pool_chapter1",
   "source": "design/narrative/novel/chapter01_day01.md (五、無光的道路)",
   "entries": [
-    {"id": "lamp_spirit_flicker", "weight": 3, "outcome": "flavor"},
-    {"id": "restless_spirit_ambush", "weight": 2, "outcome": "battle",
-     "on_loss": {"food": 1, "herbs": 1, "injury": true}},
-    {"id": "supply_theft", "weight": 1, "outcome": "resource_loss",
-     "on_loss": {"food": 1, "herbs": 0, "injury": false}}
+    {
+      "id": "lamp_spirit_flicker",
+      "weight": 3,
+      "outcome": "flavor",
+      "text": "燈靈在路口閃爍，又很快熄滅。"
+    },
+    {
+      "id": "restless_spirit_ambush",
+      "weight": 2,
+      "outcome": "battle",
+      "on_loss": {
+        "food": 1,
+        "herbs": 1,
+        "injury": true
+      },
+      "text": "一群怨靈從石縫中撲出。",
+      "enemy_hp": 20,
+      "enemy_def": 1
+    },
+    {
+      "id": "supply_theft",
+      "weight": 1,
+      "outcome": "resource_loss",
+      "on_loss": {
+        "food": 1,
+        "herbs": 0,
+        "injury": false
+      },
+      "text": "有人在夜色裡摸走了一包食糧。"
+    }
   ]
 }

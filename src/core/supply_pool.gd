@@ -31,3 +31,8 @@ func consume(kind: String, amount: int) -> bool:
 		return false
 	_counts[kind] = int(_counts[kind]) - amount
 	return true
+
+
+## Replaces both counts, used when restoring a saved game. Negative values become zero.
+func set_counts(herbs: int, food: int) -> void:
+	_counts = {"herbs": maxi(herbs, 0), "food": maxi(food, 0)}

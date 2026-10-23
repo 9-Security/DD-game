@@ -1,39 +1,58 @@
 extends Control
-## Chapter one prototype: prologue dialogue, then day one actions and the
-## tutorial skirmish. Game rules live in DayOneFlow; this script only shows them.
+## Chapter one prototype: prologue dialogue, difficulty choice, then day one actions,
+## supplies, night events and the tutorial skirmish. Game rules live in DayOneFlow and
+## the data files; this script only builds the screen and shows what the flow returns.
 
 const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
+const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
+const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
 const SAVE_PATH: String = "user://save_slot_1.json"
+const DIFFICULTY_LABELS: Dictionary = {
+	"strict": "嚴格難度（休息消耗食糧）",
+	"assisted": "輔助難度（休息不耗食糧）",
+}
 
 var _lines: Array = []
 var _line_index: int = 0
 var _flow: DayOneFlow
+var _difficulty: String = "strict"
+var _rules: Dictionary = {}
+var _night_entries: Array = []
 
-var _title_label: Label
 var _dialogue_label: Label
 var _next_button: Button
 var _load_button: Button
+var _difficulty_bar: HBoxContainer
+var _difficulty_label: Label
 var _status_label: Label
+var _supply_label: Label
 var _log_label: Label
 var _action_bar: HBoxContainer
+var _action_buttons: Dictionary = {}
 var _save_button: Button
 
 
 func _ready() -> void:
 	_build_ui()
 	_lines = _load_prologue_lines()
-	var party: Array = _load_party()
-	_flow = DayOneFlow.new(party, _sample_rolls())
+	_rules = _load_rules()
+	_night_entries = _load_night_entries()
+	_difficulty = str(_rules.get("default_difficulty", "strict"))
 
 	# Launch options for capture and review, passed after "--" on the command line:
-	#   --skip-prologue            open directly on the day-one screen
-	#   --demo-load                load the save slot at launch
-	#   --demo-action=<action>     perform one action at launch (move, explore, rest, battle, save)
+	#   --skip-prologue              open directly on the day-one screen
+	#   --difficulty=<strict|assisted>  choose the difficulty before the day starts
+	#   --demo-load                  load the save slot at launch
+	#   --demo-action=<action>       perform one action at launch (move, explore, rest, battle, save)
 	var options: PackedStringArray = OS.get_cmdline_user_args()
+	for option: String in options:
+		if option.begins_with("--difficulty="):
+			_set_difficulty(option.trim_prefix("--difficulty="))
+
 	if options.has("--skip-prologue"):
 		_enter_day_one()
 	else:
@@ -61,10 +80,10 @@ func _build_ui() -> void:
 	root.add_theme_constant_override("separation", 24)
 	add_child(root)
 
-	_title_label = Label.new()
-	_title_label.text = "七日之藥，深淵之願 — 序章與第一日（原型）"
-	_title_label.add_theme_font_size_override("font_size", 28)
-	root.add_child(_title_label)
+	var title := Label.new()
+	title.text = "七日之藥，深淵之願 — 序章與第一日（原型）"
+	title.add_theme_font_size_override("font_size", 28)
+	root.add_child(title)
 
 	_dialogue_label = Label.new()
 	_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -78,6 +97,16 @@ func _build_ui() -> void:
 	_next_button.pressed.connect(_show_next_line)
 	root.add_child(_next_button)
 
+	_difficulty_bar = HBoxContainer.new()
+	_difficulty_bar.add_theme_constant_override("separation", 16)
+	root.add_child(_difficulty_bar)
+	for difficulty: String in ["strict", "assisted"]:
+		var button := Button.new()
+		button.text = DIFFICULTY_LABELS[difficulty]
+		button.custom_minimum_size = Vector2(320, 48)
+		button.pressed.connect(_set_difficulty.bind(difficulty))
+		_difficulty_bar.add_child(button)
+
 	_load_button = Button.new()
 	_load_button.text = "讀取存檔"
 	_load_button.custom_minimum_size = Vector2(200, 48)
@@ -90,6 +119,16 @@ func _build_ui() -> void:
 	_status_label.visible = false
 	root.add_child(_status_label)
 
+	_supply_label = Label.new()
+	_supply_label.add_theme_font_size_override("font_size", 20)
+	_supply_label.visible = false
+	root.add_child(_supply_label)
+
+	_difficulty_label = Label.new()
+	_difficulty_label.add_theme_font_size_override("font_size", 18)
+	_difficulty_label.visible = false
+	root.add_child(_difficulty_label)
+
 	_action_bar = HBoxContainer.new()
 	_action_bar.add_theme_constant_override("separation", 16)
 	_action_bar.visible = false
@@ -97,9 +136,10 @@ func _build_ui() -> void:
 	for action: String in ["move", "explore", "rest", "battle"]:
 		var button := Button.new()
 		button.text = _button_text(action)
-		button.custom_minimum_size = Vector2(160, 48)
+		button.custom_minimum_size = Vector2(220, 48)
 		button.pressed.connect(_on_action_pressed.bind(action))
 		_action_bar.add_child(button)
+		_action_buttons[action] = button
 
 	_save_button = Button.new()
 	_save_button.text = "存檔（需在營地）"
@@ -122,10 +162,21 @@ func _button_text(action: String) -> String:
 		"explore":
 			return "探索（1 段）"
 		"rest":
-			return "休息（2 段）"
+			return "休息（2 段，耗食糧）"
 		"battle":
 			return "教學戰鬥（1 段）"
 	return action
+
+
+func _set_difficulty(difficulty: String) -> void:
+	if _flow != null:
+		# The difficulty is fixed once the day has started.
+		return
+	if not DIFFICULTY_LABELS.has(difficulty):
+		return
+	_difficulty = difficulty
+	_difficulty_label.visible = true
+	_difficulty_label.text = "已選擇：%s" % DIFFICULTY_LABELS[difficulty]
 
 
 func _show_next_line() -> void:
@@ -138,17 +189,40 @@ func _show_next_line() -> void:
 
 
 func _enter_day_one() -> void:
+	_ensure_flow()
 	_next_button.visible = false
 	_load_button.visible = false
+	_difficulty_bar.visible = false
+	_difficulty_label.visible = false
 	_dialogue_label.text = "第一日開始。四人踏入星墜之淵外圍。"
 	_status_label.visible = true
+	_supply_label.visible = true
 	_action_bar.visible = true
 	_log_label.visible = true
 	_log_label.text = ""
 	_refresh_status()
 
 
+## Builds the day-one flow once, using the chosen difficulty and the balance data.
+func _ensure_flow() -> void:
+	if _flow != null:
+		return
+	var party: Array = _load_party()
+	var settings: Dictionary = _rules.get("difficulty", {}).get(_difficulty, {})
+	var supply := SupplyPool.new(
+		int(settings.get("starting_herbs", 0)),
+		int(settings.get("starting_food", 0)),
+	)
+	_flow = DayOneFlow.new(party, _sample_rolls(), {
+		"supply": supply,
+		"rest_food_cost": int(settings.get("rest_food_cost", 0)),
+		"night_entries": _night_entries,
+		"night_rolls": _unit_rolls(),
+	})
+
+
 func _on_action_pressed(action: String) -> void:
+	_ensure_flow()
 	var message: String = _flow.perform(action)
 	_log_label.text = message
 	_refresh_status()
@@ -157,6 +231,7 @@ func _on_action_pressed(action: String) -> void:
 
 
 func _on_save_pressed() -> void:
+	_ensure_flow()
 	if not _flow.can_save():
 		_log_label.text = "只能在營地存檔。請先休息。"
 	elif SaveRepository.write(SAVE_PATH, _flow.snapshot()):
@@ -167,6 +242,7 @@ func _on_save_pressed() -> void:
 
 
 func _on_load_pressed() -> void:
+	_ensure_flow()
 	var data: Variant = SaveRepository.read(SAVE_PATH)
 	if data == null:
 		_log_label.text = "沒有可讀取的存檔。"
@@ -183,6 +259,8 @@ func _on_load_pressed() -> void:
 
 func _refresh_status() -> void:
 	_status_label.text = _flow.status_text()
+	_supply_label.text = _flow.supply_text()
+	_action_buttons["rest"].disabled = not _flow.can_rest()
 	_save_button.disabled = not _flow.can_save()
 
 
@@ -193,6 +271,32 @@ func _load_prologue_lines() -> Array:
 		push_error("Prologue data missing or malformed: %s" % PROLOGUE_PATH)
 		return []
 	return parsed["lines"]
+
+
+## Loads the balance rules after validating them. Returns an empty dictionary on failure.
+func _load_rules() -> Dictionary:
+	var parsed: Variant = _load_json(BALANCE_PATH)
+	if not (parsed is Dictionary):
+		push_error("Balance data missing or malformed: %s" % BALANCE_PATH)
+		return {}
+	var errors: Array[String] = GameRules.validate(parsed)
+	if not errors.is_empty():
+		push_error("Balance data invalid: %s" % ", ".join(errors))
+		return {}
+	return parsed
+
+
+## Loads the night event entries after validating them. Returns an empty array on failure.
+func _load_night_entries() -> Array:
+	var parsed: Variant = _load_json(NIGHT_POOL_PATH)
+	if not (parsed is Dictionary) or not parsed.has("entries"):
+		push_error("Night pool data missing or malformed: %s" % NIGHT_POOL_PATH)
+		return []
+	var errors: Array[String] = NightEventPool.validate(parsed["entries"])
+	if not errors.is_empty():
+		push_error("Night pool data invalid: %s" % ", ".join(errors))
+		return []
+	return parsed["entries"]
 
 
 ## Loads and validates party members. Invalid files are skipped and logged.
@@ -221,9 +325,17 @@ func _load_json(path: String) -> Variant:
 	return JSON.parse_string(FileAccess.get_file_as_string(path))
 
 
-## Random variance samples for the tutorial battle.
+## Random variance samples for combat.
 func _sample_rolls() -> Array:
 	var rolls: Array = []
 	for index: int in range(ROLL_SAMPLES):
 		rolls.append(randf_range(-DamageCalculator.ROLL_LIMIT, DamageCalculator.ROLL_LIMIT))
+	return rolls
+
+
+## Random samples in [0, 1) used to pick night events.
+func _unit_rolls() -> Array:
+	var rolls: Array = []
+	for index: int in range(ROLL_SAMPLES):
+		rolls.append(randf())
 	return rolls
