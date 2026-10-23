@@ -318,6 +318,20 @@ project.godot              Godot 專案設定（repo 根目錄）
 
 > 上表的 M1–M4 為舊的里程碑規劃，待第一版範圍完成後重新排定。
 
+**第一版實作狀態（2026-10-23）**
+
+| 項目 | 狀態 | 證據 |
+|---|---|---|
+| 時間系統（七日、晨午夜） | 已實作並測試 | `src/core/day_clock.gd`，`tests/unit/core/day_clock_time_test.gd` |
+| 傷害公式與戰鬥結算 | 已實作並測試 | `src/battle/damage_calculator.gd`、`src/battle/skirmish.gd` |
+| 角色資料與驗證 | 已實作並測試 | `assets/data/characters/`，`tests/integration/characters/` |
+| 第一日行動與教學戰鬥 | 已實作並測試 | `src/exploration/day_one_flow.gd` |
+| 營地存檔與讀檔（單一存檔格） | 已實作並測試 | `src/core/save_repository.gd`，`tests/unit/core/save_snapshot_rules_test.gd` |
+| 序章對話 | 已實作 | `assets/data/narrative/prologue.json` |
+| 網頁版匯出與瀏覽器驗證 | 已驗證 | `production/qa/evidence/chapter1-prototype/` |
+
+**尚未完成**：三個存檔格（目前只有一格）、地圖與角色立繪（目前只有文字介面）、第二日以後的內容。
+
 ---
 
 ## 11. 風險與對策
