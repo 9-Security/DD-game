@@ -4,8 +4,9 @@ extends RefCounted
 ## every condition holds. Effects set flags, produce log messages, or return trust changes
 ## for the caller to apply, so this class does not depend on the trust board.
 ##
-## Trigger: {"action": String} with optional "location" and "is_night", and/or
-## {"night_entered": true}, or {"location": String} alone to match any action there.
+## Trigger: {"action": String} with optional "location", "is_night", "day" (exact day number)
+## and "min_day" (that day or later), and/or {"night_entered": true}, or {"location": String}
+## alone to match any action there.
 ## Conditions: [{"flag": String, "equals": bool}] (equals defaults to true).
 ## Effects: {"type": "set_flag", "flag", "value"}, {"type": "message", "text"},
 ##          {"type": "trust", "character", "delta"}.
@@ -36,6 +37,10 @@ static func validate(event: Dictionary) -> Array[String]:
 	var has_location: bool = trigger is Dictionary and str(trigger.get("location", "")) != ""
 	if not has_action and not has_night and not has_location:
 		errors.append("trigger must name an action or night_entered")
+	if trigger is Dictionary:
+		for key: String in ["day", "min_day"]:
+			if trigger.has(key) and not (trigger[key] is int or trigger[key] is float):
+				errors.append("trigger.%s must be a number" % key)
 
 	for condition: Variant in event.get("conditions", []):
 		if not (condition is Dictionary) or not condition.has("flag"):
@@ -139,6 +144,11 @@ func _trigger_matches(trigger: Variant, context: Dictionary) -> bool:
 	if has_night and not bool(context.get("night_entered", false)):
 		return false
 	if trigger.has("is_night") and bool(context.get("is_night", false)) != bool(trigger["is_night"]):
+		return false
+	var day: int = int(context.get("day", 0))
+	if trigger.has("day") and day != int(trigger["day"]):
+		return false
+	if trigger.has("min_day") and day < int(trigger["min_day"]):
 		return false
 	return true
 

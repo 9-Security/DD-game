@@ -165,6 +165,7 @@ func _run_events(action: String) -> String:
 		"location": _location,
 		"night_entered": _night_entered,
 		"is_night": clock.segment == DayClock.SEGMENT_NIGHT,
+		"day": clock.day,
 	})
 	for unlock: Dictionary in result["skill_unlocks"]:
 		var owner: String = str(unlock["character"])

@@ -129,10 +129,11 @@
       ]
     },
     {
-      "id": "ch2_passage_arrival",
-      "source_ref": "第二日結尾：走入門後",
+      "id": "ch2_passage_arrival_day2",
+      "source_ref": "走入門後",
       "trigger": {
-        "action": "go:門後通道"
+        "action": "go:門後通道",
+        "day": 2
       },
       "conditions": [],
       "effects": [
@@ -148,6 +149,30 @@
         {
           "type": "message",
           "text": "艾洛恩最後跨過門檻。第二日尚未結束，而星墜之淵的第一道封印，已被他們留在身後。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_passage_arrival_later",
+      "source_ref": "走入門後",
+      "trigger": {
+        "action": "go:門後通道",
+        "min_day": 3
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "passage_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "門後是一條幽暗的通道，看不見盡頭。兩側岩壁上的紋路隨著門的開啟逐漸顯露。"
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩最後跨過門檻。星墜之淵的第一道封印，已被他們留在身後。"
         }
       ]
     }
