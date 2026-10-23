@@ -89,6 +89,13 @@
     "curse_stacks": 2
   },
   "location_requirements": {
-    "門後通道": "obsidian_gate_open"
+    "黑曜石之門": {
+      "min_day": 2,
+      "blocked_text": "夜色已深，黑曜石之門太遠，今夜無法抵達。"
+    },
+    "門後通道": {
+      "flag": "obsidian_gate_open",
+      "blocked_text": "門後的通道仍被封印，無法通行。"
+    }
   }
 }

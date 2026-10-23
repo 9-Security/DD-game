@@ -2,7 +2,9 @@ extends GdUnitTestSuite
 # Unit tests for the passage behind the Obsidian Gate: locked until the gate opens, and
 # arriving there fires its own event without spending anything extra.
 
-const REQUIREMENTS: Dictionary = {"門後通道": "obsidian_gate_open"}
+const REQUIREMENTS: Dictionary = {
+	"門後通道": {"flag": "obsidian_gate_open", "blocked_text": "門後的通道仍被封印，無法通行。"},
+}
 
 
 func _events() -> Array:

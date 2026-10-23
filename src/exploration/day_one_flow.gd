@@ -117,11 +117,23 @@ func location() -> String:
 	return _location
 
 
-## True when the place has no entry requirement, or its required flag is set.
+## True when the place has no entry requirement, or the requirement is met.
 func _can_enter(place: String) -> bool:
+	return _entry_block(place) == ""
+
+
+## Returns the refusal text when the place cannot be entered yet, or "" when it can.
+## A requirement may set "min_day" (the day must have started) and/or "flag" (must be set).
+func _entry_block(place: String) -> String:
 	if not _location_requirements.has(place):
-		return true
-	return event_flag(str(_location_requirements[place]))
+		return ""
+	var rule: Dictionary = _location_requirements[place]
+	var blocked: String = str(rule.get("blocked_text", "此地尚無法前往。"))
+	if rule.has("min_day") and clock.day < int(rule["min_day"]):
+		return blocked
+	if rule.has("flag") and not event_flag(str(rule["flag"])):
+		return blocked
+	return ""
 
 
 ## Value of a narrative flag. False when unset or when the chapter has no events.
@@ -178,8 +190,9 @@ func _perform_action(action: String) -> String:
 		if clock.is_expired():
 			return "時限已到，無法再行動。"
 		var place: String = action.trim_prefix("go:")
-		if not _can_enter(place):
-			return "門後的通道仍被封印，無法通行。"
+		var blocked: String = _entry_block(place)
+		if blocked != "":
+			return blocked
 		_at_camp = false
 		_location = place
 		return "你前往%s。" % _location + _spend(ACTION_COSTS["move"])
