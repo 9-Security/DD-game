@@ -61,6 +61,7 @@ var _encounter_entries: Array = []
 
 var _dialogue_label: Label
 var _dialogue_button: Button
+var _dialogue_skip_button: Button
 ## Scripted dialogue scenes that play after a player action.
 var _dialogue: DialoguePlayer = DialoguePlayer.new()
 ## A story fight waiting for its lead-in dialogue to finish: {enemy, note}. Empty when none waits.
@@ -248,6 +249,13 @@ func _build_ui() -> void:
 	_dialogue_button.visible = false
 	_dialogue_button.pressed.connect(_on_dialogue_next_pressed)
 	root.add_child(_dialogue_button)
+
+	_dialogue_skip_button = Button.new()
+	_dialogue_skip_button.text = "略過"
+	_dialogue_skip_button.custom_minimum_size = Vector2(200, 48)
+	_dialogue_skip_button.visible = false
+	_dialogue_skip_button.pressed.connect(_on_dialogue_skip_pressed)
+	root.add_child(_dialogue_skip_button)
 
 	_next_button = Button.new()
 	_next_button.text = "下一句"
@@ -625,6 +633,19 @@ func _on_dialogue_next_pressed() -> void:
 	if _dialogue.advance():
 		_show_dialogue_line()
 		return
+	_end_dialogue()
+
+
+## Ends the scene on screen at once, without showing its remaining lines. Its flag is already saved, so
+## it does not play again.
+func _on_dialogue_skip_pressed() -> void:
+	_dialogue.cancel()
+	_end_dialogue()
+
+
+## Clears the dialogue box and resumes the game: refreshes the screen and, when a story fight was
+## waiting for its lead-in dialogue, opens that battle.
+func _end_dialogue() -> void:
 	_set_portrait("")
 	_refresh_status()
 	if not _pending_battle.is_empty():
@@ -951,6 +972,7 @@ func _refresh_status() -> void:
 		_check_story_transitions()
 	var dialogue_open: bool = _dialogue.is_active()
 	_dialogue_button.visible = dialogue_open
+	_dialogue_skip_button.visible = dialogue_open
 	var where: String = _flow.location()
 	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
 	var party_line: String = _flow.party_text()
