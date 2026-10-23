@@ -80,13 +80,15 @@ func test_a_won_fight_clears_the_encounter_and_says_so() -> void:
 	assert_str(message).contains("戰鬥勝利")
 
 
-func test_a_fled_fight_keeps_the_encounter_open() -> void:
+func test_a_fled_fight_keeps_the_encounter_open_and_costs_one_segment() -> void:
 	var flow := _started([0.9])
 	flow.prepare_encounter_fight("combat")
+	var start := flow.clock.get_elapsed()
 
 	flow.finish_encounter_fight("fled")
 
 	assert_bool(flow.pending_approaches().is_empty()).is_false()
+	assert_int(flow.clock.get_elapsed()).is_equal(start + 1)
 
 
 func test_finishing_a_fight_writes_the_curse_stacks_back() -> void:

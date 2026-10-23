@@ -10,7 +10,7 @@ const ACTION_COSTS: Dictionary = {"move": 1, "explore": 1, "rest": 2, "battle": 
 const SEGMENT_NAMES: Array[String] = ["晨", "午", "夜"]
 
 ## Placeholder values for the tutorial enemy. These are not design-document values.
-const TUTORIAL_ENEMY_HP: int = 30
+const TUTORIAL_ENEMY_HP: int = 80
 const TUTORIAL_ENEMY_DEF: int = 2
 
 ## Fallback stats for a night battle entry that does not define its own enemy.
@@ -965,7 +965,7 @@ func finish_encounter_fight(outcome: String, stacks: Dictionary = {}) -> String:
 	_fight_approach = ""
 	_battle_this_action = true
 	if outcome == "fled":
-		return "你撤出了戰鬥，遭遇仍在。"
+		return "你撤出了戰鬥，遭遇仍在。" + _spend(ACTION_COSTS["move"])
 	_pending = null
 	if outcome == "won":
 		return "戰鬥勝利。" + _reward_victory()
@@ -1008,7 +1008,7 @@ func finish_story_fight(outcome: String, stacks: Dictionary = {}) -> String:
 func _finish_sequence_fight(fight: Dictionary, outcome: String) -> String:
 	var sequence: Dictionary = fight["sequence"]
 	if outcome == "fled":
-		return "你撤出了戰鬥，守衛仍在。"
+		return "你撤出了戰鬥，守衛仍在。" + _spend(ACTION_COSTS["move"])
 	if outcome != "won":
 		return _sequence_failure(sequence, _steps(sequence).size() - 1)
 	_apply_success(sequence)
@@ -1021,7 +1021,7 @@ func _finish_sequence_fight(fight: Dictionary, outcome: String) -> String:
 ## The mirror fight: winning avoids the counterattack; losing applies it as before.
 func _finish_mirror_fight(outcome: String) -> String:
 	if outcome == "fled":
-		return "你退開了鏡面。"
+		return "你退開了鏡面。" + _spend(ACTION_COSTS["move"])
 	var spend_text: String = _spend(ACTION_COSTS["move"])
 	if outcome == "won":
 		return "你擋下了鏡中的反擊。" + spend_text

@@ -101,3 +101,15 @@ func test_counterattack_does_not_open_the_gate_or_count_as_a_confession() -> voi
 	# Assert
 	assert_bool(flow.event_flag("mirror_freya_acknowledged")).is_false()
 	assert_bool(flow.event_flag("obsidian_gate_open")).is_false()
+
+
+func test_retreating_from_the_mirror_costs_one_segment_and_wounds_nobody() -> void:
+	var flow := _flow()
+	flow.perform("go:黑曜石之門")
+	flow.perform("strike:mirror")
+	var start := flow.clock.get_elapsed()
+
+	flow.finish_story_fight("fled")
+
+	assert_int(flow.clock.get_elapsed()).is_equal(start + 1)
+	assert_int(flow.wounds("freya")).is_equal(0)

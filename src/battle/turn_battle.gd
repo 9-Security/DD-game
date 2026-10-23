@@ -4,7 +4,7 @@ extends RefCounted
 ##
 ## A round lets every living party member act once, in speed order (highest first; equal speed
 ## keeps the party order). When the last member has acted, the enemy strikes the living member with
-## the lowest HP, and the next round begins. The caller drives the battle by calling act() for the
+## a living member chosen by the roll, and the next round begins. The caller drives the battle by calling act() for the
 ## member whose turn it is. Rolls are supplied by the caller and cycled, so results are deterministic.
 ##
 ## Party member: { id, name, hp, max_hp, mp, atk, def, speed, skill }
@@ -251,6 +251,13 @@ func _drop_fallen_from_pending() -> void:
 	_pending = still_waiting
 
 
+## Maps the next roll onto a position among count living members, evenly across the roll range.
+func _target_index(count: int) -> int:
+	var roll: float = _next_roll()
+	var position: float = (roll + DamageCalculator.ROLL_LIMIT) / (2.0 * DamageCalculator.ROLL_LIMIT)
+	return clampi(int(position * count), 0, count - 1)
+
+
 func _living_members() -> Array:
 	var living: Array = []
 	for member: Dictionary in _members:
@@ -259,14 +266,13 @@ func _living_members() -> Array:
 	return living
 
 
-## The enemy hits the living member with the lowest HP. Returns the description.
+## The enemy hits a living member chosen by the next roll, so focus fire does not decide the fight.
+## Returns the description.
 func _enemy_strike() -> String:
-	var target: Dictionary = {}
-	for member: Dictionary in _living_members():
-		if target.is_empty() or int(member["hp"]) < int(target["hp"]):
-			target = member
-	if target.is_empty():
+	var living: Array = _living_members()
+	if living.is_empty():
 		return ""
+	var target: Dictionary = living[_target_index(living.size())]
 	var raw: int = DamageCalculator.calculate(int(_enemy["atk"]), 1.0, int(target["def"]), _next_roll())
 	var damage: int = maxi(1, roundi(raw * float(target["guard"])))
 	target["hp"] = maxi(0, int(target["hp"]) - damage)

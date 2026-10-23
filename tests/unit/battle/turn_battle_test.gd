@@ -132,17 +132,26 @@ func test_reaching_the_round_limit_loses_the_battle() -> void:
 	assert_str(battle.outcome()).is_equal("lost")
 
 
-func test_the_enemy_attacks_the_living_member_with_the_lowest_hp() -> void:
-	var battle := _battle([
+func test_the_enemy_target_is_chosen_by_the_roll_among_the_living_members() -> void:
+	# A roll at the low end picks the first living member; at the high end, the last one.
+	var low := _battle([
 		_member("eron", 9, 90, 1, 0, "life_resonance"),
 		_member("freya", 6, 40, 1, 0, "iron_guard"),
-	], _enemy(500, 20))
+	], _enemy(500, 20), [-0.1])
+	low.act("eron", "defend")
+	low.act("freya", "defend")
 
-	battle.act("eron", "defend")
-	battle.act("freya", "defend")
+	var high := _battle([
+		_member("eron", 9, 90, 1, 0, "life_resonance"),
+		_member("freya", 6, 40, 1, 0, "iron_guard"),
+	], _enemy(500, 20), [0.1])
+	high.act("eron", "defend")
+	high.act("freya", "defend")
 
-	assert_int(battle.member_hp("freya")).is_less(40)
-	assert_int(battle.member_hp("eron")).is_equal(90)
+	assert_int(low.member_hp("eron")).is_less(90)
+	assert_int(low.member_hp("freya")).is_equal(40)
+	assert_int(high.member_hp("eron")).is_equal(90)
+	assert_int(high.member_hp("freya")).is_less(40)
 
 
 func test_an_action_out_of_turn_is_refused() -> void:

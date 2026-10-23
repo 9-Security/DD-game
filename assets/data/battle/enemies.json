@@ -1,31 +1,31 @@
 {
-  "source": "Enemies for the interactive battle. The tutorial enemy must match the flow constants (DayOneFlow.TUTORIAL_ENEMY_HP and TUTORIAL_ENEMY_DEF). Story enemies (stone_flower_beast, blood_oath_armor, mirror_freya) have provisional values and are referenced by balance.json. atk is provisional for all.",
+  "source": "Enemies for the interactive battle. Values are provisional first-version values chosen with tools/balance/battle_sim.py (random enemy targeting). The tutorial enemy must match DayOneFlow.TUTORIAL_ENEMY_HP and TUTORIAL_ENEMY_DEF.",
   "tutorial": {
     "name": "影子守衛",
-    "hp": 30,
-    "max_hp": 30,
+    "hp": 80,
+    "max_hp": 80,
     "def": 2,
-    "atk": 6
+    "atk": 57
   },
   "stone_flower_beast": {
     "name": "石花巨獸",
-    "hp": 60,
-    "max_hp": 60,
+    "hp": 160,
+    "max_hp": 160,
     "def": 4,
-    "atk": 10
+    "atk": 59
   },
   "blood_oath_armor": {
     "name": "血誓鐵甲守衛",
-    "hp": 70,
-    "max_hp": 70,
+    "hp": 160,
+    "max_hp": 160,
     "def": 6,
-    "atk": 12
+    "atk": 55
   },
   "mirror_freya": {
     "name": "鏡中芙蕾雅",
-    "hp": 40,
-    "max_hp": 40,
+    "hp": 80,
+    "max_hp": 80,
     "def": 3,
-    "atk": 8
+    "atk": 57
   }
 }

@@ -13,7 +13,7 @@
     {
       "id": "spirit_gate",
       "text": "一群怨靈在山路口聚集，低聲重複著某個名字。",
-      "enemy_hp": 30,
+      "enemy_hp": 80,
       "enemy_def": 1,
       "enemy_tags": [
         "restless_spirit"
@@ -30,12 +30,12 @@
         "injury": true
       },
       "name": "怨靈",
-      "enemy_atk": 6
+      "enemy_atk": 57
     },
     {
       "id": "rune_seal",
       "text": "路旁的石壁上刻著符文封印，光線流過刻紋後又暗了下去。",
-      "enemy_hp": 20,
+      "enemy_hp": 80,
       "enemy_def": 0,
       "enemy_tags": [
         "ancient_construct"
@@ -50,7 +50,7 @@
         "injury": true
       },
       "name": "符文石像",
-      "enemy_atk": 4
+      "enemy_atk": 57
     }
   ]
 }

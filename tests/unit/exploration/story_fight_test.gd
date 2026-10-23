@@ -96,7 +96,7 @@ func test_losing_resets_the_sequence_and_costs_its_failure_time() -> void:
 	assert_int(flow.clock.get_elapsed()).is_equal(start + 1)
 
 
-func test_retreating_changes_nothing_and_the_fight_can_be_started_again() -> void:
+func test_retreating_spends_one_segment_changes_no_flags_and_the_fight_can_be_started_again() -> void:
 	var flow := _flow()
 	flow.perform("first:act")
 	var start := flow.clock.get_elapsed()
@@ -106,7 +106,7 @@ func test_retreating_changes_nothing_and_the_fight_can_be_started_again() -> voi
 
 	assert_bool(flow.event_flag("first_done")).is_true()
 	assert_bool(flow.event_flag("sealed")).is_false()
-	assert_int(flow.clock.get_elapsed()).is_equal(start)
+	assert_int(flow.clock.get_elapsed()).is_equal(start + 1)
 	flow.perform("last:act")
 	assert_bool(flow.story_fight_pending()).is_true()
 
