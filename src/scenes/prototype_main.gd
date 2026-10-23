@@ -24,7 +24,18 @@ func _ready() -> void:
 	_lines = _load_prologue_lines()
 	var party: Array = _load_party()
 	_flow = DayOneFlow.new(party, _sample_rolls())
-	_show_next_line()
+
+	# Launch options for capture and review, passed after "--" on the command line:
+	#   --skip-prologue            open directly on the day-one screen
+	#   --demo-action=<action>     perform one action at launch (move, explore, rest, battle)
+	var options: PackedStringArray = OS.get_cmdline_user_args()
+	if options.has("--skip-prologue"):
+		_enter_day_one()
+	else:
+		_show_next_line()
+	for option: String in options:
+		if option.begins_with("--demo-action="):
+			_on_action_pressed(option.trim_prefix("--demo-action="))
 
 
 func _build_ui() -> void:
