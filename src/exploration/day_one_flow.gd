@@ -251,7 +251,7 @@ func _perform_step(action: String) -> String:
 		return "這一步已經完成了。"
 	if not _prior_steps_done(sequence, index):
 		return _sequence_failure(sequence, index)
-	var risk: float = _curse_risk(sequence)
+	var risk: float = _curse_risk(sequence, action)
 	if risk > 0.0 and _next_step_roll() < risk:
 		var curse_text: String = str(sequence["curse_risk"].get("text", "血之詛咒擾亂了你的動作。"))
 		return _sequence_failure(sequence, 0, curse_text, false)
@@ -280,12 +280,21 @@ func _apply_success(sequence: Dictionary) -> void:
 
 
 ## Chance that a step fails because of the curse: stacks times the per-stack chance, capped.
-func _curse_risk(sequence: Dictionary) -> float:
+## Only the steps listed in the sequence's curse_risk actions are affected.
+func _curse_risk(sequence: Dictionary, action: String) -> float:
 	var risk_data: Dictionary = sequence.get("curse_risk", {})
-	if risk_data.is_empty():
+	if risk_data.is_empty() or not (risk_data.get("actions", []) as Array).has(action):
 		return 0.0
 	var stacks: int = maxi(curse_stacks(str(risk_data.get("character", ""))), 0)
 	return minf(float(risk_data.get("max", 0.0)), stacks * float(risk_data.get("per_stack", 0.0)))
+
+
+## Public chance that the step fails because of the curse, for the buttons. Zero for other actions.
+func step_curse_risk(action: String) -> float:
+	var sequence: Dictionary = _sequence_for(action)
+	if sequence.is_empty():
+		return 0.0
+	return _curse_risk(sequence, action)
 
 
 ## The next roll for a curse-raised failure. With no rolls given, the step never fails this way.

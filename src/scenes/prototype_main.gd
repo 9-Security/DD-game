@@ -214,6 +214,7 @@ func _build_ui() -> void:
 		button.custom_minimum_size = Vector2(220, 44)
 		button.set_meta("action", str(entry[0]))
 		button.set_meta("place", str(entry[2]))
+		button.set_meta("label", str(entry[1]))
 		button.pressed.connect(_on_action_pressed.bind(str(entry[0])))
 		_chapter3_bar.add_child(button)
 		_chapter3_buttons.append(button)
@@ -407,6 +408,9 @@ func _refresh_chapter3(bar_open: bool) -> void:
 		else:
 			shown = shown and _flow.step_visible(action)
 		button.visible = shown
+		var base: String = str(button.get_meta("label"))
+		var risk: float = _flow.step_curse_risk(action) if shown else 0.0
+		button.text = base if risk <= 0.0 else "%s｜血咒干擾：約 %d%%" % [base, roundi(risk * 100.0)]
 
 
 ## True when a destination has already been reached, so its button is hidden.

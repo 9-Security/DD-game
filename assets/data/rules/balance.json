@@ -187,12 +187,6 @@
         "curse_stacks": 1,
         "curse_target": "freya",
         "flag": "seal_failed"
-      },
-      "curse_risk": {
-        "character": "freya",
-        "per_stack": 0.1,
-        "max": 0.5,
-        "text": "血之詛咒擾亂了你的動作，這一次的努力全部落空，必須從頭來過。"
       }
     },
     {
@@ -300,8 +294,12 @@
       },
       "curse_risk": {
         "character": "freya",
-        "per_stack": 0.1,
-        "max": 0.5,
+        "per_stack": 0.05,
+        "max": 0.25,
+        "actions": [
+          "oath:lower",
+          "oath:pierce"
+        ],
         "text": "血之詛咒擾亂了你的動作，這一次的努力全部落空，必須從頭來過。"
       }
     },
