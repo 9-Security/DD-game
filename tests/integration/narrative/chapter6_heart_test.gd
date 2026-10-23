@@ -164,5 +164,5 @@ func test_taking_the_whole_herb_secures_it_and_the_party_can_return() -> void:
 	assert_bool(flow.event_flag("herb_seven_leaves_preserved")).is_true()
 	assert_bool(flow.event_flag("herb_secured")).is_true()
 
-	flow.perform("depart:return")
-	assert_bool(flow.event_flag("returned_from_star_heart")).is_true()
+	flow.perform("return:safe")
+	assert_str(flow.location()).is_equal("王宮藥室")

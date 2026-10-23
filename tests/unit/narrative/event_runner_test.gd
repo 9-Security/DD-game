@@ -114,7 +114,7 @@ func test_validation_rejects_unknown_effect_and_missing_trigger() -> void:
 
 	# Assert
 	assert_bool(errors.has("trigger must name an action or night_entered")).is_true()
-	assert_bool(errors.has("effects[0].type must be one of: set_flag, message, trust, unlock_skill")).is_true()
+	assert_bool(errors.has("effects[0].type must be one of: set_flag, message, trust, unlock_skill, advance_day")).is_true()
 
 
 func test_flags_survive_a_snapshot_round_trip() -> void:

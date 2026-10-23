@@ -137,30 +137,6 @@
           "text": "他把整株神喻草安置在保護袋中，確保葉片沒有受到擠壓。"
         }
       ]
-    },
-    {
-      "id": "ch6_depart",
-      "source_ref": "返程：第七日將至",
-      "trigger": {
-        "action": "depart:return",
-        "location": "墜星之心"
-      },
-      "conditions": [],
-      "effects": [
-        {
-          "type": "set_flag",
-          "flag": "returned_from_star_heart",
-          "value": true
-        },
-        {
-          "type": "message",
-          "text": "里克特望向仍在脈動的墜星之心。「我們只剩第七日了。」"
-        },
-        {
-          "type": "message",
-          "text": "墜星之心沒有追趕他們，也沒有阻止他們離開。只是像一顆背負太多記憶的心，繼續維持不知還能延續多久的脈動。"
-        }
-      ]
     }
   ]
 }

@@ -157,6 +157,9 @@
         {
           "type": "message",
           "text": "第五日，尚未結束。"
+        },
+        {
+          "type": "advance_day"
         }
       ]
     },

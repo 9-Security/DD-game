@@ -123,6 +123,8 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 ## Performs a player action and returns a message for the log. Narrative events run
 ## only after an action that actually happened.
 func perform(action: String) -> String:
+	if is_over():
+		return "時限已到，無法再行動。" if is_time_up() else "結局已定，無法再行動。"
 	var ran: bool = _can_run(action)
 	_night_entered = false
 	_step_failed = false
@@ -135,6 +137,27 @@ func perform(action: String) -> String:
 ## True once the seven-day limit has run out. No further actions are possible.
 func is_time_up() -> bool:
 	return clock.is_expired()
+
+
+## The ending reached, "END_A", "END_B", "END_C", or "" while the story continues.
+func ending_id() -> String:
+	if event_flag("ending_a"):
+		return "END_A"
+	if event_flag("ending_b"):
+		return "END_B"
+	if event_flag("ending_c"):
+		return "END_C"
+	return ""
+
+
+## True once an ending has been reached.
+func is_ended() -> bool:
+	return ending_id() != ""
+
+
+## True when no further action is possible: time has run out or an ending has been reached.
+func is_over() -> bool:
+	return is_time_up() or is_ended()
 
 
 ## Current location, empty before the first move.
@@ -210,9 +233,27 @@ func _step_index(sequence: Dictionary, action: String) -> int:
 	return -1
 
 
+## True when every required flag is set and no forbidden flag is set. Both may be a single name
+## or an Array of names.
 func _requirement_met(sequence: Dictionary) -> bool:
-	var requires: String = str(sequence.get("requires", ""))
-	return requires == "" or event_flag(requires)
+	for name: String in _names(sequence.get("requires", [])):
+		if not event_flag(name):
+			return false
+	for name: String in _names(sequence.get("forbids", [])):
+		if event_flag(name):
+			return false
+	return true
+
+
+func _names(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if value is Array:
+		for item: Variant in value:
+			if str(item) != "":
+				result.append(str(item))
+	elif str(value) != "":
+		result.append(str(value))
+	return result
 
 
 func _prior_steps_done(sequence: Dictionary, index: int) -> bool:
@@ -255,13 +296,35 @@ func _perform_step(action: String) -> String:
 	if risk > 0.0 and _next_step_roll() < risk:
 		var curse_text: String = str(sequence["curse_risk"].get("text", "血之詛咒擾亂了你的動作。"))
 		return _sequence_failure(sequence, 0, curse_text, false)
+	var late_text: String = ""
+	var chance: float = _chance_risk(sequence, action)
+	if chance > 0.0 and _next_step_roll() < chance:
+		var risk_data: Dictionary = sequence["risk"]
+		var late_flag: String = str(risk_data.get("late_flag", ""))
+		if late_flag != "":
+			_events.flags[late_flag] = true
+		late_text = _spend(int(risk_data.get("late_segments", 0)))
 	_at_camp = false
+	var text: String = ""
 	if index < steps.size() - 1:
 		_events.flags[step_flag] = true
-		var text: String = _step_text(sequence, index)
-		return text if text != "" else "你依序行動，線條隨之動了起來。"
-	_apply_success(sequence)
-	return "你依序行動，線條隨之動了起來。"
+		text = _step_text(sequence, index)
+	else:
+		_apply_success(sequence)
+	var cost_text: String = _spend(int(sequence.get("cost", 0)))
+	if sequence.has("to"):
+		_location = str(sequence["to"])
+	if text == "":
+		text = "你依序行動，線條隨之動了起來。"
+	return text + late_text + cost_text
+
+
+## Chance that the action runs late, from the sequence's "risk" block. Zero for other actions.
+func _chance_risk(sequence: Dictionary, action: String) -> float:
+	var risk_data: Dictionary = sequence.get("risk", {})
+	if risk_data.is_empty() or not (risk_data.get("actions", []) as Array).has(action):
+		return 0.0
+	return float(risk_data.get("chance", 0.0))
 
 
 ## The narration for a step. It is in the sequence data, so it repeats when the step is redone.
@@ -364,7 +427,7 @@ func event_flag(flag: String) -> bool:
 
 
 func _can_run(action: String) -> bool:
-	if clock.is_expired():
+	if is_over():
 		return false
 	if _pending != null:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
@@ -397,6 +460,8 @@ func _run_events(action: String) -> String:
 			_acquired[owner] = []
 		if not (_acquired[owner] as Array).has(str(unlock["skill"])):
 			(_acquired[owner] as Array).append(str(unlock["skill"]))
+	if int(result.get("day_advances", 0)) > 0:
+		clock.restore_elapsed(clock.day * DayClock.SEGMENTS_PER_DAY)
 	for change: Dictionary in result["trust_changes"]:
 		if _trust != null:
 			_trust.change(str(change["character"]), int(change["delta"]))

@@ -9,9 +9,10 @@ extends RefCounted
 ## alone to match any action there.
 ## Conditions: [{"flag": String, "equals": bool}] (equals defaults to true).
 ## Effects: {"type": "set_flag", "flag", "value"}, {"type": "message", "text"},
-##          {"type": "trust", "character", "delta"}.
+##          {"type": "trust", "character", "delta"}, {"type": "advance_day"} (the story moves to
+##          the start of the next day; the caller applies it).
 
-const EFFECT_TYPES: Array[String] = ["set_flag", "message", "trust", "unlock_skill"]
+const EFFECT_TYPES: Array[String] = ["set_flag", "message", "trust", "unlock_skill", "advance_day"]
 
 ## Story flags. Keys are flag names, values are bools.
 var flags: Dictionary = {}
@@ -69,6 +70,8 @@ static func validate(event: Dictionary) -> Array[String]:
 			"unlock_skill":
 				if not effect.has("character") or not effect.has("skill"):
 					errors.append("%s needs character and skill" % prefix)
+			"advance_day":
+				pass
 	return errors
 
 
@@ -78,6 +81,7 @@ func evaluate(context: Dictionary) -> Dictionary:
 	var messages: Array[String] = []
 	var trust_changes: Array[Dictionary] = []
 	var skill_unlocks: Array[Dictionary] = []
+	var day_advances: int = 0
 
 	for event: Dictionary in _events:
 		var id: String = str(event.get("id", ""))
@@ -99,8 +103,15 @@ func evaluate(context: Dictionary) -> Dictionary:
 					trust_changes.append({"character": str(effect["character"]), "delta": int(effect["delta"])})
 				"unlock_skill":
 					skill_unlocks.append({"character": str(effect["character"]), "skill": str(effect["skill"])})
+				"advance_day":
+					day_advances += 1
 
-	return {"messages": messages, "trust_changes": trust_changes, "skill_unlocks": skill_unlocks}
+	return {
+		"messages": messages,
+		"trust_changes": trust_changes,
+		"skill_unlocks": skill_unlocks,
+		"day_advances": day_advances,
+	}
 
 
 ## Captures flags and which events have fired.

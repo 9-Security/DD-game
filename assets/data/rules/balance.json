@@ -165,7 +165,17 @@
       "harvest:assess",
       "harvest:pluck",
       "harvest:whole",
-      "depart:return"
+      "return:safe",
+      "return:shortcut"
+    ],
+    "王宮藥室": [
+      "palace:evidence",
+      "palace:orders",
+      "palace:tell_liana",
+      "palace:liana_consent",
+      "final:king_volunteers",
+      "final:ritual_a",
+      "final:break_oath"
     ]
   },
   "sequences": [
@@ -426,13 +436,127 @@
       }
     },
     {
-      "id": "depart",
-      "requires": "herb_secured",
+      "id": "return_safe",
+      "requires": [
+        "herb_secured"
+      ],
+      "forbids": [
+        "palace_arrived"
+      ],
       "blocked_text": "神喻草還沒有完整取得。",
+      "cost": 3,
+      "to": "王宮藥室",
       "steps": [
         {
-          "action": "depart:return",
-          "flag": "returned_from_star_heart"
+          "action": "return:safe",
+          "flag": "palace_arrived",
+          "hint": "沿來時的路線返回，石階較慢但穩定。"
+        }
+      ]
+    },
+    {
+      "id": "return_shortcut",
+      "requires": [
+        "herb_secured"
+      ],
+      "forbids": [
+        "palace_arrived"
+      ],
+      "blocked_text": "神喻草還沒有完整取得。",
+      "cost": 2,
+      "to": "王宮藥室",
+      "risk": {
+        "actions": [
+          "return:shortcut"
+        ],
+        "chance": 0.5,
+        "late_flag": "return_late",
+        "late_segments": 6
+      },
+      "steps": [
+        {
+          "action": "return:shortcut",
+          "flag": "palace_arrived",
+          "hint": "走較短的捷徑，但石階可能崩落，耽誤的時間可能讓你們無法在第七夜前抵達。"
+        }
+      ]
+    },
+    {
+      "id": "disclosure",
+      "requires": [
+        "palace_arrived"
+      ],
+      "forbids": [
+        "return_late"
+      ],
+      "blocked_text": "還沒有抵達王宮。",
+      "steps": [
+        {
+          "action": "palace:evidence",
+          "flag": "evidence_presented_to_king",
+          "text": "里克特把死亡名冊攤在桌上。國王的目光掃過第一行名字，便停住了。「誰允許你們把這個帶進王宮？」「那些人沒有人允許他們被抹去。」",
+          "hint": "先讓國王看見死亡名冊。"
+        },
+        {
+          "action": "palace:orders",
+          "flag": "royal_orders_presented",
+          "text": "芙蕾雅把亡父之骨放在桌上，取出封村密令與處決紀錄。「為什麼從來不是你自己？」國王低下頭。「因為我害怕。」",
+          "hint": "出示封村密令與父親的處決紀錄。"
+        },
+        {
+          "action": "palace:tell_liana",
+          "flag": "liana_informed_of_costs",
+          "text": "艾洛恩向黎安娜說明兩條路，並說明它們各自的代價：一個自願獻出的完整靈魂，或斬斷誓約、王國可能失去護界。",
+          "hint": "向黎安娜說明兩條路與代價。"
+        },
+        {
+          "action": "palace:liana_consent",
+          "flag": "liana_consent_recorded",
+          "hint": "請黎安娜作出決定。"
+        }
+      ]
+    },
+    {
+      "id": "ending_a",
+      "requires": [
+        "liana_consent_recorded"
+      ],
+      "forbids": [
+        "ending_b"
+      ],
+      "blocked_text": "黎安娜還沒有作出決定。",
+      "steps": [
+        {
+          "action": "final:king_volunteers",
+          "flag": "king_explicit_voluntary_consent",
+          "text": "國王再次確認願意奉出自己的完整靈魂。這一次，沒有人替他宣誓。",
+          "hint": "國王必須自己說出願意奉出完整靈魂。"
+        },
+        {
+          "action": "final:ritual_a",
+          "flag": "ending_a",
+          "hint": "以舊儀式救回黎安娜。"
+        }
+      ]
+    },
+    {
+      "id": "ending_b",
+      "requires": [
+        "liana_consent_recorded",
+        "chapter3_sealed",
+        "oath_seal_broken",
+        "spirits_listened",
+        "translucent_seed_received"
+      ],
+      "forbids": [
+        "ending_a"
+      ],
+      "blocked_text": "斷誓還缺少前章的成果，無法斬斷誓約。",
+      "steps": [
+        {
+          "action": "final:break_oath",
+          "flag": "ending_b",
+          "hint": "與黎安娜共同斬斷誓約。"
         }
       ]
     }

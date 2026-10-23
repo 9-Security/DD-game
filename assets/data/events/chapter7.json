@@ -1,0 +1,238 @@
+{
+  "id": "chapter7",
+  "source": "design/narrative/novel/chapter07_deep_abyss_wish.md 與三個結局小說；design/narrative/ENDING_TRIGGER_DESIGN_v1.0.md；design/characters/source/CHAPTER7_SETTINGS_v1.0.md",
+  "events": [
+    {
+      "id": "ch7_return_safe",
+      "source_ref": "第七日：沿來時路線返回",
+      "trigger": {
+        "action": "return:safe",
+        "location": "王宮藥室"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "palace_arrived",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "returned_from_star_heart",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "四人沿來時的路線返回。石階大多穩定，只是比來時慢了許多。"
+        },
+        {
+          "type": "message",
+          "text": "遠處王宮的鐘聲斷斷續續地響著。里克特低聲說：「我們只剩第七日了。」"
+        }
+      ]
+    },
+    {
+      "id": "ch7_return_shortcut_on_time",
+      "source_ref": "第七日：捷徑準時抵達",
+      "trigger": {
+        "action": "return:shortcut",
+        "location": "王宮藥室"
+      },
+      "conditions": [
+        {
+          "flag": "return_late",
+          "equals": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "palace_arrived",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "returned_from_star_heart",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特選了較短的路線。石階一塊接一塊轉動，他們踩著最穩的幾塊跳了過去。"
+        },
+        {
+          "type": "message",
+          "text": "王宮的鐘聲就在前方。"
+        }
+      ]
+    },
+    {
+      "id": "ch7_return_shortcut_late",
+      "source_ref": "結局 C：捷徑崩落，逾期",
+      "trigger": {
+        "action": "return:shortcut",
+        "location": "王宮藥室"
+      },
+      "conditions": [
+        {
+          "flag": "return_late"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "palace_arrived",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "ending_c",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "石階在半途崩落。他們花了比預計更久才爬回穩定的路。"
+        },
+        {
+          "type": "message",
+          "text": "抵達王城時，天已經亮了。城門沒有迎接他們的隊伍，只有值夜士兵疲倦的臉。"
+        },
+        {
+          "type": "message",
+          "text": "黎安娜在第七夜的鐘聲前失去了意識。國王啟動王室備用儀式，強行將一個新的靈魂送入墜星之心。"
+        },
+        {
+          "type": "message",
+          "text": "四人帶著完整的神喻草回來，卻已錯過原本的治療窗口。守淵村的鐘，在本不應響起的第八日再次響起。"
+        },
+        {
+          "type": "message",
+          "text": "結局 C 完｜未竟的第八日。"
+        }
+      ]
+    },
+    {
+      "id": "ch7_liana_consent",
+      "source_ref": "共同主線：黎安娜的決定",
+      "trigger": {
+        "action": "palace:liana_consent",
+        "location": "王宮藥室"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "liana_consent_recorded",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "黎安娜看著父親，又看著四位冒險者。「我不想讓別人因為我的名字消失。也不想假裝城外的人不需要保護。」"
+        },
+        {
+          "type": "message",
+          "text": "「那至少，讓我參與決定。」"
+        }
+      ]
+    },
+    {
+      "id": "ch7_ending_a",
+      "source_ref": "結局 A：代價之藥",
+      "trigger": {
+        "action": "final:ritual_a",
+        "location": "王宮藥室"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "ending_a",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "草葉先是發白，隨後一縷柔和的光線從根部伸出，沿著國王伸開的手掌流向公主。"
+        },
+        {
+          "type": "message",
+          "text": "國王沒有喊叫。他只是看著女兒。「我希望妳有一天，能夠用自己的名字生活。」"
+        },
+        {
+          "type": "message",
+          "text": "那隻手漸漸失去重量。一瞬間，屋內每支蠟燭都向內彎折。國王的身影消失了。"
+        },
+        {
+          "type": "message",
+          "text": "神喻草的七片葉子由蒼白轉為近乎透明，最後垂落在床沿。黎安娜的呼吸逐漸平穩。她醒來了。"
+        },
+        {
+          "type": "message",
+          "text": "桌上的王室文件開始出現細微變化，簽名的筆畫淡去。黎安娜記得剛才有人握著她的手，卻想不起那人的臉。"
+        },
+        {
+          "type": "message",
+          "text": "里克特在凱恩的名字旁刻下國王的姓名。刻到一半，他的記憶也開始模糊，於是請黎安娜說出父親的名字，一個音節一個音節拼起來。"
+        },
+        {
+          "type": "message",
+          "text": "天亮時，王國的護界沒有破碎，邊境也沒有傳來荒潮侵入的消息。城裡的人開始談論公主痊癒。"
+        },
+        {
+          "type": "message",
+          "text": "另一件同樣確定的事，卻沒有人願意在慶典中提起：一條生命填補了另一條生命，製造悲劇的誓約仍在運作。"
+        },
+        {
+          "type": "message",
+          "text": "結局 A 完｜代價之藥。"
+        }
+      ]
+    },
+    {
+      "id": "ch7_ending_b",
+      "source_ref": "結局 B：斷誓黎明",
+      "trigger": {
+        "action": "final:break_oath",
+        "location": "王宮藥室"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "ending_b",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅舉起巨劍，沒有怒吼，也沒有血色暴走。「我不再替王室守這個謊。」劍鋒落下，一條橫跨藥室地面的血紅線條斷開。"
+        },
+        {
+          "type": "message",
+          "text": "茵芮引導群靈依自己的方向穿過光線。藥室不再被重疊的哀求填滿。遠在地下的深淵，也第一次不必用哀號回應王室的鐘聲。"
+        },
+        {
+          "type": "message",
+          "text": "神喻草的七片葉子終於合攏，散成細白色光絲，落入公主胸前。黎安娜的呼吸漸漸穩定。"
+        },
+        {
+          "type": "message",
+          "text": "王城上空出現第一道裂光。那道維持數百年的護界正在瓦解。墜星之心出現新的裂縫，無聲地碎裂。"
+        },
+        {
+          "type": "message",
+          "text": "邊境的哨站報告：護界消失後，原本被隔絕在外的荒潮已出現在地平線上。"
+        },
+        {
+          "type": "message",
+          "text": "第二天清晨，黎安娜走上城牆。她已能自己行走，卻不記得童年時常去的庭園。「我們失去了保護。」艾洛恩也看向日出。「也終於有機會學會保護自己。」"
+        },
+        {
+          "type": "message",
+          "text": "數百年來第一次，守淵村的人在夜裡聽見的不是哀號，而是風聲。"
+        },
+        {
+          "type": "message",
+          "text": "結局 B 完｜斷誓黎明。"
+        }
+      ]
+    }
+  ]
+}

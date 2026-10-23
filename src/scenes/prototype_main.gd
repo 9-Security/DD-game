@@ -17,6 +17,7 @@ const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter4.json",
 	"res://assets/data/events/chapter5.json",
 	"res://assets/data/events/chapter6.json",
+	"res://assets/data/events/chapter7.json",
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
@@ -42,6 +43,7 @@ var _captions: Dictionary = {}
 var _labels: Dictionary = {}
 var _ending_panel: VBoxContainer
 var _ending_load_button: Button
+var _ending_label: Label
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -233,10 +235,9 @@ func _build_ui() -> void:
 	_ending_panel.add_theme_constant_override("separation", 12)
 	_ending_panel.visible = false
 	root.add_child(_ending_panel)
-	var ending_label := Label.new()
-	ending_label.text = str(_labels.get("time_up", ""))
-	ending_label.add_theme_font_size_override("font_size", 24)
-	_ending_panel.add_child(ending_label)
+	_ending_label = Label.new()
+	_ending_label.add_theme_font_size_override("font_size", 24)
+	_ending_panel.add_child(_ending_label)
 	var buttons: Dictionary = _labels.get("time_up_buttons", {})
 	_ending_load_button = Button.new()
 	_ending_load_button.text = str(buttons.get("load", ""))
@@ -369,7 +370,7 @@ func _on_action_pressed(action: String) -> void:
 	var message: String = _flow.perform(action)
 	_set_log(message)
 	_refresh_status()
-	if _flow.clock.is_expired():
+	if _flow.is_over():
 		_action_bar.visible = false
 
 
@@ -382,6 +383,14 @@ func _on_save_pressed() -> void:
 	else:
 		_set_log("存檔失敗，請檢查儲存空間。")
 	_refresh_status()
+
+
+## The text under the panel: the caption of the ending reached, or the time-limit text.
+func _ending_text() -> String:
+	var endings: Dictionary = _labels.get("endings", {})
+	if _flow.is_ended():
+		return str(endings.get(_flow.ending_id(), ""))
+	return str(_labels.get("time_up", ""))
 
 
 ## Starts the whole game again from the beginning.
@@ -476,14 +485,15 @@ func _refresh_status() -> void:
 	var approaches: Array[String] = _flow.pending_approaches()
 	_rebuild_approach_bar(approaches)
 	_approach_bar.visible = not approaches.is_empty()
-	_action_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
-	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
-	_gate_bar.visible = approaches.is_empty() and not _flow.clock.is_expired() and _flow.location() == "黑曜石之門"
+	_action_bar.visible = approaches.is_empty() and not _flow.is_over()
+	_talk_bar.visible = approaches.is_empty() and not _flow.is_over()
+	_gate_bar.visible = approaches.is_empty() and not _flow.is_over() and _flow.location() == "黑曜石之門"
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
-	_ending_panel.visible = _flow.is_time_up()
+	_ending_panel.visible = _flow.is_over()
+	_ending_label.text = _ending_text()
 	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
 	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
-	_refresh_chapter3(approaches.is_empty() and not _flow.clock.is_expired())
+	_refresh_chapter3(approaches.is_empty() and not _flow.is_over())
 	_save_button.disabled = not _flow.can_save()
 
 
