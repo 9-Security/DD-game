@@ -13,6 +13,7 @@ const COMMANDS: Array[Array] = [
 	["skill", "技能"],
 ]
 const LOG_LIMIT: int = 8
+const LOG_HEIGHT: int = 200
 
 var _battle: TurnBattle
 var _skills: Dictionary = {}
@@ -25,6 +26,7 @@ var _log_lines: Array[String] = []
 var _status_label: Label
 var _members_label: Label
 var _log_label: Label
+var _log_scroll: ScrollContainer
 var _command_bar: HBoxContainer
 var _target_bar: HBoxContainer
 var _prompt_label: Label
@@ -47,11 +49,16 @@ func _init() -> void:
 	_members_label.add_theme_font_size_override("font_size", 20)
 	box.add_child(_members_label)
 
+	# The log has a fixed height and scrolls, so the command buttons stay in place as lines are added.
+	_log_scroll = ScrollContainer.new()
+	_log_scroll.custom_minimum_size = Vector2(0, LOG_HEIGHT)
+	_log_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(_log_scroll)
 	_log_label = Label.new()
 	_log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_log_label.add_theme_font_size_override("font_size", 20)
-	_log_label.custom_minimum_size = Vector2(0, 200)
-	box.add_child(_log_label)
+	_log_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_log_scroll.add_child(_log_label)
 
 	_prompt_label = Label.new()
 	_prompt_label.add_theme_font_size_override("font_size", 20)
@@ -105,6 +112,12 @@ func _refresh() -> void:
 		lines.append(line)
 	_members_label.text = "\n".join(lines)
 	_log_label.text = "\n".join(_log_lines)
+	_scroll_log_to_end.call_deferred()
+
+
+## Keeps the newest log line visible.
+func _scroll_log_to_end() -> void:
+	_log_scroll.scroll_vertical = int(_log_scroll.get_v_scroll_bar().max_value)
 
 	var order: Array[String] = _battle.turn_order()
 	var outcome: String = _battle.outcome()
