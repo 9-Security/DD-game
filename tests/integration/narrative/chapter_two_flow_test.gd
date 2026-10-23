@@ -82,3 +82,32 @@ func test_a_refused_confession_before_the_gate_sets_no_flag() -> void:
 	flow.perform("confess:eron")
 
 	assert_bool(flow.event_flag("mirror_eron_acknowledged")).is_false()
+
+
+func test_losing_the_mirror_fight_wounds_freya_and_the_route_still_reaches_the_passage() -> void:
+	var flow := _flow()
+	flow.clock.spend(DayClock.SEGMENTS_PER_DAY)
+	flow.perform("go:黑曜石之門")
+	flow.perform("strike:mirror")
+
+	var message := flow.finish_story_fight("lost")
+
+	assert_str(message).contains("反擊")
+	assert_int(flow.wounds("freya")).is_equal(8)
+	assert_int(flow.curse_stacks("freya")).is_equal(2)
+	for character_id: String in CONFESSIONS:
+		flow.perform("confess:%s" % character_id)
+	flow.perform("go:門後通道")
+	assert_bool(flow.event_flag("passage_entered")).is_true()
+
+
+func test_losing_the_mirror_fight_still_sets_the_strike_flag_for_its_dialogue() -> void:
+	var flow := _flow()
+	flow.clock.spend(DayClock.SEGMENTS_PER_DAY)
+	flow.perform("go:黑曜石之門")
+	flow.perform("strike:mirror")
+
+	flow.finish_story_fight("lost")
+
+	assert_bool(flow.event_flag(DayOneFlow.MIRROR_STRIKE_FLAG)).is_true()
+	assert_bool(flow.story_fight_pending()).is_false()
