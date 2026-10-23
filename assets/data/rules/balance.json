@@ -86,7 +86,8 @@
   ],
   "mirror_counter": {
     "damage": 8,
-    "curse_stacks": 2
+    "curse_stacks": 2,
+    "enemy": "mirror_freya"
   },
   "location_requirements": {
     "黑曜石之門": {
@@ -256,6 +257,10 @@
         "segments": 1,
         "curse_stacks": 0,
         "curse_target": ""
+      },
+      "battle": {
+        "enemy": "stone_flower_beast",
+        "text": "石花巨獸睜開眼睛，束縛仍在它的晶核上。牠沒有退開，你們只能正面迎戰。"
       }
     },
     {
@@ -328,6 +333,10 @@
           "oath:pierce"
         ],
         "text": "血之詛咒擾亂了你的動作，這一次的努力全部落空，必須從頭來過。"
+      },
+      "battle": {
+        "enemy": "blood_oath_armor",
+        "text": "鐵甲守衛重新站起，長刃朝你們揮來。"
       }
     },
     {

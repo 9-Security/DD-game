@@ -2,11 +2,12 @@ extends GdUnitTestSuite
 # Unit tests for the mirror counterattack: Freya strikes a silver mirror, the mirror strikes
 # back, she is wounded and her blood curse grows. It is a trial mechanic, not a kill route.
 
-const COUNTER: Dictionary = {"damage": 8, "curse_stacks": 2}
+const COUNTER: Dictionary = {"damage": 8, "curse_stacks": 2, "enemy": "mirror_freya"}
+const ENEMIES: Dictionary = {"mirror_freya": {"name": "鏡中芙蕾雅", "hp": 40, "max_hp": 40, "def": 3, "atk": 8}}
 
 
 func _flow(extra: Dictionary = {}) -> DayOneFlow:
-	var options := {"mirror_counter": COUNTER, "events": []}
+	var options := {"mirror_counter": COUNTER, "events": [], "battle_enemies": ENEMIES}
 	options.merge(extra, true)
 	return DayOneFlow.new([
 		{"id": "freya", "name": "f", "atk": 10, "curse": true},
@@ -14,30 +15,47 @@ func _flow(extra: Dictionary = {}) -> DayOneFlow:
 	], [0.0], options)
 
 
-func test_striking_a_mirror_wounds_freya_and_grows_her_curse() -> void:
-	# Arrange
+func test_striking_a_mirror_opens_a_fight_without_wounding_freya_yet() -> void:
 	var flow := _flow()
 	flow.perform("go:黑曜石之門")
 
-	# Act
-	var message := flow.perform("strike:mirror")
+	flow.perform("strike:mirror")
 
-	# Assert
+	assert_bool(flow.story_fight_pending()).is_true()
+	assert_int(flow.wounds("freya")).is_equal(0)
+
+
+func test_losing_to_the_mirror_wounds_freya_and_grows_her_curse() -> void:
+	var flow := _flow()
+	flow.perform("go:黑曜石之門")
+	flow.perform("strike:mirror")
+
+	var message := flow.finish_story_fight("lost")
+
 	assert_bool(message.contains("反擊")).is_true()
 	assert_int(flow.wounds("freya")).is_equal(8)
 	assert_int(flow.curse_stacks("freya")).is_equal(2)
 
 
-func test_striking_costs_one_segment() -> void:
-	# Arrange
+func test_winning_against_the_mirror_avoids_the_counterattack() -> void:
+	var flow := _flow()
+	flow.perform("go:黑曜石之門")
+	flow.perform("strike:mirror")
+
+	flow.finish_story_fight("won")
+
+	assert_int(flow.wounds("freya")).is_equal(0)
+	assert_int(flow.curse_stacks("freya")).is_equal(0)
+
+
+func test_striking_costs_one_segment_when_the_fight_is_over() -> void:
 	var flow := _flow()
 	flow.perform("go:黑曜石之門")
 	var before := flow.clock.get_elapsed()
-
-	# Act
 	flow.perform("strike:mirror")
 
-	# Assert
+	flow.finish_story_fight("won")
+
 	assert_int(flow.clock.get_elapsed()).is_equal(before + 1)
 
 
@@ -59,6 +77,7 @@ func test_wounds_and_curse_survive_a_snapshot_round_trip() -> void:
 	var source := _flow()
 	source.perform("go:黑曜石之門")
 	source.perform("strike:mirror")
+	source.finish_story_fight("lost")
 	var snapshot := source.snapshot()
 	var target := _flow()
 

@@ -423,6 +423,7 @@ func _ensure_flow() -> void:
 		"affinity": _rules.get("affinity", {}),
 		"attack_tags": _rules.get("attack_tags", {}),
 		"encounters": _encounter_entries,
+		"battle_enemies": _read_dictionary(BATTLE_ENEMIES_PATH),
 		"party_skills": _party_skills(party),
 		"approach_skills": _rules.get("approach_skills", {}),
 		"encounter_rolls": _unit_rolls(),
@@ -446,7 +447,15 @@ func _on_action_pressed(action: String) -> void:
 		var summon: Array = [_summon_member()] if _flow.fight_approach() == "summon" else []
 		_open_battle(_flow.encounter_enemy(), summon)
 		return
-	_show_result(_flow.perform(action))
+	var message: String = _flow.perform(action)
+	if _flow.story_fight_pending():
+		# A story fight (a sequence's final step, or the mirror) is fought on the battle screen.
+		_battle_source = "story"
+		_show_result(message)
+		_open_battle(_flow.story_fight_enemy(), [])
+		_battle_panel.add_note(message)
+		return
+	_show_result(message)
 
 
 ## Shows the result of an action in the log and refreshes the screen.
@@ -510,10 +519,13 @@ func _battle_rolls() -> Array:
 func _on_battle_finished(outcome: String) -> void:
 	_battle_panel.visible = false
 	var stacks: Dictionary = _battle_panel.curse_stacks()
-	if _battle_source == "encounter":
-		_show_result(_flow.finish_encounter_fight(outcome, stacks))
-	else:
-		_show_result(_flow.finish_battle(outcome, stacks))
+	match _battle_source:
+		"encounter":
+			_show_result(_flow.finish_encounter_fight(outcome, stacks))
+		"story":
+			_show_result(_flow.finish_story_fight(outcome, stacks))
+		_:
+			_show_result(_flow.finish_battle(outcome, stacks))
 
 
 func _on_save_pressed() -> void:

@@ -57,6 +57,10 @@ var _battle_this_action: bool = false
 var _acquired: Dictionary = {}
 var _wounds: Dictionary = {}
 var _mirror_counter: Dictionary = {}
+## Enemy definitions for fights on the battle screen, keyed by enemy id.
+var _battle_enemies: Dictionary = {}
+## A story fight waiting on the battle screen: {kind: "sequence" | "mirror", enemy, action, ...}.
+var _story_fight: Dictionary = {}
 var _location_requirements: Dictionary = {}
 var _location_actions: Dictionary = {}
 var _sequences: Array = []
@@ -110,6 +114,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	for entry: Variant in options.get("encounters", []):
 		_encounters.append(Encounter.new(entry))
 	_mirror_counter = options.get("mirror_counter", {})
+	_battle_enemies = options.get("battle_enemies", {})
 	_location_requirements = options.get("location_requirements", {})
 	_location_actions = options.get("location_actions", {})
 	_sequences = options.get("sequences", [])
@@ -133,7 +138,7 @@ func perform(action: String) -> String:
 	_battle_this_action = false
 	_step_failed = false
 	var text: String = _perform_action(action)
-	if ran and not _step_failed and _events != null:
+	if ran and not _step_failed and _events != null and _story_fight.is_empty():
 		text += _run_events(action)
 	return text
 
@@ -348,6 +353,11 @@ func _perform_step(action: String) -> String:
 	if risk > 0.0 and _next_step_roll() < risk:
 		var curse_text: String = str(sequence["curse_risk"].get("text", "血之詛咒擾亂了你的動作。"))
 		return _sequence_failure(sequence, 0, curse_text, false)
+	var battle: Dictionary = sequence.get("battle", {})
+	if index == steps.size() - 1 and _has_enemy(str(battle.get("enemy", ""))):
+		# The final step is a fight: it completes only when the battle is won.
+		_story_fight = {"kind": "sequence", "enemy": str(battle["enemy"]), "action": action, "sequence": sequence}
+		return str(battle.get("text", "敵人擋住了去路。"))
 	var late_text: String = ""
 	var chance: float = _chance_risk(sequence, action)
 	if chance > 0.0 and _next_step_roll() < chance:
@@ -556,6 +566,10 @@ func _perform_action(action: String) -> String:
 		if not _curses.has("freya"):
 			return "只有芙蕾雅能攻擊這面鏡子。"
 		_at_camp = false
+		var enemy_id: String = str(_mirror_counter.get("enemy", ""))
+		if _has_enemy(enemy_id):
+			_story_fight = {"kind": "mirror", "enemy": enemy_id, "action": action}
+			return "你揮劍擊向銀鏡，鏡中的芙蕾雅舉劍擋下。"
 		var damage: int = int(_mirror_counter.get("damage", 0))
 		var stacks: int = int(_mirror_counter.get("curse_stacks", 0))
 		var spend_text: String = _spend(ACTION_COSTS["move"])
@@ -959,6 +973,70 @@ func finish_encounter_fight(outcome: String, stacks: Dictionary = {}) -> String:
 	if _supply != null:
 		injured = NightEventPool.resolve_loss({"on_loss": encounter.on_loss}, _supply)
 	return "戰鬥失敗，隊伍退出了這場戰鬥。" + ("\n隊伍受傷。" if injured else "")
+
+
+## True when a story fight is waiting on the battle screen.
+func story_fight_pending() -> bool:
+	return not _story_fight.is_empty()
+
+
+## The enemy of the waiting story fight, or empty when none.
+func story_fight_enemy() -> Dictionary:
+	if _story_fight.is_empty():
+		return {}
+	return (_battle_enemies[str(_story_fight["enemy"])] as Dictionary).duplicate(true)
+
+
+## Applies the result of a story fight. outcome is "won", "lost" or "fled". stacks: blood-curse
+## stacks after the fight, written back to the flow.
+func finish_story_fight(outcome: String, stacks: Dictionary = {}) -> String:
+	if _story_fight.is_empty():
+		return "沒有進行中的戰鬥。"
+	for id: String in stacks:
+		if _curses.has(id):
+			_curses[id].stacks = clampi(int(stacks[id]), 0, BloodCurse.MAX_STACKS)
+	var fight: Dictionary = _story_fight
+	_story_fight = {}
+	_battle_this_action = true
+	if str(fight["kind"]) == "mirror":
+		return _finish_mirror_fight(outcome)
+	return _finish_sequence_fight(fight, outcome)
+
+
+## A sequence's final-step fight: winning completes the step and runs its event; losing resets the
+## sequence; retreating changes nothing.
+func _finish_sequence_fight(fight: Dictionary, outcome: String) -> String:
+	var sequence: Dictionary = fight["sequence"]
+	if outcome == "fled":
+		return "你撤出了戰鬥，守衛仍在。"
+	if outcome != "won":
+		return _sequence_failure(sequence, _steps(sequence).size() - 1)
+	_apply_success(sequence)
+	var cost_text: String = _spend(int(sequence.get("cost", 0)))
+	if sequence.has("to"):
+		_location = str(sequence["to"])
+	return "戰鬥勝利。" + cost_text + _run_events(str(fight["action"]))
+
+
+## The mirror fight: winning avoids the counterattack; losing applies it as before.
+func _finish_mirror_fight(outcome: String) -> String:
+	if outcome == "fled":
+		return "你退開了鏡面。"
+	var spend_text: String = _spend(ACTION_COSTS["move"])
+	if outcome == "won":
+		return "你擋下了鏡中的反擊。" + spend_text
+	var damage: int = int(_mirror_counter.get("damage", 0))
+	var stacks: int = int(_mirror_counter.get("curse_stacks", 0))
+	var curse: BloodCurse = _curses["freya"]
+	for index: int in range(stacks):
+		curse.add_stack()
+	_wounds["freya"] = int(_wounds.get("freya", 0)) + damage
+	return "鏡中的芙蕾雅反擊。芙蕾雅受傷（-%d）。血之詛咒激化。" % damage + spend_text
+
+
+## True when the enemy id names an enemy defined for the battle screen.
+func _has_enemy(enemy_id: String) -> bool:
+	return enemy_id != "" and _battle_enemies.has(enemy_id)
 
 
 ## Resolves the pending encounter with a chosen approach.

@@ -87,6 +87,12 @@ func start(party: Array, enemy: Dictionary, rolls: Array, skills: Dictionary, ro
 	_refresh()
 
 
+## Adds a line of narration to the battle log, for example the text that led into the fight.
+func add_note(text: String) -> void:
+	_add_log(text)
+	_refresh()
+
+
 func _refresh() -> void:
 	_status_label.text = "第 %d 回合｜%s 生命 %d" % [_battle.rounds, _enemy_name, _battle.enemy_hp()]
 	var lines: Array[String] = []
