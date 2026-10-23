@@ -125,7 +125,7 @@ func _can_run(action: String) -> bool:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
 	if action == "rest":
 		return can_rest()
-	if action.begins_with("help:"):
+	if action.begins_with("help:") or action.begins_with("confess:"):
 		return true
 	if action.begins_with("go:") or action.begins_with("talk:"):
 		return true
@@ -170,6 +170,9 @@ func _perform_action(action: String) -> String:
 			return "時限已到，無法再行動。"
 		_at_camp = false
 		return "你停下來照顧幼樹。" + _spend(ACTION_COSTS["move"])
+	if action.begins_with("confess:"):
+		_at_camp = false
+		return "你直視鏡中的影像。"
 	if action.begins_with("talk:"):
 		if clock.is_expired():
 			return "時限已到，無法再行動。"

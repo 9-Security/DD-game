@@ -8,12 +8,23 @@ const CHARACTER_DIR: String = "res://assets/data/characters/"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
 const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
-const EVENTS_PATH: String = "res://assets/data/events/chapter1.json"
+const EVENTS_PATHS: Array[String] = [
+	"res://assets/data/events/chapter1.json",
+	"res://assets/data/events/chapter2.json",
+]
 ## Location and conversation actions offered on the day-one screen, with their labels.
+## Confessions offered at the Obsidian Gate, one per party member.
+const GATE_ACTIONS: Array = [
+	["confess:eron", "承認：艾洛恩的枯林"],
+	["confess:freya", "承認：芙蕾雅的封村"],
+	["confess:richter", "承認：里克特的兄長"],
+	["confess:inry", "承認：茵芮的失控"],
+]
 const NARRATIVE_ACTIONS: Array = [
 	["go:焦林", "前往焦林"],
 	["help:sapling", "幫助焦林的幼樹"],
 	["go:守淵村", "前往守淵村"],
+	["go:黑曜石之門", "前往黑曜石之門"],
 	["talk:freya", "與芙蕾雅交談"],
 	["talk:richter", "與里克特交談"],
 	["talk:freya_food", "遞給芙蕾雅乾糧"],
@@ -47,7 +58,8 @@ var _log_label: Label
 var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
-var _talk_bar: HBoxContainer
+var _talk_bar: GridContainer
+var _gate_bar: HBoxContainer
 var _event_data: Array = []
 var _save_button: Button
 
@@ -95,7 +107,7 @@ func _build_ui() -> void:
 	root.offset_top = 32
 	root.offset_right = -48
 	root.offset_bottom = -32
-	root.add_theme_constant_override("separation", 24)
+	root.add_theme_constant_override("separation", 12)
 	add_child(root)
 
 	var title := Label.new()
@@ -159,8 +171,10 @@ func _build_ui() -> void:
 		_action_bar.add_child(button)
 		_action_buttons[action] = button
 
-	_talk_bar = HBoxContainer.new()
-	_talk_bar.add_theme_constant_override("separation", 12)
+	_talk_bar = GridContainer.new()
+	_talk_bar.columns = 4
+	_talk_bar.add_theme_constant_override("h_separation", 12)
+	_talk_bar.add_theme_constant_override("v_separation", 10)
 	_talk_bar.visible = false
 	root.add_child(_talk_bar)
 	for pair: Array in NARRATIVE_ACTIONS:
@@ -169,6 +183,17 @@ func _build_ui() -> void:
 		button.custom_minimum_size = Vector2(150, 44)
 		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
 		_talk_bar.add_child(button)
+
+	_gate_bar = HBoxContainer.new()
+	_gate_bar.add_theme_constant_override("separation", 12)
+	_gate_bar.visible = false
+	root.add_child(_gate_bar)
+	for pair: Array in GATE_ACTIONS:
+		var button := Button.new()
+		button.text = str(pair[1])
+		button.custom_minimum_size = Vector2(220, 44)
+		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
+		_gate_bar.add_child(button)
 
 	_approach_bar = HBoxContainer.new()
 	_approach_bar.add_theme_constant_override("separation", 16)
@@ -229,6 +254,7 @@ func _enter_day_one() -> void:
 	_difficulty_bar.visible = false
 	_difficulty_label.visible = false
 	_dialogue_label.text = "第一日開始。四人踏入星墜之淵外圍。"
+	_dialogue_label.custom_minimum_size = Vector2(0, 40)
 	_status_label.visible = true
 	_supply_label.visible = true
 	_action_bar.visible = true
@@ -321,6 +347,7 @@ func _refresh_status() -> void:
 	_approach_bar.visible = not approaches.is_empty()
 	_action_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
+	_gate_bar.visible = approaches.is_empty() and not _flow.clock.is_expired() and _flow.location() == "黑曜石之門"
 	_save_button.disabled = not _flow.can_save()
 
 
@@ -440,17 +467,18 @@ func _rebuild_approach_bar(approaches: Array[String]) -> void:
 		_approach_bar.add_child(button)
 
 
-## Loads the chapter one events, keeping only valid entries.
+## Loads the narrative events of every chapter file, keeping only valid entries.
 func _load_event_entries() -> Array:
-	var parsed: Variant = _load_json(EVENTS_PATH)
-	if not (parsed is Dictionary) or not parsed.has("events"):
-		push_error("Event data missing or malformed: %s" % EVENTS_PATH)
-		return []
 	var valid: Array = []
-	for event: Variant in parsed["events"]:
-		var errors: Array[String] = EventRunner.validate(event)
-		if errors.is_empty():
-			valid.append(event)
-		else:
-			push_error("Event invalid: %s" % ", ".join(errors))
+	for path: String in EVENTS_PATHS:
+		var parsed: Variant = _load_json(path)
+		if not (parsed is Dictionary) or not parsed.has("events"):
+			push_error("Event data missing or malformed: %s" % path)
+			continue
+		for event: Variant in parsed["events"]:
+			var errors: Array[String] = EventRunner.validate(event)
+			if errors.is_empty():
+				valid.append(event)
+			else:
+				push_error("Event invalid: %s" % ", ".join(errors))
 	return valid

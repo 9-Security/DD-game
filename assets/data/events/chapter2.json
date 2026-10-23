@@ -1,0 +1,132 @@
+{
+  "id": "chapter2_gate_events",
+  "source": "design/narrative/novel/chapter02_day02.md (二、四面銀鏡；四、無法隱藏的真相；五、第一份代價) and design/characters/source/CHAPTER2_SETTINGS_v1.0.md section 5",
+  "events": [
+    {
+      "id": "ch2_gate_reveal",
+      "source_ref": "一、沒有回聲的峽谷／二、四面銀鏡",
+      "trigger": {
+        "action": "go:黑曜石之門"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "message",
+          "text": "峽谷沒有回聲。黑牆中央的門上嵌著四面銀鏡，其中一面率先亮起。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_confess_eron",
+      "source_ref": "二、四面銀鏡（第一面鏡：枯林與最後一隻鹿）",
+      "trigger": {
+        "action": "confess:eron",
+        "location": "黑曜石之門"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "mirror_eron_acknowledged",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩承認：他不是每個生命都能救得了。森林的影像淡出。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_confess_freya",
+      "source_ref": "四、無法隱藏的真相（第二面鏡：封鎖的村莊）",
+      "trigger": {
+        "action": "confess:freya",
+        "location": "黑曜石之門"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "mirror_freya_acknowledged",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅承認：她接過封鎖村莊的命令，沒有違抗。村口的長矛淡出。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_confess_richter",
+      "source_ref": "四、無法隱藏的真相（第三面鏡：死亡名冊）",
+      "trigger": {
+        "action": "confess:richter",
+        "location": "黑曜石之門"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "mirror_richter_acknowledged",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特承認：他加入隊伍是為了找出王室殺死兄長的證據。名冊的影像淡出。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_confess_inry",
+      "source_ref": "四、無法隱藏的真相（第四面鏡：召喚室）",
+      "trigger": {
+        "action": "confess:inry",
+        "location": "黑曜石之門"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "mirror_inry_acknowledged",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "茵芮承認：她的力量曾經傷害別人。裂縫停止擴張，召喚室化為銀光。"
+        }
+      ]
+    },
+    {
+      "id": "ch2_gate_open",
+      "source_ref": "五、第一份代價",
+      "trigger": {
+        "location": "黑曜石之門"
+      },
+      "conditions": [
+        {
+          "flag": "mirror_eron_acknowledged"
+        },
+        {
+          "flag": "mirror_freya_acknowledged"
+        },
+        {
+          "flag": "mirror_richter_acknowledged"
+        },
+        {
+          "flag": "mirror_inry_acknowledged"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "obsidian_gate_open",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "四面銀鏡同時失去倒影。黑曜石之門無聲地向內開啟。"
+        }
+      ]
+    }
+  ]
+}

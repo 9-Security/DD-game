@@ -4,7 +4,8 @@ extends RefCounted
 ## every condition holds. Effects set flags, produce log messages, or return trust changes
 ## for the caller to apply, so this class does not depend on the trust board.
 ##
-## Trigger: {"action": String} with optional "location", and/or {"night_entered": true}.
+## Trigger: {"action": String} with optional "location" and "is_night", and/or
+## {"night_entered": true}, or {"location": String} alone to match any action there.
 ## Conditions: [{"flag": String, "equals": bool}] (equals defaults to true).
 ## Effects: {"type": "set_flag", "flag", "value"}, {"type": "message", "text"},
 ##          {"type": "trust", "character", "delta"}.
@@ -32,7 +33,8 @@ static func validate(event: Dictionary) -> Array[String]:
 	var trigger: Variant = event.get("trigger", {})
 	var has_action: bool = trigger is Dictionary and str(trigger.get("action", "")) != ""
 	var has_night: bool = trigger is Dictionary and bool(trigger.get("night_entered", false))
-	if not has_action and not has_night:
+	var has_location: bool = trigger is Dictionary and str(trigger.get("location", "")) != ""
+	if not has_action and not has_night and not has_location:
 		errors.append("trigger must name an action or night_entered")
 
 	for condition: Variant in event.get("conditions", []):
@@ -127,13 +129,13 @@ func _trigger_matches(trigger: Variant, context: Dictionary) -> bool:
 		return false
 	var has_action: bool = str(trigger.get("action", "")) != ""
 	var has_night: bool = bool(trigger.get("night_entered", false))
-	if not has_action and not has_night:
+	var has_location: bool = str(trigger.get("location", "")) != ""
+	if not has_action and not has_night and not has_location:
 		return false
-	if has_action:
-		if str(context.get("action", "")) != str(trigger["action"]):
-			return false
-		if trigger.has("location") and str(context.get("location", "")) != str(trigger["location"]):
-			return false
+	if has_action and str(context.get("action", "")) != str(trigger["action"]):
+		return false
+	if has_location and str(context.get("location", "")) != str(trigger["location"]):
+		return false
 	if has_night and not bool(context.get("night_entered", false)):
 		return false
 	if trigger.has("is_night") and bool(context.get("is_night", false)) != bool(trigger["is_night"]):
