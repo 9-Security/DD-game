@@ -140,8 +140,6 @@ func _ready() -> void:
 	#   --difficulty=<strict|assisted>  choose the difficulty before the day starts
 	#   --demo-load                  load the save slot at launch
 	#   --demo-action=<action>       perform one action at launch (move, explore, rest, battle, save)
-	#   --demo-skip-dialogue         finish each dialogue scene after the demo action that starts it
-	#   --demo-win-fights            win each story fight the demo starts, so the route passes its battles
 	var options: PackedStringArray = _launch_options()
 	for option: String in options:
 		if option.begins_with("--difficulty="):
@@ -160,27 +158,6 @@ func _ready() -> void:
 				_on_save_pressed()
 			else:
 				_on_action_pressed(action)
-			if options.has("--demo-skip-dialogue"):
-				_skip_dialogue()
-			if options.has("--demo-win-fights") and _flow.story_fight_pending():
-				_demo_win_story_fight()
-				if options.has("--demo-skip-dialogue"):
-					_skip_dialogue()
-
-
-## Finishes the dialogue on screen, including any scene that the finished one leads to.
-func _skip_dialogue() -> void:
-	while _dialogue.is_active():
-		_on_dialogue_next_pressed()
-
-
-## Wins the story fight the demo started, without the battle screen, and plays the scene it leads to.
-func _demo_win_story_fight() -> void:
-	if _battle_panel != null:
-		_battle_panel.visible = false
-	_show_result(_flow.finish_story_fight("won"))
-	_start_dialogue_for(_story_action)
-	_story_action = ""
 
 
 ## Desktop reads the command line; the web build reads the page URL (see LaunchOptions).
