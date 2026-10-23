@@ -1,0 +1,12 @@
+{
+  "source": "Music files are not yet chosen. Each key maps to a res:// path of an OGG file; an empty path plays silence.",
+  "volume_db": -8.0,
+  "tracks": {
+    "prologue": "",
+    "explore": "",
+    "heart": "",
+    "ending_a": "",
+    "ending_b": "",
+    "ending_c": ""
+  }
+}

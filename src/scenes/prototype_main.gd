@@ -26,6 +26,7 @@ const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
 ## Darkens the full-screen illustration so the text stays readable.
 const BACKDROP_SHADE_ALPHA: float = 0.5
+const BGM_CONFIG_PATH: String = "res://assets/data/audio/bgm.json"
 const ENDING_ART_PATHS: Dictionary = {
 	"END_A": "res://assets/art/chapters/ending_a.png",
 	"END_B": "res://assets/art/chapters/ending_b.png",
@@ -52,6 +53,7 @@ var _ending_load_button: Button
 var _ending_label: Label
 var _ending_art: TextureRect
 var _backdrop: TextureRect
+var _bgm: BgmPlayer
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -128,6 +130,10 @@ func _build_ui() -> void:
 	_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_backdrop)
+	_bgm = BgmPlayer.new()
+	add_child(_bgm)
+	var bgm_config: Dictionary = _read_dictionary(BGM_CONFIG_PATH)
+	_bgm.setup(bgm_config.get("tracks", {}), float(bgm_config.get("volume_db", -8.0)))
 	var shade := ColorRect.new()
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	shade.color = Color(0, 0, 0, BACKDROP_SHADE_ALPHA)
@@ -355,11 +361,13 @@ func _show_next_line() -> void:
 func _refresh_backdrop() -> void:
 	var in_prologue: bool = _flow == null
 	var day: int = _flow.clock.day if _flow != null else 1
-	var ending_path: String = ""
-	if _flow != null and _flow.is_ended():
-		ending_path = str(ENDING_ART_PATHS.get(_flow.ending_id(), ""))
+	var ending_id: String = _flow.ending_id() if _flow != null else ""
+	var ending_path: String = str(ENDING_ART_PATHS.get(ending_id, ""))
 	var path: String = BackdropRules.path_for(in_prologue, day, ending_path)
 	_backdrop.texture = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	# The music follows the same state as the backdrop.
+	var place: String = _flow.location() if _flow != null else ""
+	_bgm.play_key(BgmRules.key_for(in_prologue, ending_id, place))
 
 
 func _enter_day_one() -> void:

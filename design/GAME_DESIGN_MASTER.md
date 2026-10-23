@@ -340,6 +340,7 @@ project.godot              Godot 專案設定（repo 根目錄）
 | 第六章：墜星之心（神喻草、群靈傾聽、真相） | 已實作並測試 | `assets/data/events/chapter6.json`，`tests/integration/narrative/chapter6_heart_test.gd` |
 | 第七章：返程路線、共同主線、結局 A／B／C | 已實作並測試 | `assets/data/events/chapter7.json`，`tests/integration/narrative/chapter7_test.gd` |
 | 時限逾期 → 結局 C（依原稿附錄） | 已實作並測試 | `src/exploration/day_one_flow.gd`（`ending_id()`），`tests/integration/narrative/chapter7_test.gd` |
+| 背景音樂播放架構（依畫面選曲、缺檔時靜音不失敗） | 已實作並測試，音檔待定 | `src/presentation/bgm_rules.gd`，`src/presentation/bgm_player.gd`，`assets/data/audio/bgm.json`，`tests/unit/presentation/` |
 | 結局畫面（插圖、標題、結局文字、重來／讀檔） | 已實作，桌面與網頁版截圖 | `production/qa/evidence/chapter1-prototype/31-ending-a.png`、`33-ending-b.png`、`34-ending-c.png` |
 | 存檔快照讀回（第三至第七章狀態） | 已實作並測試 | `tests/integration/narrative/chapter_save_restore_test.gd` |
 | 網頁版字型子集（1011 個非 ASCII 字元） | 已重新產生 | `tools/asset-pipeline/subset_font.py`，`assets/fonts/NotoSansTC-Subset.ttf` |
@@ -348,6 +349,7 @@ project.godot              Godot 專案設定（repo 根目錄）
 - 地圖與角色立繪（目前只有文字介面）；章節插圖已入庫（`assets/art/chapters/`），尚未接到封面、序章與轉場。
 - 鏡影精靈的出場與退場演出。
 - 鏡像反擊的 HP 數值（目前只記錄傷害，尚無 HP 系統）、幼樹的 spirit_link 效果（尚未套用到戰鬥）。
+- 背景音樂與音效的音檔（架構已完成，`assets/data/audio/bgm.json` 的各代號目前為空）。
 - 荒潮與瑟維恩殘影的演出（原稿與設定集未定義具體表現）。
 - 結局判定與原稿的時限規則已統一（時限逾期 → 結局 C）；觸發規格 `ENDING_TRIGGER_DESIGN_v1.0.md` 第 18 行仍寫「C 只限返程逾期」，待你確認以哪一份為準。
 
