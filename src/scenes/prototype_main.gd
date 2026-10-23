@@ -24,7 +24,6 @@ const EVENTS_PATHS: Array[String] = [
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
-const SAVE_PATH: String = "user://save_slot_1.json"
 ## Darkens the full-screen illustration so the text stays readable.
 const BACKDROP_SHADE_ALPHA: float = 0.5
 const ENDING_ART_PATHS: Dictionary = {
@@ -71,6 +70,9 @@ var _gate_bar: GridContainer
 var _passage_button: Button
 var _event_data: Array = []
 var _save_button: Button
+var _slot: int = 1
+var _slot_bar: HBoxContainer
+var _slot_buttons: Array[Button] = []
 
 
 func _ready() -> void:
@@ -172,7 +174,7 @@ func _build_ui() -> void:
 	_load_button.text = "讀取存檔"
 	_load_button.custom_minimum_size = Vector2(200, 48)
 	_load_button.pressed.connect(_on_load_pressed)
-	_load_button.visible = SaveRepository.read(SAVE_PATH) != null
+	_load_button.visible = SaveRepository.read(_save_path()) != null
 	root.add_child(_load_button)
 
 	_status_label = Label.new()
@@ -290,6 +292,19 @@ func _build_ui() -> void:
 	_save_button.disabled = true
 	_save_button.pressed.connect(_on_save_pressed)
 	_action_bar.add_child(_save_button)
+
+	# The save slots sit on their own row so the action row never overflows the screen width.
+	_slot_bar = HBoxContainer.new()
+	_slot_bar.add_theme_constant_override("separation", 16)
+	_slot_bar.visible = false
+	root.add_child(_slot_bar)
+	for slot: int in range(1, SaveRepository.SLOT_COUNT + 1):
+		var slot_button := Button.new()
+		slot_button.custom_minimum_size = Vector2(200, 48)
+		slot_button.set_meta("slot", slot)
+		slot_button.pressed.connect(_on_slot_pressed.bind(slot))
+		_slot_bar.add_child(slot_button)
+		_slot_buttons.append(slot_button)
 
 	_log_scroll = ScrollContainer.new()
 	_log_scroll.custom_minimum_size = Vector2(0, 160)
@@ -412,13 +427,14 @@ func _on_action_pressed(action: String) -> void:
 	_refresh_status()
 	if _flow.is_over():
 		_action_bar.visible = false
+		_slot_bar.visible = false
 
 
 func _on_save_pressed() -> void:
 	_ensure_flow()
 	if not _flow.can_save():
 		_set_log("只能在營地存檔。請先休息。")
-	elif SaveRepository.write(SAVE_PATH, _flow.snapshot()):
+	elif SaveRepository.write(_save_path(), _flow.snapshot()):
 		_set_log("已存檔。")
 	else:
 		_set_log("存檔失敗，請檢查儲存空間。")
@@ -431,6 +447,14 @@ func _ending_text() -> String:
 	if _flow.is_ended():
 		return str(endings.get(_flow.ending_id(), ""))
 	return str(_labels.get("time_up", ""))
+
+
+## The closing text of the ending reached, or "" while the story continues.
+func _ending_body() -> String:
+	if not _flow.is_ended():
+		return ""
+	var bodies: Dictionary = _labels.get("ending_bodies", {})
+	return str(bodies.get(_flow.ending_id(), ""))
 
 
 ## The illustration of the ending reached. Null while the game is still running or the art is missing.
@@ -446,9 +470,30 @@ func _on_restart_pressed() -> void:
 	get_tree().reload_current_scene()
 
 
+## The save file of the slot currently selected.
+func _save_path() -> String:
+	return SaveRepository.slot_path(_slot)
+
+
+## Selects a camp save slot. The selected slot is used by save, load and restart-from-save.
+func _on_slot_pressed(slot: int) -> void:
+	_slot = slot
+	_refresh_slot_buttons()
+	_load_button.visible = SaveRepository.read(_save_path()) != null
+
+
+## Shows each slot as empty or filled, and disables the slot that is selected.
+func _refresh_slot_buttons() -> void:
+	for slot_button: Button in _slot_buttons:
+		var slot: int = int(slot_button.get_meta("slot"))
+		var filled: bool = SaveRepository.read(SaveRepository.slot_path(slot)) != null
+		slot_button.text = "存檔格 %d（%s）" % [slot, "有存檔" if filled else "空"]
+		slot_button.disabled = slot == _slot
+
+
 func _on_load_pressed() -> void:
 	_ensure_flow()
-	var data: Variant = SaveRepository.read(SAVE_PATH)
+	var data: Variant = SaveRepository.read(_save_path())
 	if data == null:
 		_set_log("沒有可讀取的存檔。")
 		_log_scroll.visible = true
@@ -459,7 +504,8 @@ func _on_load_pressed() -> void:
 		_log_scroll.visible = true
 		return
 	_enter_day_one()
-	_set_log("已讀取存檔。")
+	var body: String = _ending_body()
+	_set_log("已讀取存檔。" + ("\n\n" + body if body != "" else ""))
 
 
 ## Shows each chapter three button only at its place and only when its action or destination is open.
@@ -534,13 +580,15 @@ func _refresh_status() -> void:
 	_rebuild_approach_bar(approaches)
 	_approach_bar.visible = not approaches.is_empty()
 	_action_bar.visible = approaches.is_empty() and not _flow.is_over()
+	_slot_bar.visible = _action_bar.visible
 	_talk_bar.visible = approaches.is_empty() and not _flow.is_over()
 	_gate_bar.visible = approaches.is_empty() and not _flow.is_over() and _flow.location() == "黑曜石之門"
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
 	_ending_panel.visible = _flow.is_over()
 	_ending_label.text = _ending_text()
 	_ending_art.texture = _ending_texture()
-	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
+	_ending_load_button.disabled = SaveRepository.read(_save_path()) == null
+	_refresh_slot_buttons()
 	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
 	_refresh_chapter3(approaches.is_empty() and not _flow.is_over())
 	_refresh_backdrop()

@@ -38,3 +38,12 @@ func test_the_time_up_panel_does_not_repeat_the_status_line() -> void:
 	var text: String = str(_labels().get("time_up", ""))
 	assert_str(text).is_not_empty()
 	assert_bool(text.contains("時限已到")).is_false()
+
+
+func test_every_ending_has_its_manuscript_body_text() -> void:
+	# Each ending's closing text comes from STORY_MANUSCRIPT.md, so a loaded save can show it again.
+	var bodies: Dictionary = _labels().get("ending_bodies", {})
+	for ending_id: String in ["END_A", "END_B", "END_C"]:
+		var body: String = str(bodies.get(ending_id, ""))
+		assert_str(body).is_not_empty()
+		assert_bool(body.contains("**")).is_false()

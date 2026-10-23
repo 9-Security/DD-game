@@ -3,6 +3,21 @@ extends RefCounted
 ## Reads and writes JSON save files. All disk access for saves is isolated here,
 ## so game logic can be unit tested without touching the file system.
 
+## Number of camp save slots the design allows (design master section 2.2).
+const SLOT_COUNT: int = 3
+
+
+## True when the slot number names one of the camp save slots.
+static func is_valid_slot(slot: int) -> bool:
+	return slot >= 1 and slot <= SLOT_COUNT
+
+
+## The save file for a slot, or "" when the slot number is not valid.
+static func slot_path(slot: int) -> String:
+	if not is_valid_slot(slot):
+		return ""
+	return "user://save_slot_%d.json" % slot
+
 
 ## Writes the data as JSON to the given path. Returns false when the file cannot be opened.
 static func write(path: String, data: Dictionary) -> bool:

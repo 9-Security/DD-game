@@ -326,7 +326,8 @@ project.godot              Godot 專案設定（repo 根目錄）
 | 傷害公式與戰鬥結算 | 已實作並測試 | `src/battle/damage_calculator.gd`、`src/battle/skirmish.gd` |
 | 角色資料與驗證 | 已實作並測試 | `assets/data/characters/`，`tests/integration/characters/` |
 | 第一日行動與教學戰鬥 | 已實作並測試 | `src/exploration/day_one_flow.gd` |
-| 營地存檔與讀檔（單一存檔格） | 已實作並測試 | `src/core/save_repository.gd`，`tests/unit/core/save_snapshot_rules_test.gd` |
+| 營地存檔與讀檔（三個存檔格，D5） | 已實作並測試 | `src/core/save_repository.gd`，`tests/unit/core/save_slot_test.gd`，`tests/unit/core/save_snapshot_rules_test.gd` |
+| 讀取已結束的存檔時顯示結局正文（原稿文字） | 已實作並測試 | `assets/data/narrative/ui_labels.json`（`ending_bodies`），`tests/integration/narrative/ui_labels_test.gd` |
 | 序章對話 | 已實作 | `assets/data/narrative/prologue.json` |
 | 第一章事件（村莊、旅店、夜間、幼樹） | 已實作並測試 | `assets/data/events/chapter1.json`，`src/narrative/event_runner.gd` |
 | 事件日數條件（`day`、`min_day`） | 已實作並測試 | `tests/unit/narrative/event_day_condition_test.gd` |
@@ -344,12 +345,10 @@ project.godot              Godot 專案設定（repo 根目錄）
 | 網頁版字型子集（1011 個非 ASCII 字元） | 已重新產生 | `tools/asset-pipeline/subset_font.py`，`assets/fonts/NotoSansTC-Subset.ttf` |
 
 **尚未完成**：
-- 三個存檔格（目前只有一格）。
 - 地圖與角色立繪（目前只有文字介面）；章節插圖已入庫（`assets/art/chapters/`），尚未接到封面、序章與轉場。
 - 鏡影精靈的出場與退場演出。
 - 鏡像反擊的 HP 數值（目前只記錄傷害，尚無 HP 系統）、幼樹的 spirit_link 效果（尚未套用到戰鬥）。
 - 荒潮與瑟維恩殘影的演出（原稿與設定集未定義具體表現）。
-- 讀取已結束的存檔時，結局面板只顯示結局標題，正文不會重現（正文保存於事件紀錄，存檔不保留）。
 - 結局判定與原稿的時限規則已統一（時限逾期 → 結局 C）；觸發規格 `ENDING_TRIGGER_DESIGN_v1.0.md` 第 18 行仍寫「C 只限返程逾期」，待你確認以哪一份為準。
 
 **第一版之後已先行實作**：第二章的黑曜石之門與門後通道，因為第二章的事件已確定，且它們是第一版之後的首批內容。第二日的時間線已與小說一致（門在第二日開放）。
