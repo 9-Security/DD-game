@@ -57,6 +57,8 @@ var _ending_label: Label
 var _ending_art: TextureRect
 ## Full-screen transition illustration shown briefly at a story moment, and its fade tween.
 var _transition: TextureRect
+## Portrait of the prologue speaker, shown on the right while that speaker talks.
+var _portrait: TextureRect
 var _transition_tween: Tween
 ## Last story day seen, so a new day starts a transition; and whether the ending transition has played.
 var _last_day: int = 0
@@ -96,6 +98,17 @@ var _slot_buttons: Array[Button] = []
 func _ready() -> void:
 	_labels = _read_dictionary(LABELS_PATH)
 	_build_ui()
+	_portrait = TextureRect.new()
+	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_portrait.offset_left = -400
+	_portrait.offset_top = -580
+	_portrait.offset_right = -40
+	_portrait.offset_bottom = -20
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait.visible = false
+	add_child(_portrait)
 	# The transition overlay is added last, so it sits above the whole screen and ignores the mouse.
 	_transition = TextureRect.new()
 	_transition.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -394,8 +407,10 @@ func _show_next_line() -> void:
 	if _line_index < _lines.size():
 		var line: Dictionary = _lines[_line_index]
 		_dialogue_label.text = "%s：%s" % [line.get("speaker", ""), line.get("text", "")]
+		_set_portrait(PortraitRules.path_for_speaker(str(line.get("speaker", ""))))
 		_line_index += 1
 	else:
+		_set_portrait("")
 		_enter_day_one()
 		_play_transition(TransitionRules.KIND_PARTY)
 	_refresh_backdrop()
@@ -499,6 +514,12 @@ func _on_action_pressed(action: String) -> void:
 		_play_transition(TransitionRules.KIND_CRITICAL)
 	elif action.begins_with("go:") and _flow.location() != before:
 		_play_transition(TransitionRules.KIND_TRAVEL)
+
+
+## Shows the portrait at path, or hides the portrait when path is empty or missing.
+func _set_portrait(path: String) -> void:
+	_portrait.texture = load(path) as Texture2D if path != "" and ResourceLoader.exists(path) else null
+	_portrait.visible = _portrait.texture != null
 
 
 ## A new story day, and the first reached ending, each play their transition once.
