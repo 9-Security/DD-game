@@ -12,7 +12,7 @@ func _tracks() -> Dictionary:
 func test_every_key_the_rules_can_return_is_configured() -> void:
 	var tracks := _tracks()
 	var keys: Array[String] = [
-		BgmRules.KEY_PROLOGUE, BgmRules.KEY_EXPLORE, BgmRules.KEY_HEART,
+		BgmRules.KEY_PROLOGUE, BgmRules.KEY_EXPLORE, BgmRules.KEY_HEART, BgmRules.KEY_BATTLE, BgmRules.KEY_NIGHT,
 		"ending_a", "ending_b", "ending_c",
 	]
 

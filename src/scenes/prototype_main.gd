@@ -367,7 +367,8 @@ func _refresh_backdrop() -> void:
 	_backdrop.texture = load(path) as Texture2D if ResourceLoader.exists(path) else null
 	# The music follows the same state as the backdrop.
 	var place: String = _flow.location() if _flow != null else ""
-	_bgm.play_key(BgmRules.key_for(in_prologue, ending_id, place))
+	var mood: String = _flow.mood() if _flow != null else ""
+	_bgm.play_key(BgmRules.key_for(in_prologue, ending_id, place, mood))
 
 
 func _enter_day_one() -> void:

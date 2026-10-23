@@ -51,6 +51,7 @@ var _encounter_rolls: Array = [0.0]
 var _location: String = ""
 var _events: EventRunner = null
 var _night_entered: bool = false
+var _battle_this_action: bool = false
 var _acquired: Dictionary = {}
 var _wounds: Dictionary = {}
 var _mirror_counter: Dictionary = {}
@@ -127,11 +128,22 @@ func perform(action: String) -> String:
 		return "時限已到，無法再行動。" if is_time_up() else "結局已定，無法再行動。"
 	var ran: bool = _can_run(action)
 	_night_entered = false
+	_battle_this_action = false
 	_step_failed = false
 	var text: String = _perform_action(action)
 	if ran and not _step_failed and _events != null:
 		text += _run_events(action)
 	return text
+
+
+## The mood of the current moment for the music: "battle" while the last action fought,
+## "night" during the night segment, and "" otherwise. A battle mood ends with the next action.
+func mood() -> String:
+	if _battle_this_action:
+		return "battle"
+	if clock.segment == DayClock.SEGMENT_NIGHT:
+		return "night"
+	return ""
 
 
 ## True once the seven-day limit has run out. No further actions are possible.
@@ -702,6 +714,7 @@ func _perform_battle() -> String:
 
 	var spend_text: String = _spend(ACTION_COSTS["battle"])
 	battle_done = true
+	_battle_this_action = true
 
 	var result: Dictionary = Skirmish.resolve(
 		_battle_members(), TUTORIAL_ENEMY_HP, TUTORIAL_ENEMY_DEF, _rolls, Skirmish.DEFAULT_ROUND_LIMIT,
@@ -744,6 +757,7 @@ func _resolve_night_event() -> String:
 
 	match str(entry.get("outcome", "")):
 		"battle":
+			_battle_this_action = true
 			var hp: int = int(entry.get("enemy_hp", DEFAULT_NIGHT_ENEMY_HP))
 			var def: int = int(entry.get("enemy_def", DEFAULT_NIGHT_ENEMY_DEF))
 			var tags: Array = entry.get("enemy_tags", [])
@@ -861,6 +875,8 @@ func _resolve_approach(approach: String) -> String:
 	var encounter: Encounter = _pending
 	_pending = null
 	var result: Dictionary = encounter.resolve(approach, _battle_members(), _encounter_rolls, _affinity, {})
+	if result.get("persuade_failed", false) or not ["solved", "persuaded"].has(str(result["outcome"])):
+		_battle_this_action = true
 
 	var text: String = ""
 	if result.get("persuade_failed", false):
