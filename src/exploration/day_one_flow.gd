@@ -296,13 +296,13 @@ func _resolve_night_event() -> String:
 				_battle_members(), hp, def, _rolls, Skirmish.DEFAULT_ROUND_LIMIT,
 				{"enemy_tags": tags, "affinity": _affinity})
 			if result["won"]:
-				return text + "\n你擊退了襲擊者。" + _reward_victory()
+				return text + "\n你擊退了襲擊者。" + _hit_text(result) + _reward_victory()
 			var injured: bool = false
 			if _supply != null:
 				injured = NightEventPool.resolve_loss(entry, _supply)
 			else:
 				injured = bool(entry.get("on_loss", {}).get("injury", false))
-			return text + ("\n隊伍受傷，補給也有所損失。" if injured else "\n隊伍撤退，補給有所損失。")
+			return text + _hit_text(result) + ("\n隊伍受傷，補給也有所損失。" if injured else "\n隊伍撤退，補給有所損失。")
 		"resource_loss":
 			if _supply != null:
 				NightEventPool.resolve_loss(entry, _supply)

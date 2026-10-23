@@ -1,25 +1,52 @@
 {
   "id": "day1_encounters",
   "source": "prototype encounters for day one. The novel describes day one without a battle; these are additions for play testing.",
+  "field_notes": [
+    "id: unique encounter ID, required.",
+    "text: description shown when the encounter starts.",
+    "approaches: which responses exist. combat, persuade, puzzle or summon. Each is offered only if a party member has a skill mapped to it in assets/data/rules/balance.json (approach_skills); combat is always offered.",
+    "enemy_hp, enemy_def, enemy_tags: enemy stats and tags. Required when combat, persuade or summon can start a fight. Tags are matched against attack tags through the affinity table.",
+    "persuade_threshold: a persuade roll at or above this value succeeds (0 to 1). Default 0.5.",
+    "on_loss: food, herbs and injury applied when a fight is lost."
+  ],
   "entries": [
     {
       "id": "spirit_gate",
       "text": "一群怨靈在山路口聚集，低聲重複著某個名字。",
       "enemy_hp": 30,
       "enemy_def": 1,
-      "enemy_tags": ["restless_spirit"],
-      "approaches": ["combat", "persuade", "summon"],
+      "enemy_tags": [
+        "restless_spirit"
+      ],
+      "approaches": [
+        "combat",
+        "persuade",
+        "summon"
+      ],
       "persuade_threshold": 0.5,
-      "on_loss": {"food": 1, "herbs": 0, "injury": true}
+      "on_loss": {
+        "food": 1,
+        "herbs": 0,
+        "injury": true
+      }
     },
     {
       "id": "rune_seal",
       "text": "路旁的石壁上刻著符文封印，光線流過刻紋後又暗了下去。",
       "enemy_hp": 20,
       "enemy_def": 0,
-      "enemy_tags": ["ancient_construct"],
-      "approaches": ["puzzle", "combat"],
-      "on_loss": {"food": 0, "herbs": 1, "injury": true}
+      "enemy_tags": [
+        "ancient_construct"
+      ],
+      "approaches": [
+        "puzzle",
+        "combat"
+      ],
+      "on_loss": {
+        "food": 0,
+        "herbs": 1,
+        "injury": true
+      }
     }
   ]
 }
