@@ -12,6 +12,7 @@ const EVENTS_PATH: String = "res://assets/data/events/chapter1.json"
 ## Location and conversation actions offered on the day-one screen, with their labels.
 const NARRATIVE_ACTIONS: Array = [
 	["go:焦林", "前往焦林"],
+	["help:sapling", "幫助焦林的幼樹"],
 	["go:守淵村", "前往守淵村"],
 	["talk:freya", "與芙蕾雅交談"],
 	["talk:richter", "與里克特交談"],
@@ -165,7 +166,7 @@ func _build_ui() -> void:
 	for pair: Array in NARRATIVE_ACTIONS:
 		var button := Button.new()
 		button.text = str(pair[1])
-		button.custom_minimum_size = Vector2(170, 44)
+		button.custom_minimum_size = Vector2(150, 44)
 		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
 		_talk_bar.add_child(button)
 

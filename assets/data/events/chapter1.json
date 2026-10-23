@@ -5,81 +5,221 @@
     {
       "id": "ch1_sapling_clue",
       "source_ref": "二、焦林",
-      "trigger": {"action": "explore", "location": "焦林"},
+      "trigger": {
+        "action": "explore",
+        "location": "焦林"
+      },
       "conditions": [],
       "effects": [
-        {"type": "set_flag", "flag": "saw_royal_convoy", "value": true},
-        {"type": "message", "text": "幼樹的記憶閃現：一支穿著王室鎧甲的隊伍，押著蓋了黑布的箱子往深淵去。"}
+        {
+          "type": "set_flag",
+          "flag": "saw_royal_convoy",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "幼樹的記憶閃現：一支穿著王室鎧甲的隊伍，押著蓋了黑布的箱子往深淵去。"
+        }
       ]
     },
     {
       "id": "ch1_royal_convoy_lie",
       "source_ref": "二、焦林",
-      "trigger": {"action": "talk:freya"},
-      "conditions": [{"flag": "saw_royal_convoy", "equals": true}],
+      "trigger": {
+        "action": "talk:freya"
+      },
+      "conditions": [
+        {
+          "flag": "saw_royal_convoy",
+          "equals": true
+        }
+      ],
       "effects": [
-        {"type": "set_flag", "flag": "richter_suspicious", "value": true},
-        {"type": "message", "text": "里克特注意到芙蕾雅對箱子的瞭解比她承認的多。"}
+        {
+          "type": "set_flag",
+          "flag": "richter_suspicious",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特注意到芙蕾雅對箱子的瞭解比她承認的多。"
+        }
       ]
     },
     {
       "id": "ch1_village_no_children",
       "source_ref": "三、守淵村",
-      "trigger": {"action": "go:守淵村"},
+      "trigger": {
+        "action": "go:守淵村"
+      },
       "conditions": [],
       "effects": [
-        {"type": "set_flag", "flag": "village_no_children", "value": true},
-        {"type": "message", "text": "守淵村沒有孩子。大人們看見陌生人，紛紛放下簾子。"}
+        {
+          "type": "set_flag",
+          "flag": "village_no_children",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "守淵村沒有孩子。大人們看見陌生人，紛紛放下簾子。"
+        }
       ]
     },
     {
       "id": "ch1_innkeeper_bell",
       "source_ref": "四、不該響起的鐘",
-      "trigger": {"action": "talk:innkeeper"},
-      "conditions": [{"flag": "village_no_children", "equals": true}],
+      "trigger": {
+        "action": "talk:innkeeper",
+        "is_night": false
+      },
+      "conditions": [
+        {
+          "flag": "village_no_children",
+          "equals": true
+        }
+      ],
       "effects": [
-        {"type": "set_flag", "flag": "heard_bell_story", "value": true},
-        {"type": "message", "text": "旅店主人說：王室有新生兒時，深淵便會傳出鐘聲；鐘響後，總有人忘記至親。"}
+        {
+          "type": "set_flag",
+          "flag": "heard_bell_story",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "旅店主人說：王室有新生兒時，深淵便會傳出鐘聲；鐘響後，總有人忘記至親。"
+        }
       ]
     },
     {
       "id": "ch1_night_lamp_spirit",
       "source_ref": "五、無光的道路",
-      "trigger": {"night_entered": true},
-      "conditions": [{"flag": "village_no_children", "equals": true}],
+      "trigger": {
+        "night_entered": true
+      },
+      "conditions": [
+        {
+          "flag": "village_no_children",
+          "equals": true
+        }
+      ],
       "effects": [
-        {"type": "set_flag", "flag": "saw_girl", "value": true},
-        {"type": "message", "text": "燈靈化成一個背對眾人的小女孩：「她不是第一個生病的人。」契約被強行終止。"}
+        {
+          "type": "set_flag",
+          "flag": "saw_girl",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "燈靈化成一個背對眾人的小女孩：「她不是第一個生病的人。」契約被強行終止。"
+        }
       ]
     },
     {
       "id": "ch1_royal_seal",
       "source_ref": "六、王徽",
-      "trigger": {"action": "explore", "location": "守淵村"},
-      "conditions": [{"flag": "saw_girl", "equals": true}],
+      "trigger": {
+        "action": "explore",
+        "location": "守淵村"
+      },
+      "conditions": [
+        {
+          "flag": "saw_girl",
+          "equals": true
+        }
+      ],
       "effects": [
-        {"type": "set_flag", "flag": "seal_matches_token", "value": true},
-        {"type": "message", "text": "地面的印痕與國王的通行印記一模一樣。"}
+        {
+          "type": "set_flag",
+          "flag": "seal_matches_token",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "地面的印痕與國王的通行印記一模一樣。"
+        }
       ]
     },
     {
       "id": "ch1_token_check",
       "source_ref": "三、通往守淵村的路",
-      "trigger": {"action": "talk:richter"},
+      "trigger": {
+        "action": "talk:richter"
+      },
       "conditions": [],
       "effects": [
-        {"type": "set_flag", "flag": "token_checked", "value": true},
-        {"type": "message", "text": "里克特翻過通行印記的背面，檢查紋路是否被動過手腳。"}
+        {
+          "type": "set_flag",
+          "flag": "token_checked",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特翻過通行印記的背面，檢查紋路是否被動過手腳。"
+        }
       ]
     },
     {
       "id": "ch1_bonus_bread",
       "source_ref": "三、通往守淵村的路",
-      "trigger": {"action": "talk:freya_food"},
+      "trigger": {
+        "action": "talk:freya_food"
+      },
       "conditions": [],
       "effects": [
-        {"type": "trust", "character": "freya", "delta": 5},
-        {"type": "message", "text": "芙蕾雅接過乾糧，沒有立刻吃，而是先收進袋子裡。"}
+        {
+          "type": "trust",
+          "character": "freya",
+          "delta": 5
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅接過乾糧，沒有立刻吃，而是先收進袋子裡。"
+        }
+      ]
+    },
+    {
+      "id": "ch1_sapling_help",
+      "source_ref": "二、焦林（白色嫩芽、倒伏幼樹）",
+      "trigger": {
+        "action": "help:sapling",
+        "location": "焦林"
+      },
+      "conditions": [
+        {
+          "flag": "saw_royal_convoy",
+          "equals": true
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_skill",
+          "character": "eron",
+          "skill": "spirit_link"
+        },
+        {
+          "type": "message",
+          "text": "幼樹重新長出葉子。艾洛恩學會了生靈連結，能與植物短暫協作。"
+        }
+      ]
+    },
+    {
+      "id": "ch1_innkeeper_night_refusal",
+      "source_ref": "四、不該響起的鐘（「天黑之後別再說那個名字」）",
+      "trigger": {
+        "action": "talk:innkeeper",
+        "is_night": true
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "innkeeper_refused",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "旅店主人把抹布摔在桌上：「天黑之後，別再問那個名字。」"
+        }
       ]
     }
   ]

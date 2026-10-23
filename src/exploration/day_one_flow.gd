@@ -21,7 +21,7 @@ const DEFAULT_ATTACK_TAG: String = "physical"
 const BERSERK_EFFECT: String = "berserk_block"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
-const SNAPSHOT_VERSION: int = 5
+const SNAPSHOT_VERSION: int = 6
 
 var clock: DayClock
 var battle_done: bool = false
@@ -50,6 +50,7 @@ var _encounter_rolls: Array = [0.0]
 var _location: String = ""
 var _events: EventRunner = null
 var _night_entered: bool = false
+var _acquired: Dictionary = {}
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -124,6 +125,8 @@ func _can_run(action: String) -> bool:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
 	if action == "rest":
 		return can_rest()
+	if action.begins_with("help:"):
+		return true
 	if action.begins_with("go:") or action.begins_with("talk:"):
 		return true
 	return ACTION_COSTS.has(action)
@@ -134,7 +137,14 @@ func _run_events(action: String) -> String:
 		"action": action,
 		"location": _location,
 		"night_entered": _night_entered,
+		"is_night": clock.segment == DayClock.SEGMENT_NIGHT,
 	})
+	for unlock: Dictionary in result["skill_unlocks"]:
+		var owner: String = str(unlock["character"])
+		if not _acquired.has(owner):
+			_acquired[owner] = []
+		if not (_acquired[owner] as Array).has(str(unlock["skill"])):
+			(_acquired[owner] as Array).append(str(unlock["skill"]))
 	for change: Dictionary in result["trust_changes"]:
 		if _trust != null:
 			_trust.change(str(change["character"]), int(change["delta"]))
@@ -155,6 +165,11 @@ func _perform_action(action: String) -> String:
 		_at_camp = false
 		_location = action.trim_prefix("go:")
 		return "你前往%s。" % _location + _spend(ACTION_COSTS["move"])
+	if action.begins_with("help:"):
+		if clock.is_expired():
+			return "時限已到，無法再行動。"
+		_at_camp = false
+		return "你停下來照顧幼樹。" + _spend(ACTION_COSTS["move"])
 	if action.begins_with("talk:"):
 		if clock.is_expired():
 			return "時限已到，無法再行動。"
@@ -246,6 +261,7 @@ func snapshot() -> Dictionary:
 	data["curse_stacks"] = stacks
 	data["encounter_index"] = _encounter_index
 	data["location"] = _location
+	data["acquired_skills"] = _acquired.duplicate(true)
 	if _events != null:
 		data["events"] = _events.snapshot()
 	return data
@@ -271,6 +287,11 @@ func restore(data: Dictionary) -> bool:
 	var encounter_index: int = _as_int(data.get("encounter_index", -1))
 	if not (data.get("location", "") is String):
 		return false
+	if not (data.get("acquired_skills", {}) is Dictionary):
+		return false
+	for owner: String in data.get("acquired_skills", {}):
+		if not (data["acquired_skills"][owner] is Array):
+			return false
 	if _events != null and data.has("events") and not _events.is_snapshot_valid(data["events"]):
 		return false
 	if encounter_index < 0 or encounter_index > _encounters.size():
@@ -305,6 +326,7 @@ func restore(data: Dictionary) -> bool:
 		curse.stacks = stack_values[id]
 	_encounter_index = encounter_index
 	_location = str(data.get("location", ""))
+	_acquired = (data.get("acquired_skills", {}) as Dictionary).duplicate(true)
 	if _events != null and data.has("events"):
 		_events.restore(data["events"])
 	_pending = null
@@ -506,6 +528,14 @@ func _resolve_approach(approach: String) -> String:
 func _party_skill_ids() -> Array:
 	var ids: Array = []
 	for member: Dictionary in _party:
-		for skill_id: Variant in _party_skills.get(str(member.get("id", "")), []):
+		var id: String = str(member.get("id", ""))
+		for skill_id: Variant in _party_skills.get(id, []):
+			ids.append(skill_id)
+		for skill_id: Variant in _acquired.get(id, []):
 			ids.append(skill_id)
 	return ids
+
+
+## Skills the character gained from narrative rewards (for example a side-quest reward).
+func acquired_skills(character_id: String) -> Array:
+	return (_acquired.get(character_id, []) as Array).duplicate()

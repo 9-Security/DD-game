@@ -9,7 +9,7 @@ extends RefCounted
 ## Effects: {"type": "set_flag", "flag", "value"}, {"type": "message", "text"},
 ##          {"type": "trust", "character", "delta"}.
 
-const EFFECT_TYPES: Array[String] = ["set_flag", "message", "trust"]
+const EFFECT_TYPES: Array[String] = ["set_flag", "message", "trust", "unlock_skill"]
 
 ## Story flags. Keys are flag names, values are bools.
 var flags: Dictionary = {}
@@ -59,6 +59,9 @@ static func validate(event: Dictionary) -> Array[String]:
 			"trust":
 				if not effect.has("character") or not effect.has("delta"):
 					errors.append("%s needs character and delta" % prefix)
+			"unlock_skill":
+				if not effect.has("character") or not effect.has("skill"):
+					errors.append("%s needs character and skill" % prefix)
 	return errors
 
 
@@ -67,6 +70,7 @@ static func validate(event: Dictionary) -> Array[String]:
 func evaluate(context: Dictionary) -> Dictionary:
 	var messages: Array[String] = []
 	var trust_changes: Array[Dictionary] = []
+	var skill_unlocks: Array[Dictionary] = []
 
 	for event: Dictionary in _events:
 		var id: String = str(event.get("id", ""))
@@ -86,8 +90,10 @@ func evaluate(context: Dictionary) -> Dictionary:
 					messages.append(str(effect["text"]))
 				"trust":
 					trust_changes.append({"character": str(effect["character"]), "delta": int(effect["delta"])})
+				"unlock_skill":
+					skill_unlocks.append({"character": str(effect["character"]), "skill": str(effect["skill"])})
 
-	return {"messages": messages, "trust_changes": trust_changes}
+	return {"messages": messages, "trust_changes": trust_changes, "skill_unlocks": skill_unlocks}
 
 
 ## Captures flags and which events have fired.
@@ -129,6 +135,8 @@ func _trigger_matches(trigger: Variant, context: Dictionary) -> bool:
 		if trigger.has("location") and str(context.get("location", "")) != str(trigger["location"]):
 			return false
 	if has_night and not bool(context.get("night_entered", false)):
+		return false
+	if trigger.has("is_night") and bool(context.get("is_night", false)) != bool(trigger["is_night"]):
 		return false
 	return true
 
