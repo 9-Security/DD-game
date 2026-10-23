@@ -242,12 +242,13 @@ func _build_ui() -> void:
 	_ending_panel.visible = false
 	root.add_child(_ending_panel)
 	_ending_art = TextureRect.new()
-	_ending_art.custom_minimum_size = Vector2(0, 240)
+	_ending_art.custom_minimum_size = Vector2(0, 160)
 	_ending_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_ending_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_ending_panel.add_child(_ending_art)
 	_ending_label = Label.new()
-	_ending_label.add_theme_font_size_override("font_size", 24)
+	_ending_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_ending_label.add_theme_font_size_override("font_size", 20)
 	_ending_panel.add_child(_ending_label)
 	var buttons: Dictionary = _labels.get("time_up_buttons", {})
 	_ending_load_button = Button.new()
