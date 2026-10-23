@@ -13,7 +13,7 @@
 | D4 | 地下城層數 | 保留五段結構（採原稿層級名稱），第一版不納入 | 第一版範圍已限定為序章與第一日 |
 | D5 | 時間回溯 | 不允許；只能在營地存檔 | 避免玩家反覆讀檔繞過時間壓力 |
 | D6 | 王室秘密 | 古代王室曾以神喻草延續血脈，碎魂熱是副作用 | 與咒牆迷廊的古代王室線索連結 |
-| D7 | 平台 | 網頁（Phaser 3 + TypeScript） | 符合「網頁版遊戲」方向 |
+| D7 | 平台 | 網頁（Godot 4.7.2 + GDScript，Web 匯出） | 符合「網頁版遊戲」方向；採用 Game Studios 框架支援的引擎 |
 | D8 | 第一版範圍 | 序章「王城的第七聲鐘」+ 第一日「離城之人」 | 你與 GPT 已討論過的章節（已確認） |
 
 ---
@@ -246,32 +246,39 @@
 
 | 項目 | 選擇 |
 |---|---|
-| 遊戲引擎 | Phaser 3 |
-| 語言 | TypeScript |
-| 建置工具 | Vite |
-| 測試 | Vitest（戰鬥與時間邏輯的單元測試） |
-| 存檔 | IndexedDB，保留版本欄位以利未來遷移 |
-| 部署 | 靜態網站託管 |
+| 遊戲引擎 | Godot 4.7.2（版本釘選見 `docs/engine-reference/godot/VERSION.md`） |
+| 語言 | GDScript |
+| 渲染器 | Compatibility（2D 網頁版） |
+| 物理 | Godot Physics 2D |
+| 建置 | Godot 匯出（Web 匯出 preset 尚未建立，待設定） |
+| 測試 | gdUnit4（以 `/test-setup` 安裝）；戰鬥與時間邏輯的單元測試 |
+| 存檔 | `user://` 使用者資料路徑，JSON 格式，保留版本欄位以利未來遷移；網頁版的實際儲存位置待實機驗證 |
+| 部署 | 網頁匯出後的靜態檔案，部署至靜態網站託管 |
 
 ### 9.2 專案結構
 
 ```text
-design/      設計文件（本目錄）
-game/        遊戲原始碼（Phaser + TypeScript）
-  src/
-    core/          時間系統、回合控制、存檔
-    battle/        戰鬥邏輯（與畫面分離）
-    exploration/   地圖與互動
-    narrative/     對話與日終事件
-    characters/    角色資料載入與驗證
-    scenes/        Phaser 場景（只負責畫面）
-  data/            JSON 資料（角色、技能、敵人、關卡）
-  schemas/         JSON Schema 驗證規則
-  assets/
-  tests/
+design/                    設計文件（本目錄）
+src/                       遊戲原始碼（GDScript，Godot 程式碼根目錄，見 src/CLAUDE.md）
+  core/                    時間系統、回合控制、存檔
+  battle/                  戰鬥邏輯（與場景節點分離，可獨立測試）
+  exploration/             地圖與互動
+  narrative/               對話與日終事件
+  characters/              角色資料載入與驗證
+  scenes/                  場景與畫面（只負責呈現）
+assets/
+  data/                    JSON 資料（角色、技能、敵人、關卡）
+  data/schemas/            JSON Schema 驗證規則
+  art/ audio/              美術與音效（待建立）
+tests/
+  unit/                    單元測試（gdUnit4）
+  integration/             整合測試
+project.godot              Godot 專案設定（repo 根目錄）
 ```
 
-**設計原則**：戰鬥與時間邏輯不依賴 Phaser，可獨立測試。資料以 JSON 管理，數值調整不需修改程式碼。
+> 原先規劃的 `game/` 目錄（Phaser 版）已移除。Godot 的程式碼根目錄為 `src/`，遊戲資料與測試依框架規範放在 `assets/` 與 `tests/`。
+
+**設計原則**：戰鬥與時間邏輯不依賴場景節點（Node），可獨立測試。資料以 JSON 管理，數值調整不需修改程式碼。
 
 ### 9.3 角色模組規格範例
 
@@ -342,3 +349,4 @@ game/        遊戲原始碼（Phaser + TypeScript）
 | v0.2 | 補充建議設計與待決事項 |
 | v1.0 | 依建議決定所有待決項目，完成遊戲設計文件 |
 | v1.1 | 採用共同設計的原稿：神喻草代價、第一版範圍（序章 + 第一日）；新增原稿檔案 `design/narrative/STORY_MANUSCRIPT.md` |
+| v1.2 | 引擎由 Phaser 改為 Godot 4.7.2（GDScript），技術架構與專案結構改為 Godot 規範 |
