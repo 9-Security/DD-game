@@ -20,6 +20,8 @@ const DEFAULT_NIGHT_ENEMY_DEF: int = 1
 const DEFAULT_ATTACK_TAG: String = "physical"
 const WRONG_PLACE_TEXT: String = "這裡沒有可以進行這個行動的地方。"
 const BERSERK_EFFECT: String = "berserk_block"
+## Prefix of the saved flag that records a played dialogue scene, e.g. "dialogue:ch2_dialogue_confess_eron".
+const DIALOGUE_FLAG_PREFIX: String = "dialogue:"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
 const SNAPSHOT_VERSION: int = 7
@@ -501,6 +503,17 @@ func event_flag(flag: String) -> bool:
 	if _events == null:
 		return false
 	return bool(_events.flags.get(flag, false))
+
+
+## True when a dialogue scene has already played in this game. The flag is saved with the game.
+func dialogue_played(scene_id: String) -> bool:
+	return event_flag(DIALOGUE_FLAG_PREFIX + scene_id)
+
+
+## Records that a dialogue scene has played, so it does not play again.
+func mark_dialogue_played(scene_id: String) -> void:
+	if _events != null:
+		_events.flags[DIALOGUE_FLAG_PREFIX + scene_id] = true
 
 
 func _can_run(action: String) -> bool:

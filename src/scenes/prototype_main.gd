@@ -7,6 +7,7 @@ const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CAPTIONS_PATH: String = "res://assets/data/narrative/captions.json"
 const LABELS_PATH: String = "res://assets/data/narrative/ui_labels.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
+const DIALOGUE_PATH: String = "res://assets/data/dialogue/chapter2_dialogue.json"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
 const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
@@ -49,6 +50,9 @@ var _night_entries: Array = []
 var _encounter_entries: Array = []
 
 var _dialogue_label: Label
+var _dialogue_button: Button
+## Scripted dialogue scenes that play after a player action.
+var _dialogue: DialoguePlayer = DialoguePlayer.new()
 var _captions: Dictionary = {}
 var _labels: Dictionary = {}
 var _ending_panel: VBoxContainer
@@ -124,6 +128,7 @@ func _ready() -> void:
 	_night_entries = _load_night_entries()
 	_encounter_entries = _load_encounter_entries()
 	_event_data = _load_event_entries()
+	_load_dialogue()
 	_difficulty = str(_rules.get("default_difficulty", "strict"))
 
 	# Launch options for capture and review, passed after "--" on the command line:
@@ -197,6 +202,13 @@ func _build_ui() -> void:
 	_dialogue_label.add_theme_font_size_override("font_size", 24)
 	_dialogue_label.custom_minimum_size = Vector2(0, 160)
 	root.add_child(_dialogue_label)
+
+	_dialogue_button = Button.new()
+	_dialogue_button.text = "繼續"
+	_dialogue_button.custom_minimum_size = Vector2(200, 48)
+	_dialogue_button.visible = false
+	_dialogue_button.pressed.connect(_on_dialogue_next_pressed)
+	root.add_child(_dialogue_button)
 
 	_next_button = Button.new()
 	_next_button.text = "下一句"
@@ -514,6 +526,50 @@ func _on_action_pressed(action: String) -> void:
 		_play_transition(TransitionRules.KIND_CRITICAL)
 	elif action.begins_with("go:") and _flow.location() != before:
 		_play_transition(TransitionRules.KIND_TRAVEL)
+	_start_dialogue_for(action)
+
+
+## Starts the dialogue scene that the action triggers, unless that scene has already played.
+func _start_dialogue_for(action: String) -> void:
+	var scene_id: String = _dialogue.scene_for_action(action)
+	if scene_id == "" or _flow.dialogue_played(scene_id):
+		return
+	# The action may have been refused; the scene plays only once its event has set the flag.
+	if not _flow.event_flag(_dialogue.required_flag(scene_id)):
+		return
+	if not _dialogue.start(scene_id):
+		return
+	_flow.mark_dialogue_played(scene_id)
+	_refresh_status()
+	_show_dialogue_line()
+
+
+## Shows the line on screen: speaker, text and portrait. Narration has no portrait.
+func _show_dialogue_line() -> void:
+	var line: Dictionary = _dialogue.current_line()
+	var speaker: String = str(line.get("speaker", ""))
+	var text: String = str(line.get("text", ""))
+	_dialogue_label.text = text if speaker == DialoguePlayer.NARRATOR else "%s：%s" % [speaker, text]
+	_set_portrait(PortraitRules.path_for_speaker(speaker))
+
+
+## Moves to the next dialogue line, or closes the scene after its last line.
+func _on_dialogue_next_pressed() -> void:
+	if _dialogue.advance():
+		_show_dialogue_line()
+		return
+	_set_portrait("")
+	_refresh_status()
+
+
+## Loads the dialogue scene data, logging every validation error. A file with errors plays nothing.
+func _load_dialogue() -> void:
+	var parsed: Variant = _load_json(DIALOGUE_PATH)
+	if not (parsed is Dictionary):
+		push_error("Dialogue data missing or malformed: %s" % DIALOGUE_PATH)
+		return
+	for error: String in _dialogue.load_data(parsed):
+		push_error("%s: %s" % [DIALOGUE_PATH, error])
 
 
 ## Shows the portrait at path, or hides the portrait when path is empty or missing.
@@ -692,6 +748,8 @@ func _on_load_pressed() -> void:
 		_set_log("存檔內容無效，無法讀取。")
 		_log_scroll.visible = true
 		return
+	_dialogue.cancel()
+	_set_portrait("")
 	_enter_day_one()
 	var body: String = _ending_body()
 	_set_log("已讀取存檔。" + ("\n\n" + body if body != "" else ""))
@@ -799,7 +857,10 @@ func _read_dictionary(path: String) -> Dictionary:
 
 
 func _refresh_status() -> void:
-	if _flow != null:
+	# While a dialogue scene is on screen it owns the dialogue box and hides the action bars.
+	var dialogue_open: bool = _dialogue.is_active()
+	_dialogue_button.visible = dialogue_open
+	if _flow != null and not dialogue_open:
 		_dialogue_label.text = _caption()
 		_check_story_transitions()
 	var where: String = _flow.location()
@@ -811,18 +872,19 @@ func _refresh_status() -> void:
 	var approaches: Array[String] = _flow.pending_approaches()
 	_rebuild_approach_bar(approaches)
 	_approach_bar.visible = not approaches.is_empty()
-	_action_bar.visible = approaches.is_empty() and not _flow.is_over()
+	var actions_open: bool = approaches.is_empty() and not _flow.is_over() and not dialogue_open
+	_action_bar.visible = actions_open
 	_slot_bar.visible = _action_bar.visible
-	_talk_bar.visible = approaches.is_empty() and not _flow.is_over()
-	_gate_bar.visible = approaches.is_empty() and not _flow.is_over() and _flow.location() == "黑曜石之門"
-	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
+	_talk_bar.visible = actions_open
+	_gate_bar.visible = actions_open and _flow.location() == "黑曜石之門"
+	_passage_button.visible = _flow.event_flag("obsidian_gate_open") and not dialogue_open
 	_ending_panel.visible = _flow.is_over()
 	_ending_label.text = _ending_text()
 	_ending_art.texture = _ending_texture()
 	_ending_load_button.disabled = SaveRepository.read(_save_path()) == null
 	_refresh_slot_buttons()
 	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
-	_refresh_chapter3(approaches.is_empty() and not _flow.is_over())
+	_refresh_chapter3(actions_open)
 	_refresh_backdrop()
 	_save_button.disabled = not _flow.can_save()
 

@@ -1,0 +1,79 @@
+{
+  "id": "chapter2_dialogue",
+  "source": "design/narrative/novel/chapter02_day02.md (二、四面銀鏡；四、無法隱藏的真相；五、第一份代價)",
+  "scenes": [
+    {
+      "id": "ch2_dialogue_confess_eron",
+      "requires_flag": "mirror_eron_acknowledged",
+      "action": "confess:eron",
+      "source_ref": "二、四面銀鏡（第一面鏡：枯林與最後一隻鹿）",
+      "lines": [
+        {"speaker": "旁白", "text": "第一面銀鏡裡是一片枯萎的森林。一隻倒地的鹿躺在乾裂的泥土上，艾洛恩記得牠。"},
+        {"speaker": "艾洛恩", "text": "我想拯救所有生命。不只是人。"},
+        {"speaker": "艾洛恩", "text": "不論牠們是什麼，也不論別人認為牠們是否值得被救。"},
+        {"speaker": "艾洛恩", "text": "我曾經以為，只要自己足夠努力，就一定能做到。可是我救不了牠。"},
+        {"speaker": "艾洛恩", "text": "我也救不了那片森林。我不是每個生命都能救得了。"},
+        {"speaker": "艾洛恩", "text": "我仍然會繼續嘗試。只是我不能再假裝，自己的力量沒有極限。"},
+        {"speaker": "旁白", "text": "鏡中的森林開始褪色。最後一片枯葉落下，第一面銀鏡恢復空白。"}
+      ]
+    },
+    {
+      "id": "ch2_dialogue_confess_freya",
+      "requires_flag": "mirror_freya_acknowledged",
+      "action": "confess:freya",
+      "source_ref": "四、無法隱藏的真相（第二面鏡：封鎖的村莊）",
+      "lines": [
+        {"speaker": "旁白", "text": "第二面銀鏡裡，村口被士兵封鎖，門內的居民仍在哀求。"},
+        {"speaker": "芙蕾雅", "text": "我接過一道命令。封鎖一座村莊。"},
+        {"speaker": "芙蕾雅", "text": "當時有人求我放他們出去。我沒有。"},
+        {"speaker": "芙蕾雅", "text": "我知道他們害怕，也知道他們可能會死。但我沒有違抗命令。"},
+        {"speaker": "芙蕾雅", "text": "我一直告訴自己，那是軍人的職責。"},
+        {"speaker": "芙蕾雅", "text": "可是現在，我不確定那到底是職責……還是因為我沒有勇氣反抗。"},
+        {"speaker": "旁白", "text": "鏡中的近衛隊長慢慢放下手，封閉的村莊逐漸消失。"}
+      ]
+    },
+    {
+      "id": "ch2_dialogue_confess_richter",
+      "requires_flag": "mirror_richter_acknowledged",
+      "action": "confess:richter",
+      "source_ref": "四、無法隱藏的真相（第三面鏡：死亡名冊）",
+      "lines": [
+        {"speaker": "旁白", "text": "第三面銀鏡裡是一份攤開的死亡名冊。一行名字被紅墨標記，那是里克特的兄長。"},
+        {"speaker": "里克特", "text": "我加入這支隊伍，不只是為了報酬。"},
+        {"speaker": "里克特", "text": "我想找到證據，證明王室殺死了我的兄長。"},
+        {"speaker": "里克特", "text": "我一直告訴自己，只要查清楚他的死因，就能放下這件事。"},
+        {"speaker": "里克特", "text": "但如果真的查到了，我不知道自己會做什麼。我不是為了拯救王國才來的。"},
+        {"speaker": "旁白", "text": "名冊開始模糊，最後連那個名字也隱入銀白色的光中。里克特收回手，沒有任何勝利的神情。"}
+      ]
+    },
+    {
+      "id": "ch2_dialogue_confess_inry",
+      "requires_flag": "mirror_inry_acknowledged",
+      "action": "confess:inry",
+      "source_ref": "四、無法隱藏的真相（第四面鏡：召喚室）",
+      "lines": [
+        {"speaker": "旁白", "text": "第四面銀鏡裡是魔法學院的召喚室。法陣中央裂開，老師衝向她，下一瞬間裂縫吞沒了他。"},
+        {"speaker": "茵芮", "text": "老師告訴過我，力量不等於控制。"},
+        {"speaker": "茵芮", "text": "可是我沒有聽。我想證明自己，想讓所有人知道我有資格成為真正的召喚師。"},
+        {"speaker": "茵芮", "text": "然後我失去了他。"},
+        {"speaker": "茵芮", "text": "我的力量曾經傷害別人。這是事實。"},
+        {"speaker": "旁白", "text": "第四面銀鏡裡的裂縫停止擴張，整間召喚室化為銀白色的光。茵芮低下頭，用力抱著那本書。"}
+      ]
+    },
+    {
+      "id": "ch2_dialogue_passage",
+      "requires_flag": "passage_entered",
+      "action": "go:門後通道",
+      "source_ref": "五、第一份代價",
+      "lines": [
+        {"speaker": "旁白", "text": "四面銀鏡同時失去倒影。黑曜石之門無聲地向內開啟，沒有任何人再次觸碰它。"},
+        {"speaker": "芙蕾雅", "text": "這次應該不是陷阱了吧？"},
+        {"speaker": "里克特", "text": "目前看來不是。"},
+        {"speaker": "艾洛恩", "text": "你是誰？這些鏡子為什麼知道我們的過去？"},
+        {"speaker": "旁白", "text": "鏡影精靈沒有回答。它的聲音由數個聲音重疊而成：「你們已經付出第一份代價——再也不能假裝不知道自己是誰。」"},
+        {"speaker": "茵芮", "text": "我們還要繼續嗎？"},
+        {"speaker": "艾洛恩", "text": "繼續。"}
+      ]
+    }
+  ]
+}
