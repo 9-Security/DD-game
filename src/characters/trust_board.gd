@@ -41,3 +41,30 @@ func active_synergies(synergies: Array) -> Array[String]:
 		if met:
 			effects.append(str(synergy.get("effect", "")))
 	return effects
+
+
+## Sets trust to a value (clamped). Used when restoring a saved game.
+## Returns false for an unknown character.
+func set_trust(character_id: String, value: int) -> bool:
+	if not _values.has(character_id):
+		return false
+	_values[character_id] = clampi(value, _min, _max)
+	return true
+
+
+## Character IDs covered by an active synergy that carries the given effect.
+func members_with_effect(synergies: Array, effect: String) -> Array[String]:
+	var members: Array[String] = []
+	for synergy: Dictionary in synergies:
+		if str(synergy.get("effect", "")) != effect:
+			continue
+		var active: bool = true
+		for member: Variant in synergy.get("members", []):
+			if get_trust(str(member)) < int(synergy.get("min_trust", 0)):
+				active = false
+				break
+		if active:
+			for member: Variant in synergy.get("members", []):
+				if not members.has(str(member)):
+					members.append(str(member))
+	return members

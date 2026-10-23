@@ -213,11 +213,25 @@ func _ensure_flow() -> void:
 		int(settings.get("starting_herbs", 0)),
 		int(settings.get("starting_food", 0)),
 	)
+	var trust_rules: Dictionary = _rules.get("trust", {})
+	var trust := TrustBoard.new(
+		CHARACTER_IDS,
+		int(trust_rules.get("start", 50)),
+		int(trust_rules.get("min", 0)),
+		int(trust_rules.get("max", 100)),
+	)
+	var enemy_tags: Array = _rules.get("enemy_tags", {}).get("tutorial_enemy", [])
 	_flow = DayOneFlow.new(party, _sample_rolls(), {
 		"supply": supply,
 		"rest_food_cost": int(settings.get("rest_food_cost", 0)),
 		"night_entries": _night_entries,
 		"night_rolls": _unit_rolls(),
+		"trust": trust,
+		"trust_gain": int(trust_rules.get("battle_victory_gain", 0)),
+		"synergies": _rules.get("synergies", []),
+		"enemy_tags": enemy_tags,
+		"affinity": _rules.get("affinity", {}),
+		"attack_tags": _rules.get("attack_tags", {}),
 	})
 
 
@@ -259,7 +273,8 @@ func _on_load_pressed() -> void:
 
 func _refresh_status() -> void:
 	_status_label.text = _flow.status_text()
-	_supply_label.text = _flow.supply_text()
+	var party_line: String = _flow.party_text()
+	_supply_label.text = _flow.supply_text() + ("\n" + party_line if party_line != "" else "")
 	_action_buttons["rest"].disabled = not _flow.can_rest()
 	_save_button.disabled = not _flow.can_save()
 
@@ -313,8 +328,10 @@ func _load_party() -> Array:
 			push_error("Character data invalid (%s): %s" % [path, ", ".join(errors)])
 			continue
 		party.append({
+			"id": character_id,
 			"name": data["identity"]["name"],
 			"atk": int(data["stats"]["atk"]),
+			"curse": (_rules.get("blood_curse_bearers", []) as Array).has(character_id),
 		})
 	return party
 

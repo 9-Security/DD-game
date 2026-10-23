@@ -1,8 +1,9 @@
 class_name DayOneFlow
 extends RefCounted
 ## Day-one action flow: connects the seven-day clock to player actions, supply use,
-## night events and the tutorial skirmish. The UI only displays returned messages.
-## Saving is allowed only at camp (after a successful rest), and loading never rewinds time.
+## night events, trust, blood curses and the tutorial skirmish. The UI only displays
+## the messages it returns. Saving is allowed only at camp (after a successful rest),
+## and loading never rewinds time.
 
 ## Segment cost of each player action (design/GAME_DESIGN_MASTER.md section 2.1).
 const ACTION_COSTS: Dictionary = {"move": 1, "explore": 1, "rest": 2, "battle": 1}
@@ -16,8 +17,11 @@ const TUTORIAL_ENEMY_DEF: int = 2
 const DEFAULT_NIGHT_ENEMY_HP: int = 20
 const DEFAULT_NIGHT_ENEMY_DEF: int = 1
 
+const DEFAULT_ATTACK_TAG: String = "physical"
+const BERSERK_EFFECT: String = "berserk_block"
+
 ## Version of the snapshot format written by snapshot(). Bump on any change.
-const SNAPSHOT_VERSION: int = 2
+const SNAPSHOT_VERSION: int = 3
 
 var clock: DayClock
 var battle_done: bool = false
@@ -30,15 +34,29 @@ var _supply: SupplyPool
 var _night_entries: Array
 var _night_rolls: Array
 var _night_roll_index: int = 0
+var _trust: TrustBoard
+var _trust_gain: int = 0
+var _synergies: Array
+var _enemy_tags: Array
+var _affinity: Dictionary
+var _attack_tags: Dictionary
+var _curses: Dictionary = {}
 
 
-## party: Array of Dictionaries with "name" and "atk" keys.
+## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
+## gets a blood curse that is tracked by the flow.
 ## rolls: damage variance values cycled by the skirmish resolver.
 ## options (all optional):
 ##   "supply": SupplyPool. Without it, supplies are unlimited.
 ##   "rest_food_cost": food each rest consumes (strict 1, assisted 0).
 ##   "night_entries": Array of night pool entries.
 ##   "night_rolls": rolls in [0, 1) used to pick night entries, cycled.
+##   "trust": TrustBoard. Without it, trust and synergies are inactive.
+##   "trust_gain": trust each member gains after a won battle.
+##   "synergies": Array of synergy definitions (see TrustBoard).
+##   "enemy_tags": tags on the tutorial enemy. Night entries may define their own.
+##   "affinity": matchup table for Affinity.multiplier().
+##   "attack_tags": character ID -> attack tag.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -47,6 +65,16 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	rest_food_cost = int(options.get("rest_food_cost", 0))
 	_night_entries = options.get("night_entries", [])
 	_night_rolls = options.get("night_rolls", [0.0])
+	_trust = options.get("trust", null)
+	_trust_gain = int(options.get("trust_gain", 0))
+	_synergies = options.get("synergies", [])
+	_enemy_tags = options.get("enemy_tags", [])
+	_affinity = options.get("affinity", {})
+	_attack_tags = options.get("attack_tags", {})
+
+	for member: Dictionary in party:
+		if bool(member.get("curse", false)):
+			_curses[str(member.get("id", ""))] = BloodCurse.new()
 
 
 ## Performs a player action and returns a message for the log.
@@ -90,6 +118,26 @@ func supply_text() -> String:
 	return "藥草 %d｜食糧 %d" % [_supply.count("herbs"), _supply.count("food")]
 
 
+## Trust values and curse stacks for the HUD. Empty when neither is tracked.
+func party_text() -> String:
+	var parts: Array[String] = []
+	for member: Dictionary in _party:
+		var id: String = str(member.get("id", ""))
+		var name: String = str(member.get("name", id))
+		if _trust != null and _trust.get_trust(id) >= 0:
+			parts.append("%s 信任 %d" % [name, _trust.get_trust(id)])
+		if _curses.has(id):
+			parts.append("%s 血之詛咒 %d 層" % [name, curse_stacks(id)])
+	return "｜".join(parts)
+
+
+## Blood curse stacks for a character, or -1 when that character has no curse.
+func curse_stacks(character_id: String) -> int:
+	if not _curses.has(character_id):
+		return -1
+	return (_curses[character_id] as BloodCurse).stacks
+
+
 ## Captures the state needed to resume the game later.
 func snapshot() -> Dictionary:
 	var data: Dictionary = {
@@ -101,6 +149,17 @@ func snapshot() -> Dictionary:
 	if _supply != null:
 		data["herbs"] = _supply.count("herbs")
 		data["food"] = _supply.count("food")
+	if _trust != null:
+		var trust: Dictionary = {}
+		for member: Dictionary in _party:
+			var id: String = str(member.get("id", ""))
+			if _trust.get_trust(id) >= 0:
+				trust[id] = _trust.get_trust(id)
+		data["trust"] = trust
+	var stacks: Dictionary = {}
+	for id: String in _curses:
+		stacks[id] = (_curses[id] as BloodCurse).stacks
+	data["curse_stacks"] = stacks
 	return data
 
 
@@ -119,6 +178,22 @@ func restore(data: Dictionary) -> bool:
 	var food: int = _as_int(data.get("food", 0))
 	if herbs < 0 or food < 0:
 		return false
+	if not (data.get("trust", {}) is Dictionary) or not (data.get("curse_stacks", {}) is Dictionary):
+		return false
+
+	# Validate every value before changing any state.
+	var trust_values: Dictionary = {}
+	for id: String in data.get("trust", {}):
+		var value: int = _as_int(data["trust"][id])
+		if value < 0:
+			return false
+		trust_values[id] = value
+	var stack_values: Dictionary = {}
+	for id: String in data.get("curse_stacks", {}):
+		var stacks: int = _as_int(data["curse_stacks"][id])
+		if stacks < 0 or stacks > BloodCurse.MAX_STACKS or not _curses.has(id):
+			return false
+		stack_values[id] = stacks
 
 	# restore_elapsed() validates the range and changes nothing when it fails.
 	if not clock.restore_elapsed(elapsed):
@@ -127,6 +202,12 @@ func restore(data: Dictionary) -> bool:
 	rest_food_cost = cost
 	if _supply != null:
 		_supply.set_counts(herbs, food)
+	if _trust != null:
+		for id: String in trust_values:
+			_trust.set_trust(id, trust_values[id])
+	for id: String in stack_values:
+		var curse: BloodCurse = _curses[id]
+		curse.stacks = stack_values[id]
 	_at_camp = false
 	return true
 
@@ -145,9 +226,11 @@ func _perform_battle() -> String:
 	var spend_text: String = _spend(ACTION_COSTS["battle"])
 	battle_done = true
 
-	var result: Dictionary = Skirmish.resolve(_party, TUTORIAL_ENEMY_HP, TUTORIAL_ENEMY_DEF, _rolls)
+	var result: Dictionary = Skirmish.resolve(
+		_battle_members(), TUTORIAL_ENEMY_HP, TUTORIAL_ENEMY_DEF, _rolls, Skirmish.DEFAULT_ROUND_LIMIT,
+		{"enemy_tags": _enemy_tags, "affinity": _affinity})
 	if result["won"]:
-		return "戰鬥勝利，共 %d 回合。" % result["rounds"] + spend_text
+		return "戰鬥勝利，共 %d 回合。" % result["rounds"] + _reward_victory() + spend_text
 	return "戰鬥失敗，敵人剩餘 %d 點生命。" % result["enemy_hp_left"] + spend_text
 
 
@@ -184,9 +267,12 @@ func _resolve_night_event() -> String:
 		"battle":
 			var hp: int = int(entry.get("enemy_hp", DEFAULT_NIGHT_ENEMY_HP))
 			var def: int = int(entry.get("enemy_def", DEFAULT_NIGHT_ENEMY_DEF))
-			var result: Dictionary = Skirmish.resolve(_party, hp, def, _rolls)
+			var tags: Array = entry.get("enemy_tags", [])
+			var result: Dictionary = Skirmish.resolve(
+				_battle_members(), hp, def, _rolls, Skirmish.DEFAULT_ROUND_LIMIT,
+				{"enemy_tags": tags, "affinity": _affinity})
 			if result["won"]:
-				return text + "\n你擊退了襲擊者。"
+				return text + "\n你擊退了襲擊者。" + _reward_victory()
 			var injured: bool = false
 			if _supply != null:
 				injured = NightEventPool.resolve_loss(entry, _supply)
@@ -198,6 +284,34 @@ func _resolve_night_event() -> String:
 				NightEventPool.resolve_loss(entry, _supply)
 			return text + "\n補給被竊取。"
 	return text
+
+
+## Builds the members for a skirmish from the party, with attack tags, curses and
+## synergy blocks applied.
+func _battle_members() -> Array:
+	var blocked: Array[String] = []
+	if _trust != null:
+		blocked = _trust.members_with_effect(_synergies, BERSERK_EFFECT)
+
+	var members: Array = []
+	for member: Dictionary in _party:
+		var id: String = str(member.get("id", ""))
+		members.append({
+			"atk": int(member["atk"]),
+			"attack_tag": str(_attack_tags.get(id, DEFAULT_ATTACK_TAG)),
+			"curse": _curses.get(id, null),
+			"can_block_berserk": blocked.has(id),
+		})
+	return members
+
+
+## Gives every member trust after a won battle. Returns the log text, or an empty string.
+func _reward_victory() -> String:
+	if _trust == null or _trust_gain <= 0:
+		return ""
+	for member: Dictionary in _party:
+		_trust.change(str(member.get("id", "")), _trust_gain)
+	return "\n隊伍信任提升了。"
 
 
 func _action_label(action: String) -> String:
