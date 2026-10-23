@@ -55,6 +55,12 @@ var _ending_panel: VBoxContainer
 var _ending_load_button: Button
 var _ending_label: Label
 var _ending_art: TextureRect
+## Full-screen transition illustration shown briefly at a story moment, and its fade tween.
+var _transition: TextureRect
+var _transition_tween: Tween
+## Last story day seen, so a new day starts a transition; and whether the ending transition has played.
+var _last_day: int = 0
+var _ending_transition_played: bool = false
 var _backdrop: TextureRect
 var _bgm: BgmPlayer
 var _next_button: Button
@@ -90,6 +96,15 @@ var _slot_buttons: Array[Button] = []
 func _ready() -> void:
 	_labels = _read_dictionary(LABELS_PATH)
 	_build_ui()
+	# The transition overlay is added last, so it sits above the whole screen and ignores the mouse.
+	_transition = TextureRect.new()
+	_transition.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_transition.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_transition.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_transition.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_transition.modulate.a = 0.0
+	_transition.visible = false
+	add_child(_transition)
 	_lines = _load_prologue_lines()
 	_captions = _read_dictionary(CAPTIONS_PATH)
 	_rules = _load_rules()
@@ -382,6 +397,7 @@ func _show_next_line() -> void:
 		_line_index += 1
 	else:
 		_enter_day_one()
+		_play_transition(TransitionRules.KIND_PARTY)
 	_refresh_backdrop()
 
 
@@ -469,6 +485,7 @@ func _on_action_pressed(action: String) -> void:
 		var summon: Array = [_summon_member()] if _flow.fight_approach() == "summon" else []
 		_open_battle(_flow.encounter_enemy(), summon)
 		return
+	var before: String = _flow.location()
 	var message: String = _flow.perform(action)
 	if _flow.story_fight_pending():
 		# A story fight (a sequence's final step, or the mirror) is fought on the battle screen.
@@ -478,6 +495,37 @@ func _on_action_pressed(action: String) -> void:
 		_battle_panel.add_note(message)
 		return
 	_show_result(message)
+	if action.begins_with("final:"):
+		_play_transition(TransitionRules.KIND_CRITICAL)
+	elif action.begins_with("go:") and _flow.location() != before:
+		_play_transition(TransitionRules.KIND_TRAVEL)
+
+
+## A new story day, and the first reached ending, each play their transition once.
+func _check_story_transitions() -> void:
+	var day: int = _flow.clock.day
+	if _last_day != 0 and day != _last_day:
+		_play_transition(TransitionRules.KIND_CHAPTER)
+	_last_day = day
+	if _flow.is_ended() and not _ending_transition_played:
+		_ending_transition_played = true
+		_play_transition(TransitionRules.KIND_ENDING)
+
+
+## Shows a transition illustration briefly, then fades it out. Non-blocking.
+func _play_transition(kind: String) -> void:
+	var path: String = TransitionRules.path_for(kind)
+	if path == "" or not ResourceLoader.exists(path):
+		return
+	_transition.texture = load(path) as Texture2D
+	_transition.visible = true
+	if _transition_tween != null:
+		_transition_tween.kill()
+	_transition_tween = create_tween()
+	_transition_tween.tween_property(_transition, "modulate:a", 1.0, 0.4)
+	_transition_tween.tween_interval(1.6)
+	_transition_tween.tween_property(_transition, "modulate:a", 0.0, 0.6)
+	_transition_tween.tween_callback(func() -> void: _transition.visible = false)
 
 
 ## Shows the result of an action in the log and refreshes the screen.
@@ -732,6 +780,7 @@ func _read_dictionary(path: String) -> Dictionary:
 func _refresh_status() -> void:
 	if _flow != null:
 		_dialogue_label.text = _caption()
+		_check_story_transitions()
 	var where: String = _flow.location()
 	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
 	var party_line: String = _flow.party_text()
