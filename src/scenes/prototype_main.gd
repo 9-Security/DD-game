@@ -31,6 +31,7 @@ const NARRATIVE_ACTIONS: Array = [
 	["talk:freya_food", "遞給芙蕾雅乾糧"],
 	["talk:innkeeper", "詢問旅店主人"],
 ]
+const PASSAGE_ACTION: Array = ["go:門後通道", "走入門後的通道"]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
@@ -61,6 +62,7 @@ var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
 var _talk_bar: GridContainer
 var _gate_bar: HBoxContainer
+var _passage_button: Button
 var _event_data: Array = []
 var _save_button: Button
 
@@ -196,6 +198,12 @@ func _build_ui() -> void:
 		button.custom_minimum_size = Vector2(220, 44)
 		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
 		_gate_bar.add_child(button)
+	_passage_button = Button.new()
+	_passage_button.text = str(PASSAGE_ACTION[1])
+	_passage_button.custom_minimum_size = Vector2(220, 44)
+	_passage_button.visible = false
+	_passage_button.pressed.connect(_on_action_pressed.bind(str(PASSAGE_ACTION[0])))
+	_gate_bar.add_child(_passage_button)
 
 	_approach_bar = HBoxContainer.new()
 	_approach_bar.add_theme_constant_override("separation", 16)
@@ -300,6 +308,7 @@ func _ensure_flow() -> void:
 		"encounter_rolls": _unit_rolls(),
 		"events": _event_data,
 		"mirror_counter": _rules.get("mirror_counter", {}),
+		"location_requirements": _rules.get("location_requirements", {}),
 	})
 
 
@@ -351,6 +360,7 @@ func _refresh_status() -> void:
 	_action_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_gate_bar.visible = approaches.is_empty() and not _flow.clock.is_expired() and _flow.location() == "黑曜石之門"
+	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
 	_save_button.disabled = not _flow.can_save()
 
 

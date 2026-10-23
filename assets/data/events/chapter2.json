@@ -127,6 +127,29 @@
           "text": "四面銀鏡同時失去倒影。黑曜石之門無聲地向內開啟。"
         }
       ]
+    },
+    {
+      "id": "ch2_passage_arrival",
+      "source_ref": "第二日結尾：走入門後",
+      "trigger": {
+        "action": "go:門後通道"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "passage_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "門後是一條幽暗的通道，看不見盡頭。兩側岩壁上的紋路隨著門的開啟逐漸顯露。"
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩最後跨過門檻。星墜之淵的第一道封印，已被他們留在身後。"
+        }
+      ]
     }
   ]
 }

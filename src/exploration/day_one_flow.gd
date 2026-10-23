@@ -53,6 +53,7 @@ var _night_entered: bool = false
 var _acquired: Dictionary = {}
 var _wounds: Dictionary = {}
 var _mirror_counter: Dictionary = {}
+var _location_requirements: Dictionary = {}
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -69,6 +70,7 @@ var _mirror_counter: Dictionary = {}
 ##   "enemy_tags": tags on the tutorial enemy. Night entries may define their own.
 ##   "affinity": matchup table for Affinity.multiplier().
 ##   "attack_tags": character ID -> attack tag.
+##   "location_requirements": place name -> flag that must be set before entering that place.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -89,6 +91,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	for entry: Variant in options.get("encounters", []):
 		_encounters.append(Encounter.new(entry))
 	_mirror_counter = options.get("mirror_counter", {})
+	_location_requirements = options.get("location_requirements", {})
 	if options.has("events"):
 		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
@@ -114,6 +117,13 @@ func location() -> String:
 	return _location
 
 
+## True when the place has no entry requirement, or its required flag is set.
+func _can_enter(place: String) -> bool:
+	if not _location_requirements.has(place):
+		return true
+	return event_flag(str(_location_requirements[place]))
+
+
 ## Value of a narrative flag. False when unset or when the chapter has no events.
 func event_flag(flag: String) -> bool:
 	if _events == null:
@@ -130,7 +140,9 @@ func _can_run(action: String) -> bool:
 		return can_rest()
 	if action.begins_with("help:") or action.begins_with("confess:") or action.begins_with("strike:"):
 		return true
-	if action.begins_with("go:") or action.begins_with("talk:"):
+	if action.begins_with("go:"):
+		return _can_enter(action.trim_prefix("go:"))
+	if action.begins_with("talk:"):
 		return true
 	return ACTION_COSTS.has(action)
 
@@ -165,8 +177,11 @@ func _perform_action(action: String) -> String:
 	if action.begins_with("go:"):
 		if clock.is_expired():
 			return "時限已到，無法再行動。"
+		var place: String = action.trim_prefix("go:")
+		if not _can_enter(place):
+			return "門後的通道仍被封印，無法通行。"
 		_at_camp = false
-		_location = action.trim_prefix("go:")
+		_location = place
 		return "你前往%s。" % _location + _spend(ACTION_COSTS["move"])
 	if action.begins_with("help:"):
 		if clock.is_expired():

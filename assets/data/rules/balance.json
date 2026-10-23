@@ -87,5 +87,8 @@
   "mirror_counter": {
     "damage": 8,
     "curse_stacks": 2
+  },
+  "location_requirements": {
+    "門後通道": "obsidian_gate_open"
   }
 }
