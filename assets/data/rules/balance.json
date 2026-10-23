@@ -294,8 +294,8 @@
       },
       "curse_risk": {
         "character": "freya",
-        "per_stack": 0.05,
-        "max": 0.25,
+        "per_stack": 0.08,
+        "max": 0.4,
         "actions": [
           "oath:lower",
           "oath:pierce"

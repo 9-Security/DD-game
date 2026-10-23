@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 # Integration test: the blood curse raises the chance that Freya's sword steps fail in the
-# cavern. Each stack adds 5%, capped at 25%. Only "oath:lower" and "oath:pierce" are affected.
+# cavern. Each stack adds 8%, capped at 40%. The curse holds at most five stacks, so five stacks
+# reach the cap. Only "oath:lower" and "oath:pierce" are affected.
 # The roll is injected, so each test decides the outcome.
 
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
@@ -63,14 +64,15 @@ func test_seal_steps_are_not_affected_by_the_curse() -> void:
 	assert_float(flow.step_curse_risk("seal:draw")).is_equal(0.0)
 
 
-func test_the_risk_is_five_percent_per_stack_capped_at_25_percent() -> void:
+func test_the_risk_is_eight_percent_per_stack_capped_at_40_percent() -> void:
 	var flow := _flow([0.99])
 	_read_record_and_add_stacks(flow, 3)
-	assert_float(flow.step_curse_risk("oath:lower")).is_equal_approx(0.15, 0.001)
+	assert_float(flow.step_curse_risk("oath:lower")).is_equal_approx(0.24, 0.001)
 	assert_float(flow.step_curse_risk("oath:cover")).is_equal(0.0)
 
-	_read_record_and_add_stacks(flow, 10)
-	assert_float(flow.step_curse_risk("oath:pierce")).is_equal_approx(0.25, 0.001)
+	# Five stacks is the curse maximum, so requesting more still gives the cap.
+	_read_record_and_add_stacks(flow, 8)
+	assert_float(flow.step_curse_risk("oath:pierce")).is_equal_approx(0.40, 0.001)
 
 
 func test_a_low_roll_fails_the_sword_step_when_the_curse_has_stacks() -> void:
