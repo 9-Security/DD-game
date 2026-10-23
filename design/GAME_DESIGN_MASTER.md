@@ -328,9 +328,15 @@ project.godot              Godot 專案設定（repo 根目錄）
 | 第一日行動與教學戰鬥 | 已實作並測試 | `src/exploration/day_one_flow.gd` |
 | 營地存檔與讀檔（單一存檔格） | 已實作並測試 | `src/core/save_repository.gd`，`tests/unit/core/save_snapshot_rules_test.gd` |
 | 序章對話 | 已實作 | `assets/data/narrative/prologue.json` |
+| 第一章事件（村莊、旅店、夜間、幼樹） | 已實作並測試 | `assets/data/events/chapter1.json`，`src/narrative/event_runner.gd` |
+| 事件日數條件（`day`、`min_day`） | 已實作並測試 | `tests/unit/narrative/event_day_condition_test.gd` |
+| 第二章：黑曜石之門（承認、鏡像反擊、第二日開放） | 已實作並測試（超出第一版範圍） | `src/exploration/day_one_flow.gd`，`assets/data/events/chapter2.json`，`tests/unit/narrative/mirror_*` |
+| 第二章：門後通道（抵達文字依日數分支） | 已實作並測試（超出第一版範圍） | `tests/integration/narrative/passage_day_test.gd` |
 | 網頁版匯出與瀏覽器驗證 | 已驗證 | `production/qa/evidence/chapter1-prototype/` |
 
-**尚未完成**：三個存檔格（目前只有一格）、地圖與角色立繪（目前只有文字介面）、第二日以後的內容。
+**尚未完成**：三個存檔格（目前只有一格）、地圖與角色立繪（目前只有文字介面）、鏡影精靈的出場與退場演出、鏡像反擊的 HP 數值（目前只記錄傷害，尚無 HP 系統）、幼樹的 spirit_link 效果（尚未套用到戰鬥）、第三日以後的內容（咒牆迷廊起）。
+
+**第一版之後已先行實作**：第二章的黑曜石之門與門後通道，因為第二章的事件已確定，且它們是第一版之後的首批內容。第二日的時間線已與小說一致（門在第二日開放）。
 
 ---
 
