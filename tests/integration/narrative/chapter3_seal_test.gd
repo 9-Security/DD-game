@@ -64,8 +64,18 @@ func test_a_wrong_step_resets_the_seal_and_costs_time_and_a_curse_stack() -> voi
 
 	assert_bool(message.contains(ORDER_TEXT)).is_true()
 	assert_bool(flow.event_flag("seal_drawn")).is_false()
+	assert_bool(flow.event_flag("seal_failed")).is_true()
 	assert_int(flow.clock.get_elapsed()).is_equal(elapsed + 1)
 	assert_int(flow.curse_stacks("freya")).is_equal(stacks + 1)
+
+
+func test_a_seal_that_was_never_failed_does_not_set_the_flag() -> void:
+	var flow := _flow()
+	_reach_hall_with_kaen(flow)
+
+	flow.perform("seal:draw")
+
+	assert_bool(flow.event_flag("seal_failed")).is_false()
 
 
 func test_kaen_seal_before_its_name_is_read_is_refused_without_penalty() -> void:

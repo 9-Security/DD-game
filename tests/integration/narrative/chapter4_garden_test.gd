@@ -10,6 +10,7 @@ const EVENTS_PATHS: Array[String] = [
 ]
 const GARDEN_REFUSAL: String = "迷廊的出口還沒有走完"
 const ORDER_TEXT: String = "重新來過"
+const FAILURE_OPENING: String = "方才的失誤仍壓在他們心上"
 
 
 func _flow() -> DayOneFlow:
@@ -31,13 +32,16 @@ func _flow() -> DayOneFlow:
 
 
 ## Completes chapter three on day three, leaving the flow at the labyrinth exit.
-func _finish_chapter_three(flow: DayOneFlow) -> void:
+## When failed is true, the first seal attempt is out of order and resets the seal.
+func _finish_chapter_three(flow: DayOneFlow, failed: bool = false) -> void:
 	flow.clock.spend(DayClock.SEGMENTS_PER_DAY * 2)
 	flow.perform("go:咒牆迷廊")
 	flow.perform("read:first_name")
 	flow.perform("read:second_name")
 	flow.perform("go:名冊廊廳")
 	flow.perform("read:kaen")
+	if failed:
+		flow.perform("seal:link")
 	flow.perform("seal:draw")
 	flow.perform("seal:link")
 	flow.perform("seal:read")
@@ -45,11 +49,11 @@ func _finish_chapter_three(flow: DayOneFlow) -> void:
 	flow.perform("go:出口門廊")
 
 
-## Moves to the garden on day four.
-func _enter_garden(flow: DayOneFlow) -> void:
-	_finish_chapter_three(flow)
+## Moves to the garden on day four and returns the message shown on arrival.
+func _enter_garden(flow: DayOneFlow, failed: bool = false) -> String:
+	_finish_chapter_three(flow, failed)
 	flow.clock.spend(DayClock.SEGMENTS_PER_DAY)
-	flow.perform("go:失聲之庭")
+	return flow.perform("go:失聲之庭")
 
 
 func test_garden_is_refused_before_the_labyrinth_exit() -> void:
@@ -99,3 +103,22 @@ func test_a_skipped_step_resets_the_release_and_costs_time_without_a_curse() -> 
 	assert_bool(flow.event_flag("ancient_tree_memory_offered")).is_false()
 	assert_int(flow.clock.get_elapsed()).is_equal(elapsed + 1)
 	assert_int(flow.curse_stacks("freya")).is_equal(stacks)
+
+
+func test_garden_opening_after_a_seal_failure_mentions_the_failure() -> void:
+	var flow := _flow()
+
+	var message: String = _enter_garden(flow, true)
+
+	assert_bool(flow.event_flag("seal_failed")).is_true()
+	assert_bool(message.contains(FAILURE_OPENING)).is_true()
+
+
+func test_garden_opening_without_a_failure_is_the_original_text() -> void:
+	var flow := _flow()
+
+	var message: String = _enter_garden(flow, false)
+
+	assert_bool(flow.event_flag("seal_failed")).is_false()
+	assert_bool(message.contains(FAILURE_OPENING)).is_false()
+	assert_bool(message.contains("地下河仍在流動")).is_true()

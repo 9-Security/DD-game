@@ -163,7 +163,8 @@
         "text": "線條失去平衡，石壁重新逼近。你們退後重來。",
         "segments": 1,
         "curse_stacks": 1,
-        "curse_target": "freya"
+        "curse_target": "freya",
+        "flag": "seal_failed"
       }
     },
     {

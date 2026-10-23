@@ -8,7 +8,12 @@
       "trigger": {
         "action": "go:失聲之庭"
       },
-      "conditions": [],
+      "conditions": [
+        {
+          "flag": "seal_failed",
+          "equals": false
+        }
+      ],
       "effects": [
         {
           "type": "set_flag",
@@ -19,6 +24,46 @@
           "type": "set_flag",
           "flag": "guardian_nonhostility_recognized",
           "value": true
+        },
+        {
+          "type": "message",
+          "text": "地下河仍在流動，庭園裡卻沒有蟲鳴。葉片被河風吹得微微晃動，枝頭不發出摩擦聲。"
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩試著傾聽那片植物，只有一片空白。「它們還活著，但我聽不見。」"
+        },
+        {
+          "type": "message",
+          "text": "一頭巨獸從石像之間走出。牠看著眾人，卻沒有撲來；牠只守著通向河源的路。"
+        }
+      ]
+    },
+    {
+      "id": "ch4_garden_arrival_after_failure",
+      "source_ref": "第四日開場：解陣失誤之後",
+      "trigger": {
+        "action": "go:失聲之庭"
+      },
+      "conditions": [
+        {
+          "flag": "seal_failed"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "garden_entered",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "guardian_nonhostility_recognized",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特沒有說話，只是把手指從匕首柄的刻痕上移開。方才的失誤仍壓在他們心上，他不想再重蹈覆轍。"
         },
         {
           "type": "message",

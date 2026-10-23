@@ -77,7 +77,8 @@ var _sequences: Array = []
 ##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
 ##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
 ##     "blocked_text", "steps" ([action, flag] pairs; the last flag is set by events), and
-##     "failure" ({"text", "segments", "curse_stacks", "curse_target"}) for an out-of-order step.
+##     "failure" ({"text", "flag", "segments", "curse_stacks", "curse_target"}) for an out-of-order
+##     step. "flag" is set to true when the failure happens.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -214,6 +215,9 @@ func _sequence_failure(sequence: Dictionary) -> String:
 	for index: int in range(steps.size() - 1):
 		_events.flags[str(steps[index][1])] = false
 	var failure: Dictionary = sequence.get("failure", {})
+	var failure_flag: String = str(failure.get("flag", ""))
+	if failure_flag != "":
+		_events.flags[failure_flag] = true
 	var text: String = str(failure.get("text", "你們退後重來。")) + _spend(int(failure.get("segments", 0)))
 	var target: String = str(failure.get("curse_target", ""))
 	var stacks: int = int(failure.get("curse_stacks", 0))
