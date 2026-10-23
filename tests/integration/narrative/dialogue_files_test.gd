@@ -11,6 +11,7 @@ const DIALOGUE_FILES: Array[String] = [
 	"chapter5_dialogue.json",
 	"chapter6_dialogue.json",
 	"chapter7_dialogue.json",
+	"chapter7_endings_dialogue.json",
 ]
 const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter1.json",
