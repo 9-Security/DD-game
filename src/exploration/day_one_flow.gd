@@ -132,6 +132,11 @@ func perform(action: String) -> String:
 	return text
 
 
+## True once the seven-day limit has run out. No further actions are possible.
+func is_time_up() -> bool:
+	return clock.is_expired()
+
+
 ## Current location, empty before the first move.
 func location() -> String:
 	return _location

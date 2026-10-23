@@ -39,6 +39,8 @@ var _encounter_entries: Array = []
 var _dialogue_label: Label
 var _captions: Dictionary = {}
 var _labels: Dictionary = {}
+var _ending_panel: VBoxContainer
+var _ending_load_button: Button
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -216,6 +218,26 @@ func _build_ui() -> void:
 		_chapter3_bar.add_child(button)
 		_chapter3_buttons.append(button)
 
+	_ending_panel = VBoxContainer.new()
+	_ending_panel.add_theme_constant_override("separation", 12)
+	_ending_panel.visible = false
+	root.add_child(_ending_panel)
+	var ending_label := Label.new()
+	ending_label.text = str(_labels.get("time_up", ""))
+	ending_label.add_theme_font_size_override("font_size", 24)
+	_ending_panel.add_child(ending_label)
+	var buttons: Dictionary = _labels.get("time_up_buttons", {})
+	_ending_load_button = Button.new()
+	_ending_load_button.text = str(buttons.get("load", ""))
+	_ending_load_button.custom_minimum_size = Vector2(220, 48)
+	_ending_load_button.pressed.connect(_on_load_pressed)
+	_ending_panel.add_child(_ending_load_button)
+	var restart_button := Button.new()
+	restart_button.text = str(buttons.get("restart", ""))
+	restart_button.custom_minimum_size = Vector2(220, 48)
+	restart_button.pressed.connect(_on_restart_pressed)
+	_ending_panel.add_child(restart_button)
+
 	_approach_bar = HBoxContainer.new()
 	_approach_bar.add_theme_constant_override("separation", 16)
 	_approach_bar.visible = false
@@ -350,6 +372,11 @@ func _on_save_pressed() -> void:
 	_refresh_status()
 
 
+## Starts the whole game again from the beginning.
+func _on_restart_pressed() -> void:
+	get_tree().reload_current_scene()
+
+
 func _on_load_pressed() -> void:
 	_ensure_flow()
 	var data: Variant = SaveRepository.read(SAVE_PATH)
@@ -436,6 +463,8 @@ func _refresh_status() -> void:
 	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_gate_bar.visible = approaches.is_empty() and not _flow.clock.is_expired() and _flow.location() == "黑曜石之門"
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
+	_ending_panel.visible = _flow.is_time_up()
+	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
 	_refresh_chapter3(approaches.is_empty() and not _flow.clock.is_expired())
 	_save_button.disabled = not _flow.can_save()
 
