@@ -19,6 +19,7 @@ const GATE_ACTIONS: Array = [
 	["confess:freya", "承認：芙蕾雅的封村"],
 	["confess:richter", "承認：里克特的兄長"],
 	["confess:inry", "承認：茵芮的失控"],
+	["strike:mirror", "攻擊銀鏡（芙蕾雅）"],
 ]
 const NARRATIVE_ACTIONS: Array = [
 	["go:焦林", "前往焦林"],
@@ -150,6 +151,7 @@ func _build_ui() -> void:
 	root.add_child(_status_label)
 
 	_supply_label = Label.new()
+	_supply_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_supply_label.add_theme_font_size_override("font_size", 20)
 	_supply_label.visible = false
 	root.add_child(_supply_label)
@@ -297,6 +299,7 @@ func _ensure_flow() -> void:
 		"approach_skills": _rules.get("approach_skills", {}),
 		"encounter_rolls": _unit_rolls(),
 		"events": _event_data,
+		"mirror_counter": _rules.get("mirror_counter", {}),
 	})
 
 

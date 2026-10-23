@@ -21,7 +21,7 @@ const DEFAULT_ATTACK_TAG: String = "physical"
 const BERSERK_EFFECT: String = "berserk_block"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
-const SNAPSHOT_VERSION: int = 6
+const SNAPSHOT_VERSION: int = 7
 
 var clock: DayClock
 var battle_done: bool = false
@@ -51,6 +51,8 @@ var _location: String = ""
 var _events: EventRunner = null
 var _night_entered: bool = false
 var _acquired: Dictionary = {}
+var _wounds: Dictionary = {}
+var _mirror_counter: Dictionary = {}
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -86,6 +88,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	_encounter_rolls = options.get("encounter_rolls", [0.0])
 	for entry: Variant in options.get("encounters", []):
 		_encounters.append(Encounter.new(entry))
+	_mirror_counter = options.get("mirror_counter", {})
 	if options.has("events"):
 		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
@@ -125,7 +128,7 @@ func _can_run(action: String) -> bool:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
 	if action == "rest":
 		return can_rest()
-	if action.begins_with("help:") or action.begins_with("confess:"):
+	if action.begins_with("help:") or action.begins_with("confess:") or action.begins_with("strike:"):
 		return true
 	if action.begins_with("go:") or action.begins_with("talk:"):
 		return true
@@ -170,6 +173,20 @@ func _perform_action(action: String) -> String:
 			return "時限已到，無法再行動。"
 		_at_camp = false
 		return "你停下來照顧幼樹。" + _spend(ACTION_COSTS["move"])
+	if action.begins_with("strike:"):
+		if _location != "黑曜石之門" or event_flag("obsidian_gate_open") or clock.is_expired():
+			return "這裡沒有可以攻擊的鏡面。"
+		if not _curses.has("freya"):
+			return "只有芙蕾雅能攻擊這面鏡子。"
+		_at_camp = false
+		var damage: int = int(_mirror_counter.get("damage", 0))
+		var stacks: int = int(_mirror_counter.get("curse_stacks", 0))
+		var spend_text: String = _spend(ACTION_COSTS["move"])
+		var curse: BloodCurse = _curses["freya"]
+		for index: int in range(stacks):
+			curse.add_stack()
+		_wounds["freya"] = int(_wounds.get("freya", 0)) + damage
+		return "你揮劍擊向銀鏡，鏡中的芙蕾雅反擊。芙蕾雅受傷（-%d）。血之詛咒激化。" % damage + spend_text
 	if action.begins_with("confess:"):
 		_at_camp = false
 		return "你直視鏡中的影像。"
@@ -230,6 +247,8 @@ func party_text() -> String:
 			parts.append("%s 信任 %d" % [name, _trust.get_trust(id)])
 		if _curses.has(id):
 			parts.append("%s 血之詛咒 %d 層" % [name, curse_stacks(id)])
+		if wounds(id) > 0:
+			parts.append("%s 受傷 %d" % [name, wounds(id)])
 	return "｜".join(parts)
 
 
@@ -265,6 +284,7 @@ func snapshot() -> Dictionary:
 	data["encounter_index"] = _encounter_index
 	data["location"] = _location
 	data["acquired_skills"] = _acquired.duplicate(true)
+	data["wounds"] = _wounds.duplicate()
 	if _events != null:
 		data["events"] = _events.snapshot()
 	return data
@@ -292,6 +312,11 @@ func restore(data: Dictionary) -> bool:
 		return false
 	if not (data.get("acquired_skills", {}) is Dictionary):
 		return false
+	if not (data.get("wounds", {}) is Dictionary):
+		return false
+	for id: String in data.get("wounds", {}):
+		if _as_int(data["wounds"][id]) < 0:
+			return false
 	for owner: String in data.get("acquired_skills", {}):
 		if not (data["acquired_skills"][owner] is Array):
 			return false
@@ -330,6 +355,7 @@ func restore(data: Dictionary) -> bool:
 	_encounter_index = encounter_index
 	_location = str(data.get("location", ""))
 	_acquired = (data.get("acquired_skills", {}) as Dictionary).duplicate(true)
+	_wounds = (data.get("wounds", {}) as Dictionary).duplicate()
 	if _events != null and data.has("events"):
 		_events.restore(data["events"])
 	_pending = null
@@ -542,3 +568,8 @@ func _party_skill_ids() -> Array:
 ## Skills the character gained from narrative rewards (for example a side-quest reward).
 func acquired_skills(character_id: String) -> Array:
 	return (_acquired.get(character_id, []) as Array).duplicate()
+
+
+## Damage a character has taken from mirror counterattacks.
+func wounds(character_id: String) -> int:
+	return int(_wounds.get(character_id, 0))

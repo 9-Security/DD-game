@@ -83,5 +83,9 @@
   },
   "blood_curse_bearers": [
     "freya"
-  ]
+  ],
+  "mirror_counter": {
+    "damage": 8,
+    "curse_stacks": 2
+  }
 }
