@@ -143,13 +143,17 @@ func can_start_battle() -> bool:
 
 
 ## Applies the result of an interactive battle. outcome is "won", "lost" or "fled".
+## stacks: blood-curse stacks after the battle, keyed by member id; written back to the flow.
 ## Spends the battle's time, marks the tutorial battle as done, and grants the victory reward
 ## only when the party won. Returns the text for the log.
-func finish_battle(outcome: String) -> String:
+func finish_battle(outcome: String, stacks: Dictionary = {}) -> String:
 	if battle_done:
 		return "教學戰鬥已結束。"
 	if is_over():
 		return "時限已到，無法再行動。" if is_time_up() else "結局已定，無法再行動。"
+	for id: String in stacks:
+		if _curses.has(id):
+			_curses[id].stacks = clampi(int(stacks[id]), 0, BloodCurse.MAX_STACKS)
 	var spend_text: String = _spend(ACTION_COSTS["battle"])
 	battle_done = true
 	_battle_this_action = true
@@ -159,6 +163,14 @@ func finish_battle(outcome: String) -> String:
 		"fled":
 			return "你撤出了戰鬥。" + spend_text
 	return "戰鬥失敗，隊伍退出了這場戰鬥。" + spend_text
+
+
+## Blood-curse stacks of every cursed member, keyed by member id.
+func all_curse_stacks() -> Dictionary:
+	var stacks: Dictionary = {}
+	for id: String in _curses:
+		stacks[id] = _curses[id].stacks
+	return stacks
 
 
 ## The mood of the current moment for the music: "battle" while the last action fought,

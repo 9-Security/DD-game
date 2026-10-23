@@ -59,6 +59,16 @@ func act(member_id: String, command: String, target_id: String = "") -> Dictiona
 		return _refuse("還沒有輪到這位角色。")
 
 	var member: Dictionary = _find(member_id)
+	var cursed: bool = member.has("curse_stacks")
+	var stacks_after: int = mini(int(member.get("curse_stacks", 0)) + 1, BloodCurse.MAX_STACKS)
+	if cursed and stacks_after >= BloodCurse.MAX_STACKS:
+		# A full curse makes this turn berserk: the stacks reset and the member does nothing.
+		member["curse_stacks"] = 0
+		member["guard"] = 1.0
+		return _end_action("%s 陷入狂亂，本回合無法行動。" % member["name"])
+
+	# Refused commands must change nothing, so the guard is restored if the command is refused.
+	var previous_guard: float = float(member["guard"])
 	member["guard"] = 1.0
 	var message: String = ""
 	match command:
@@ -72,11 +82,34 @@ func act(member_id: String, command: String, target_id: String = "") -> Dictiona
 		"skill":
 			var skill_result: Dictionary = _use_skill(member, target_id)
 			if not skill_result["ok"]:
+				member["guard"] = previous_guard
 				return skill_result
 			message = str(skill_result["message"])
 		_:
+			member["guard"] = previous_guard
 			return _refuse("未知的指令：%s" % command)
 
+	if cursed:
+		member["curse_stacks"] = stacks_after
+	return _end_action(message)
+
+
+## Current blood-curse stacks of a member; 0 for members without a curse.
+func curse_stacks(member_id: String) -> int:
+	return int(_find(member_id).get("curse_stacks", 0))
+
+
+## Blood-curse stacks of every cursed member, keyed by member id.
+func curse_stacks_by_member() -> Dictionary:
+	var stacks: Dictionary = {}
+	for member: Dictionary in _members:
+		if member.has("curse_stacks"):
+			stacks[str(member["id"])] = int(member["curse_stacks"])
+	return stacks
+
+
+## Finishes the acting member's turn and returns the result of the action.
+func _end_action(message: String) -> Dictionary:
 	_pending.remove_at(0)
 	_drop_fallen_from_pending()
 	if _outcome == "" and _enemy_defeated():

@@ -57,3 +57,11 @@ func test_a_fled_battle_counts_as_finished_without_reward() -> void:
 
 	assert_bool(flow.battle_done).is_true()
 	assert_int(options["trust"].get_trust("eron")).is_equal(50)
+
+
+func test_finishing_a_battle_writes_the_curse_stacks_back_to_the_flow() -> void:
+	var flow := DayOneFlow.new(_party(), [0.0], _options())
+
+	flow.finish_battle("lost", {"freya": 3})
+
+	assert_int(int(flow.all_curse_stacks()["freya"])).is_equal(3)

@@ -90,8 +90,11 @@ func _refresh() -> void:
 	var lines: Array[String] = []
 	for member: Dictionary in _party:
 		var member_id: String = str(member["id"])
-		lines.append("%s  生命 %d/%d  魔力 %d" % [
-			member["name"], _battle.member_hp(member_id), int(member["max_hp"]), _battle.member_mp(member_id)])
+		var line: String = "%s  生命 %d/%d  魔力 %d" % [
+			member["name"], _battle.member_hp(member_id), int(member["max_hp"]), _battle.member_mp(member_id)]
+		if member.has("curse_stacks"):
+			line += "  血之詛咒 %d 層" % _battle.curse_stacks(member_id)
+		lines.append(line)
 	_members_label.text = "\n".join(lines)
 	_log_label.text = "\n".join(_log_lines)
 
@@ -107,6 +110,13 @@ func _refresh() -> void:
 			_prompt_label.text = "選擇要為誰施放技能："
 	if outcome != "":
 		_finish(outcome)
+
+
+## Blood-curse stacks of the cursed members after the battle, keyed by member id.
+func curse_stacks() -> Dictionary:
+	if _battle == null:
+		return {}
+	return _battle.curse_stacks_by_member()
 
 
 func _name_of(member_id: String) -> String:

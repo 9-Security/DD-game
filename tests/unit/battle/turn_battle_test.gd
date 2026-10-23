@@ -162,3 +162,46 @@ func test_member_mp_reports_the_mp_left_after_a_skill() -> void:
 	battle.act("inry", "skill")
 
 	assert_int(battle.member_mp("inry")).is_equal(60 - 40)
+
+
+func _cursed_member(id: String, stacks: int) -> Dictionary:
+	var member := _member(id, 12, 130, 16, 10, "iron_guard")
+	member["curse_stacks"] = stacks
+	return member
+
+
+func test_a_cursed_member_gains_one_stack_on_each_turn() -> void:
+	var battle := _battle([_cursed_member("freya", 0)], _enemy(500, 1))
+
+	battle.act("freya", "defend")
+
+	assert_int(battle.curse_stacks("freya")).is_equal(1)
+
+
+func test_a_full_curse_makes_the_turn_berserk_and_resets_the_stacks() -> void:
+	var battle := _battle([_cursed_member("freya", 4)], _enemy(100, 1))
+
+	var result := battle.act("freya", "attack")
+
+	assert_bool(result["ok"]).is_true()
+	assert_str(str(result["message"])).contains("狂亂")
+	assert_int(battle.enemy_hp()).is_equal(100)
+	assert_int(battle.curse_stacks("freya")).is_equal(0)
+
+
+func test_a_refused_action_does_not_add_a_curse_stack() -> void:
+	var member := _cursed_member("freya", 2)
+	member["mp"] = 0
+	var battle := _battle([member], _enemy(100, 1))
+
+	battle.act("freya", "skill")
+
+	assert_int(battle.curse_stacks("freya")).is_equal(2)
+
+
+func test_a_member_without_a_curse_has_no_curse_stacks() -> void:
+	var battle := _battle([_member("eron", 9, 90, 1, 0, "life_resonance")], _enemy(500, 1))
+
+	battle.act("eron", "defend")
+
+	assert_int(battle.curse_stacks("eron")).is_equal(0)

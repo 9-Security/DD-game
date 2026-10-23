@@ -465,9 +465,11 @@ func _open_battle() -> void:
 	var skills: Dictionary = skill_file.get("skills", {})
 	var representative: Dictionary = skill_file.get("representative", {})
 	var party: Array = []
+	var curses: Dictionary = _flow.all_curse_stacks()
 	for id: String in CHARACTER_IDS:
 		var character: Dictionary = _read_dictionary(CHARACTER_FILE_PATH % id)
-		party.append(BattleSetup.party_member(character, str(representative.get(id, ""))))
+		var stacks: int = int(curses[id]) if curses.has(id) else -1
+		party.append(BattleSetup.party_member(character, str(representative.get(id, "")), stacks))
 	var enemy: Dictionary = _read_dictionary(BATTLE_ENEMIES_PATH).get("tutorial", {})
 	_battle_panel.start(party, enemy.duplicate(true), _battle_rolls(), skills, Skirmish.DEFAULT_ROUND_LIMIT)
 	_battle_panel.visible = true
@@ -484,7 +486,7 @@ func _battle_rolls() -> Array:
 ## Applies the battle result to the day and closes the battle screen.
 func _on_battle_finished(outcome: String) -> void:
 	_battle_panel.visible = false
-	_show_result(_flow.finish_battle(outcome))
+	_show_result(_flow.finish_battle(outcome, _battle_panel.curse_stacks()))
 
 
 func _on_save_pressed() -> void:

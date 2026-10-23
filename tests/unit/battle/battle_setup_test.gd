@@ -37,3 +37,15 @@ func test_a_party_member_is_named_after_its_identity() -> void:
 
 	assert_str(str(member["name"])).is_equal("里克特・安布羅斯")
 	assert_str(str(member["id"])).is_equal("richter")
+
+
+func test_a_member_with_a_curse_carries_its_stacks_into_battle() -> void:
+	var member := BattleSetup.party_member(_character("freya"), "iron_guard", 3)
+
+	assert_int(int(member["curse_stacks"])).is_equal(3)
+
+
+func test_a_member_without_a_curse_has_no_curse_key() -> void:
+	var member := BattleSetup.party_member(_character("freya"), "iron_guard")
+
+	assert_bool(member.has("curse_stacks")).is_false()
