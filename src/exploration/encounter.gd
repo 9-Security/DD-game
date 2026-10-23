@@ -12,11 +12,14 @@ const KNOWN_APPROACHES: Array[String] = ["combat", "persuade", "puzzle", "summon
 const FIGHTING_APPROACHES: Array[String] = ["combat", "persuade", "summon"]
 const DEFAULT_PERSUADE_THRESHOLD: float = 0.5
 const DEFAULT_SUMMON_ATK: int = 12
+const DEFAULT_ENEMY_ATK: int = 5
 
 var id: String
 var text: String
+var enemy_name: String
 var enemy_hp: int
 var enemy_def: int
+var enemy_atk: int
 var enemy_tags: Array
 var approaches: Array
 var persuade_threshold: float
@@ -26,8 +29,10 @@ var on_loss: Dictionary
 func _init(entry: Dictionary) -> void:
 	id = str(entry.get("id", ""))
 	text = str(entry.get("text", ""))
+	enemy_name = str(entry.get("name", "敵人"))
 	enemy_hp = int(entry.get("enemy_hp", 0))
 	enemy_def = int(entry.get("enemy_def", 0))
+	enemy_atk = int(entry.get("enemy_atk", DEFAULT_ENEMY_ATK))
 	enemy_tags = entry.get("enemy_tags", [])
 	approaches = entry.get("approaches", [])
 	persuade_threshold = float(entry.get("persuade_threshold", DEFAULT_PERSUADE_THRESHOLD))

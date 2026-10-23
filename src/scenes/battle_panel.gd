@@ -17,6 +17,7 @@ const LOG_LIMIT: int = 8
 var _battle: TurnBattle
 var _skills: Dictionary = {}
 var _party: Array = []
+var _enemy_name: String = "敵人"
 var _done: bool = false
 var _choosing_target: bool = false
 var _log_lines: Array[String] = []
@@ -76,6 +77,7 @@ func _init() -> void:
 ## rolls: variance values in [-0.10, 0.10]. skills: skill definitions keyed by id.
 func start(party: Array, enemy: Dictionary, rolls: Array, skills: Dictionary, round_limit: int) -> void:
 	_party = party
+	_enemy_name = str(enemy.get("name", "敵人"))
 	_skills = skills
 	_battle = TurnBattle.new(party, enemy, rolls, round_limit, skills)
 	_done = false
@@ -86,7 +88,7 @@ func start(party: Array, enemy: Dictionary, rolls: Array, skills: Dictionary, ro
 
 
 func _refresh() -> void:
-	_status_label.text = "第 %d 回合｜敵人生命 %d" % [_battle.rounds, _battle.enemy_hp()]
+	_status_label.text = "第 %d 回合｜%s 生命 %d" % [_battle.rounds, _enemy_name, _battle.enemy_hp()]
 	var lines: Array[String] = []
 	for member: Dictionary in _party:
 		var member_id: String = str(member["id"])

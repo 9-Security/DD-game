@@ -45,6 +45,8 @@ var _curses: Dictionary = {}
 var _encounters: Array = []
 var _encounter_index: int = 0
 var _pending: Encounter = null
+## The approach of the encounter fight currently on the battle screen, or "" when none.
+var _fight_approach: String = ""
 var _party_skills: Dictionary = {}
 var _approach_skills: Dictionary = {}
 var _encounter_rolls: Array = [0.0]
@@ -902,6 +904,61 @@ func _start_encounter(text: String) -> String:
 	for approach: String in pending_approaches():
 		labels.append(APPROACH_LABELS.get(approach, approach))
 	return text + "\n遭遇：%s\n可選擇：%s" % [_pending.text, "、".join(labels)]
+
+
+## True when the chosen approach must be fought on the battle screen. Combat and summon always
+## fight; persuade fights only when its roll fails; a puzzle never fights. Starts the fight when true.
+func prepare_encounter_fight(approach: String) -> bool:
+	if _pending == null or not pending_approaches().has(approach):
+		return false
+	var fights: bool = approach == "combat" or approach == "summon"
+	if approach == "persuade":
+		var roll: float = float(_encounter_rolls[0]) if not _encounter_rolls.is_empty() else 0.0
+		fights = roll < _pending.persuade_threshold
+	if not fights:
+		return false
+	_fight_approach = approach
+	return true
+
+
+## The approach whose fight is on the battle screen, or "".
+func fight_approach() -> String:
+	return _fight_approach
+
+
+## The enemy of the pending encounter for the battle screen. Empty when no encounter is pending.
+func encounter_enemy() -> Dictionary:
+	if _pending == null:
+		return {}
+	return {
+		"name": _pending.enemy_name,
+		"hp": _pending.enemy_hp,
+		"max_hp": _pending.enemy_hp,
+		"def": _pending.enemy_def,
+		"atk": _pending.enemy_atk,
+	}
+
+
+## Applies the result of an encounter fight. outcome is "won", "lost" or "fled". A retreat keeps
+## the encounter open so another approach can be tried. stacks: blood-curse stacks after the fight.
+func finish_encounter_fight(outcome: String, stacks: Dictionary = {}) -> String:
+	if _pending == null or _fight_approach == "":
+		return "沒有進行中的遭遇戰鬥。"
+	for id: String in stacks:
+		if _curses.has(id):
+			_curses[id].stacks = clampi(int(stacks[id]), 0, BloodCurse.MAX_STACKS)
+	var encounter: Encounter = _pending
+	_fight_approach = ""
+	_battle_this_action = true
+	if outcome == "fled":
+		return "你撤出了戰鬥，遭遇仍在。"
+	_pending = null
+	if outcome == "won":
+		return "戰鬥勝利。" + _reward_victory()
+	var injured: bool = false
+	if _supply != null:
+		injured = NightEventPool.resolve_loss({"on_loss": encounter.on_loss}, _supply)
+	return "戰鬥失敗，隊伍退出了這場戰鬥。" + ("\n隊伍受傷。" if injured else "")
 
 
 ## Resolves the pending encounter with a chosen approach.

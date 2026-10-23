@@ -28,7 +28,9 @@
         "food": 1,
         "herbs": 0,
         "injury": true
-      }
+      },
+      "name": "怨靈",
+      "enemy_atk": 6
     },
     {
       "id": "rune_seal",
@@ -46,7 +48,9 @@
         "food": 0,
         "herbs": 1,
         "injury": true
-      }
+      },
+      "name": "符文石像",
+      "enemy_atk": 4
     }
   ]
 }

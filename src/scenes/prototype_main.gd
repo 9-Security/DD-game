@@ -76,6 +76,8 @@ var _passage_button: Button
 var _event_data: Array = []
 var _save_button: Button
 var _battle_panel: BattlePanel
+## Which flow the battle on screen belongs to: "tutorial" or "encounter".
+var _battle_source: String = ""
 var _slot: int = 1
 var _slot_bar: HBoxContainer
 var _slot_buttons: Array[Button] = []
@@ -436,7 +438,13 @@ func _ensure_flow() -> void:
 func _on_action_pressed(action: String) -> void:
 	_ensure_flow()
 	if action == "battle" and _flow.can_start_battle():
-		_open_battle()
+		_battle_source = "tutorial"
+		_open_battle(_read_dictionary(BATTLE_ENEMIES_PATH).get("tutorial", {}), [])
+		return
+	if action.begins_with("approach:") and _flow.prepare_encounter_fight(action.trim_prefix("approach:")):
+		_battle_source = "encounter"
+		var summon: Array = [_summon_member()] if _flow.fight_approach() == "summon" else []
+		_open_battle(_flow.encounter_enemy(), summon)
 		return
 	_show_result(_flow.perform(action))
 
@@ -450,8 +458,8 @@ func _show_result(message: String) -> void:
 		_slot_bar.visible = false
 
 
-## Opens the interactive battle screen for the tutorial battle.
-func _open_battle() -> void:
+## Opens the interactive battle screen against enemy. extra_members join the party for this fight.
+func _open_battle(enemy: Dictionary, extra_members: Array) -> void:
 	if _battle_panel == null:
 		_battle_panel = BattlePanel.new()
 		_battle_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -470,9 +478,24 @@ func _open_battle() -> void:
 		var character: Dictionary = _read_dictionary(CHARACTER_FILE_PATH % id)
 		var stacks: int = int(curses[id]) if curses.has(id) else -1
 		party.append(BattleSetup.party_member(character, str(representative.get(id, "")), stacks))
-	var enemy: Dictionary = _read_dictionary(BATTLE_ENEMIES_PATH).get("tutorial", {})
+	party.append_array(extra_members)
 	_battle_panel.start(party, enemy.duplicate(true), _battle_rolls(), skills, Skirmish.DEFAULT_ROUND_LIMIT)
 	_battle_panel.visible = true
+
+
+## The temporary summoned member that joins the party for a summon approach. It has no skill.
+func _summon_member() -> Dictionary:
+	return {
+		"id": "summon",
+		"name": "召喚物",
+		"hp": 20,
+		"max_hp": 20,
+		"mp": 0,
+		"atk": Encounter.DEFAULT_SUMMON_ATK,
+		"def": 0,
+		"speed": 10,
+		"skill": "",
+	}
 
 
 ## Variance values in [-0.10, 0.10] for the battle damage formula.
@@ -486,7 +509,11 @@ func _battle_rolls() -> Array:
 ## Applies the battle result to the day and closes the battle screen.
 func _on_battle_finished(outcome: String) -> void:
 	_battle_panel.visible = false
-	_show_result(_flow.finish_battle(outcome, _battle_panel.curse_stacks()))
+	var stacks: Dictionary = _battle_panel.curse_stacks()
+	if _battle_source == "encounter":
+		_show_result(_flow.finish_encounter_fight(outcome, stacks))
+	else:
+		_show_result(_flow.finish_battle(outcome, stacks))
 
 
 func _on_save_pressed() -> void:
