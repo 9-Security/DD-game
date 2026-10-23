@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-# Unit tests for the optional extra_skills block (skills kept for later upgrades or
-# acquisition). Validation is a pure function over a Dictionary.
+# Unit tests for the optional extra_skills block. Each extra skill is obtained by
+# reaching a level, as a side-quest reward, or either. Validation is a pure function.
 
 
 func _base() -> Dictionary:
@@ -12,12 +12,12 @@ func _base() -> Dictionary:
 	}
 
 
-func _extra(skill_id: String, unlock_type: String) -> Dictionary:
+func _extra(skill_id: String, sources: Array) -> Dictionary:
 	return {
 		"id": skill_id,
 		"name": "測試技能",
 		"description": "測試用描述",
-		"unlock": {"type": unlock_type},
+		"unlock": {"sources": sources},
 	}
 
 
@@ -32,10 +32,10 @@ func test_character_without_extra_skills_is_still_valid() -> void:
 	assert_int(errors.size()).is_equal(0)
 
 
-func test_valid_extra_skill_with_unassigned_unlock_passes() -> void:
+func test_extra_skill_unlocked_by_level_or_quest_reward_passes() -> void:
 	# Arrange
 	var data := _base()
-	data["extra_skills"] = [_extra("rune_analysis", "unassigned")]
+	data["extra_skills"] = [_extra("rune_analysis", ["level", "quest_reward"])]
 
 	# Act
 	var errors := CharacterData.validate(data)
@@ -44,22 +44,34 @@ func test_valid_extra_skill_with_unassigned_unlock_passes() -> void:
 	assert_int(errors.size()).is_equal(0)
 
 
-func test_unknown_unlock_type_is_reported() -> void:
+func test_unknown_unlock_source_is_reported() -> void:
 	# Arrange
 	var data := _base()
-	data["extra_skills"] = [_extra("rune_analysis", "by_magic")]
+	data["extra_skills"] = [_extra("rune_analysis", ["by_magic"])]
 
 	# Act
 	var errors := CharacterData.validate(data)
 
 	# Assert
-	assert_bool(errors.has("extra_skills[0].unlock.type must be one of: level, story_flag, upgrade, unassigned")).is_true()
+	assert_bool(errors.has("extra_skills[0].unlock.sources must contain only: level, quest_reward")).is_true()
+
+
+func test_empty_unlock_source_list_is_reported() -> void:
+	# Arrange
+	var data := _base()
+	data["extra_skills"] = [_extra("rune_analysis", [])]
+
+	# Act
+	var errors := CharacterData.validate(data)
+
+	# Assert
+	assert_bool(errors.has("extra_skills[0].unlock.sources must contain only: level, quest_reward")).is_true()
 
 
 func test_extra_skill_reusing_a_base_skill_id_is_reported() -> void:
 	# Arrange
 	var data := _base()
-	data["extra_skills"] = [_extra("rune_trap", "unassigned")]
+	data["extra_skills"] = [_extra("rune_trap", ["level"])]
 
 	# Act
 	var errors := CharacterData.validate(data)
@@ -71,7 +83,7 @@ func test_extra_skill_reusing_a_base_skill_id_is_reported() -> void:
 func test_extra_skill_missing_a_name_is_reported() -> void:
 	# Arrange
 	var data := _base()
-	var skill := _extra("rune_analysis", "unassigned")
+	var skill := _extra("rune_analysis", ["level"])
 	skill.erase("name")
 	data["extra_skills"] = [skill]
 

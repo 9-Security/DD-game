@@ -24,7 +24,10 @@
       "name": "符文解析",
       "description": "解讀古代裝置與部分封印",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
     },
     {
@@ -32,24 +35,21 @@
       "name": "陷阱感知",
       "description": "偵測地下機關",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
-    },
-    {
-      "id": "rune_shield",
-      "name": "符片屏障",
-      "description": "短時間防禦",
-      "unlock": {
-        "type": "unassigned"
-      },
-      "overlap_with": "barrier_ward"
     },
     {
       "id": "weakness_mark",
       "name": "弱點標記",
       "description": "暴露敵人防禦弱點",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
     },
     {
@@ -57,8 +57,19 @@
       "name": "干擾符印",
       "description": "中斷特定施法或機關",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
+    }
+  ],
+  "merged_skills": [
+    {
+      "id": "rune_shield",
+      "name": "符片屏障",
+      "description": "短時間防禦",
+      "into": "barrier_ward"
     }
   ]
 }

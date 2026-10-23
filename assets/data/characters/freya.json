@@ -27,33 +27,21 @@
       "name": "斷骨重擊",
       "description": "單體高破防傷害",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
-    },
-    {
-      "id": "battlefield_guard",
-      "name": "戰場守護",
-      "description": "攔截或承受隊友攻擊",
-      "unlock": {
-        "type": "unassigned"
-      },
-      "overlap_with": "iron_guard"
-    },
-    {
-      "id": "blood_fury",
-      "name": "血怒",
-      "description": "消耗生命換取戰鬥能力",
-      "unlock": {
-        "type": "unassigned"
-      },
-      "overlap_with": "blood_rage"
     },
     {
       "id": "ancestral_bone_sweep",
       "name": "亡父之骨",
       "description": "重劍蓄力與範圍攻擊",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
     },
     {
@@ -61,8 +49,25 @@
       "name": "詛咒暴走",
       "description": "高風險戰鬥狀態",
       "unlock": {
-        "type": "unassigned"
+        "sources": [
+          "level",
+          "quest_reward"
+        ]
       }
+    }
+  ],
+  "merged_skills": [
+    {
+      "id": "battlefield_guard",
+      "name": "戰場守護",
+      "description": "攔截或承受隊友攻擊",
+      "into": "iron_guard"
+    },
+    {
+      "id": "blood_fury",
+      "name": "血怒",
+      "description": "消耗生命換取戰鬥能力",
+      "into": "blood_rage"
     }
   ]
 }
