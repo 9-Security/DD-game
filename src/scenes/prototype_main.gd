@@ -7,7 +7,10 @@ const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CAPTIONS_PATH: String = "res://assets/data/narrative/captions.json"
 const LABELS_PATH: String = "res://assets/data/narrative/ui_labels.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
-const DIALOGUE_PATH: String = "res://assets/data/dialogue/chapter2_dialogue.json"
+const DIALOGUE_PATHS: Array[String] = [
+	"res://assets/data/dialogue/chapter2_dialogue.json",
+	"res://assets/data/dialogue/chapter3_dialogue.json",
+]
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
 const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
@@ -595,12 +598,19 @@ func _on_dialogue_next_pressed() -> void:
 
 ## Loads the dialogue scene data, logging every validation error. A file with errors plays nothing.
 func _load_dialogue() -> void:
-	var parsed: Variant = _load_json(DIALOGUE_PATH)
-	if not (parsed is Dictionary):
-		push_error("Dialogue data missing or malformed: %s" % DIALOGUE_PATH)
-		return
-	for error: String in _dialogue.load_data(parsed):
-		push_error("%s: %s" % [DIALOGUE_PATH, error])
+	# Each file is validated on its own, so one broken file does not silence the others.
+	var scenes: Array = []
+	for path: String in DIALOGUE_PATHS:
+		var parsed: Variant = _load_json(path)
+		if not (parsed is Dictionary):
+			push_error("Dialogue data missing or malformed: %s" % path)
+			continue
+		var errors := DialoguePlayer.validate(parsed)
+		for error: String in errors:
+			push_error("%s: %s" % [path, error])
+		if errors.is_empty():
+			scenes.append_array(parsed["scenes"])
+	_dialogue.load_data({"scenes": scenes})
 
 
 ## Shows the portrait at path, or hides the portrait when path is empty or missing.
