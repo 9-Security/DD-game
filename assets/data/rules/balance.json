@@ -157,25 +157,29 @@
       "requires": "kaen_found",
       "blocked_text": "你還沒有辨認凱恩的名字。",
       "steps": [
-        [
-          "seal:draw",
-          "seal_drawn",
-          "茵芮召出光靈，它們沿著結界的線條一隻隻散開，在半空描出凱恩之名的筆畫。"
-        ],
-        [
-          "seal:link",
-          "seal_linked",
-          "里克特依照光線重排閉鎖的關聯。「左上方的第三個接到第二列尾端，不要碰主線。」"
-        ],
-        [
-          "seal:read",
-          "seal_read",
-          "艾洛恩與茵芮依序念出名字，芙蕾雅守住閉合的石壁。石牆與光線的節奏相互呼應。"
-        ],
-        [
-          "seal:kaen",
-          "chapter3_sealed"
-        ]
+        {
+          "action": "seal:draw",
+          "flag": "seal_drawn",
+          "text": "茵芮召出光靈，它們沿著結界的線條一隻隻散開，在半空描出凱恩之名的筆畫。",
+          "hint": "先召喚光靈，讓它們沿刻痕描摹凱恩之名。"
+        },
+        {
+          "action": "seal:link",
+          "flag": "seal_linked",
+          "text": "里克特依照光線重排閉鎖的關聯。「左上方的第三個接到第二列尾端，不要碰主線。」",
+          "hint": "重排結界的連線，不要碰主線。"
+        },
+        {
+          "action": "seal:read",
+          "flag": "seal_read",
+          "text": "艾洛恩與茵芮依序念出名字，芙蕾雅守住閉合的石壁。石牆與光線的節奏相互呼應。",
+          "hint": "全隊依序念出名字。"
+        },
+        {
+          "action": "seal:kaen",
+          "flag": "chapter3_sealed",
+          "hint": "以凱恩之名完成解陣。"
+        }
       ],
       "failure": {
         "text": "線條失去平衡，石壁重新逼近。你們退後重來。",
@@ -190,30 +194,35 @@
       "requires": "",
       "blocked_text": "",
       "steps": [
-        [
-          "commune:tree",
-          "ancient_tree_memory_offered",
-          "艾洛恩把一段不願再碰觸的記憶，完整地攤在古樹的根系旁。樹皮下傳來一道極低的震顫。古樹的聲音緩慢浮現：「你可以令我們安靜，也可以令我們自由。兩件事不是同一件事。」"
-        ],
-        [
-          "release:stabilize",
-          "release_stabilized",
-          "茵芮召來光靈，在艾洛恩周圍形成一圈不斷流動的微光。「你還在這裡。」"
-        ],
-        [
-          "release:chain_one",
-          "release_chain_one",
-          "里克特找到第一處扣環。芙蕾雅舉起巨劍，一劍斬斷石鏈。巨獸猛地仰頭，卻仍沒有攻擊。"
-        ],
-        [
-          "release:chain_two",
-          "release_chain_two",
-          "第二處扣環比第一處更深。石鏈裂開時，芙蕾雅踉蹌跪地，左腕的血咒劇痛。里克特伸手扶她，被她推開。"
-        ],
-        [
-          "release:core",
-          "guardian_core_broken_safely"
-        ]
+        {
+          "action": "commune:tree",
+          "flag": "ancient_tree_memory_offered",
+          "text": "艾洛恩把一段不願再碰觸的記憶，完整地攤在古樹的根系旁。樹皮下傳來一道極低的震顫。古樹的聲音緩慢浮現：「你可以令我們安靜，也可以令我們自由。兩件事不是同一件事。」",
+          "hint": "先向古樹獻出一段記憶。"
+        },
+        {
+          "action": "release:stabilize",
+          "flag": "release_stabilized",
+          "text": "茵芮召來光靈，在艾洛恩周圍形成一圈不斷流動的微光。「你還在這裡。」",
+          "hint": "召來光靈，穩住艾洛恩的意識。"
+        },
+        {
+          "action": "release:chain_one",
+          "flag": "release_chain_one",
+          "text": "里克特找到第一處扣環。芙蕾雅舉起巨劍，一劍斬斷石鏈。巨獸猛地仰頭，卻仍沒有攻擊。",
+          "hint": "斬斷第一道石鏈。"
+        },
+        {
+          "action": "release:chain_two",
+          "flag": "release_chain_two",
+          "text": "第二處扣環比第一處更深。石鏈裂開時，芙蕾雅踉蹌跪地，左腕的血咒劇痛。里克特伸手扶她，被她推開。",
+          "hint": "斬斷第二道石鏈。"
+        },
+        {
+          "action": "release:core",
+          "flag": "guardian_core_broken_safely",
+          "hint": "承受晶核之痛，解縛巨獸。"
+        }
       ],
       "failure": {
         "text": "巨獸痛苦地掙扎，束縛的紋路重新收緊。你們必須退後，重新來過。",
@@ -227,10 +236,11 @@
       "requires": "decree_found",
       "blocked_text": "營地還沒有可以搜索的地方。",
       "steps": [
-        [
-          "read:father_record",
-          "father_record_read"
-        ]
+        {
+          "action": "read:father_record",
+          "flag": "father_record_read",
+          "hint": "讀取石室裡的處決紀錄。"
+        }
       ]
     },
     {
@@ -238,30 +248,35 @@
       "requires": "father_record_read",
       "blocked_text": "守衛還沒有甦醒。",
       "steps": [
-        [
-          "oath:lower",
-          "freya_lowered",
-          "芙蕾雅放下亡父之骨，劍尖拖過灼熱的石地。她不再用這把劍去攻擊守衛。"
-        ],
-        [
-          "oath:cover",
-          "richter_covered",
-          "里克特拔出匕首，引開鐵甲的長刃，甩出一枚符文片。金屬劃過他的外套，布料裂開。"
-        ],
-        [
-          "oath:barrier",
-          "eron_barrier",
-          "艾洛恩維持淨化結界，淡綠色的光沿著地面展開，暫時隔開鐵甲與同伴。這一次，每道光都來自他自己。"
-        ],
-        [
-          "oath:chain",
-          "inry_chained",
-          "茵芮把魔力壓成數道細長的光線，交纏成星光鎖鏈，纏住鐵甲的手臂。「我撐不了太久！」"
-        ],
-        [
-          "oath:pierce",
-          "oath_seal_broken"
-        ]
+        {
+          "action": "oath:lower",
+          "flag": "freya_lowered",
+          "text": "芙蕾雅放下亡父之骨，劍尖拖過灼熱的石地。她不再用這把劍去攻擊守衛。",
+          "hint": "先放下亡父之骨，不再以劍攻擊守衛。"
+        },
+        {
+          "action": "oath:cover",
+          "flag": "richter_covered",
+          "text": "里克特拔出匕首，引開鐵甲的長刃，甩出一枚符文片。金屬劃過他的外套，布料裂開。",
+          "hint": "里克特牽制鐵甲的長刃。"
+        },
+        {
+          "action": "oath:barrier",
+          "flag": "eron_barrier",
+          "text": "艾洛恩維持淨化結界，淡綠色的光沿著地面展開，暫時隔開鐵甲與同伴。這一次，每道光都來自他自己。",
+          "hint": "艾洛恩維持淨化結界。"
+        },
+        {
+          "action": "oath:chain",
+          "flag": "inry_chained",
+          "text": "茵芮把魔力壓成數道細長的光線，交纏成星光鎖鏈，纏住鐵甲的手臂。「我撐不了太久！」",
+          "hint": "茵芮召出星光鎖鏈。"
+        },
+        {
+          "action": "oath:pierce",
+          "flag": "oath_seal_broken",
+          "hint": "最後將亡父之骨刺入刻印。"
+        }
       ],
       "unsafe": [
         "oath:strike"
@@ -283,10 +298,11 @@
       "requires": "oath_seal_broken",
       "blocked_text": "通道還被封在石地之下。",
       "steps": [
-        [
-          "descend:stairs",
-          "princess_voice_heard"
-        ]
+        {
+          "action": "descend:stairs",
+          "flag": "princess_voice_heard",
+          "hint": "斷誓之後，才能走下石階。"
+        }
       ]
     }
   ]

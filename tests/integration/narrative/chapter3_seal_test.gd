@@ -106,6 +106,25 @@ func test_redoing_a_step_after_a_reset_replays_its_text() -> void:
 	assert_bool(message.contains("光靈")).is_true()
 
 
+func test_a_wrong_step_names_the_first_missing_step_as_a_hint() -> void:
+	var flow := _flow()
+	_reach_hall_with_kaen(flow)
+
+	var message: String = flow.perform("seal:read")
+
+	assert_bool(message.contains("提示")).is_true()
+	assert_bool(message.contains("召喚光靈")).is_true()
+
+
+func test_a_successful_step_shows_no_hint() -> void:
+	var flow := _flow()
+	_reach_hall_with_kaen(flow)
+
+	var message: String = flow.perform("seal:draw")
+
+	assert_bool(message.contains("提示")).is_false()
+
+
 func test_repeating_a_finished_step_costs_nothing() -> void:
 	var flow := _flow()
 	_reach_hall_with_kaen(flow)

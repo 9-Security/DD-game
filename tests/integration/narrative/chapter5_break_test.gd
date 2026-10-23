@@ -126,6 +126,16 @@ func test_piercing_before_the_chains_is_a_wrong_step() -> void:
 	assert_int(flow.curse_stacks("freya")).is_equal(stacks + 1)
 
 
+func test_striking_the_guard_names_the_next_step_as_a_hint() -> void:
+	var flow := _flow()
+	_read_record(flow)
+
+	var message: String = flow.perform("oath:strike")
+
+	assert_bool(message.contains("提示")).is_true()
+	assert_bool(message.contains("放下亡父之骨")).is_true()
+
+
 func test_the_stairs_are_closed_until_the_seal_breaks() -> void:
 	var flow := _flow()
 	_read_record(flow)

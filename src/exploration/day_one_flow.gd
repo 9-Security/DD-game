@@ -76,8 +76,8 @@ var _sequences: Array = []
 ##   "location_requirements": place name -> entry rule, see _entry_block().
 ##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
 ##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
-##     "blocked_text", "steps" ([action, flag, text] triples; text is optional and the last flag is
-##     set by events), and
+##     "blocked_text", "steps" ([{"action", "flag", "text", "hint"}]; text is optional, hint names
+##     the step for the player after a failure, and the last flag is set by events), and
 ##     "failure" ({"text", "flag", "segments", "curse_stacks", "curse_target"}) for an out-of-order
 ##     step. "flag" is set to true when the failure happens. Optional "unsafe" lists actions that
 ##     always fail while the sequence is open, and "success" ({"curse_weaken", "curse_target"})
@@ -149,12 +149,21 @@ func step_done(action: String) -> bool:
 	var index: int = _step_index(sequence, action)
 	if index < 0:
 		return event_flag(_final_flag(sequence))
-	return event_flag(str(_steps(sequence)[index][1]))
+	return event_flag(str(_steps(sequence)[index]["flag"]))
+
+
+## The hint of the first step before the limit that is not done, or "" when all are done.
+func _missing_hint(sequence: Dictionary, limit: int) -> String:
+	var steps: Array = _steps(sequence)
+	for index: int in range(mini(limit, steps.size())):
+		if not event_flag(str(steps[index]["flag"])):
+			return str(steps[index].get("hint", ""))
+	return ""
 
 
 func _final_flag(sequence: Dictionary) -> String:
 	var steps: Array = _steps(sequence)
-	return str(steps[steps.size() - 1][1])
+	return str(steps[steps.size() - 1]["flag"])
 
 
 func _is_unsafe(sequence: Dictionary, action: String) -> bool:
@@ -184,7 +193,7 @@ func _steps(sequence: Dictionary) -> Array:
 func _step_index(sequence: Dictionary, action: String) -> int:
 	var steps: Array = _steps(sequence)
 	for index: int in range(steps.size()):
-		if str(steps[index][0]) == action:
+		if str(steps[index]["action"]) == action:
 			return index
 	return -1
 
@@ -197,7 +206,7 @@ func _requirement_met(sequence: Dictionary) -> bool:
 func _prior_steps_done(sequence: Dictionary, index: int) -> bool:
 	var steps: Array = _steps(sequence)
 	for prior: int in range(index):
-		if not event_flag(str(steps[prior][1])):
+		if not event_flag(str(steps[prior]["flag"])):
 			return false
 	return true
 
@@ -222,14 +231,14 @@ func _perform_step(action: String) -> String:
 	if _is_unsafe(sequence, action):
 		if event_flag(_final_flag(sequence)):
 			return "守衛已經瓦解。"
-		return _sequence_failure(sequence)
+		return _sequence_failure(sequence, _steps(sequence).size())
 	var index: int = _step_index(sequence, action)
 	var steps: Array = _steps(sequence)
-	var step_flag: String = str(steps[index][1])
+	var step_flag: String = str(steps[index]["flag"])
 	if event_flag(step_flag):
 		return "這一步已經完成了。"
 	if not _prior_steps_done(sequence, index):
-		return _sequence_failure(sequence)
+		return _sequence_failure(sequence, index)
 	_at_camp = false
 	if index < steps.size() - 1:
 		_events.flags[step_flag] = true
@@ -241,8 +250,7 @@ func _perform_step(action: String) -> String:
 
 ## The narration for a step. It is in the sequence data, so it repeats when the step is redone.
 func _step_text(sequence: Dictionary, index: int) -> String:
-	var step: Array = _steps(sequence)[index]
-	return str(step[2]) if step.size() > 2 else ""
+	return str(_steps(sequence)[index].get("text", ""))
 
 
 ## Effects applied when a sequence's final step succeeds. Weakening never cures the curse.
@@ -255,11 +263,13 @@ func _apply_success(sequence: Dictionary) -> void:
 		curse.weaken(weaken)
 
 
-## Resets every step except the last, then applies the failure cost.
-func _sequence_failure(sequence: Dictionary) -> String:
+## Resets every step except the last, then applies the failure cost. The hint names the first
+## step before the given limit that is not done, so the player knows what to do next.
+func _sequence_failure(sequence: Dictionary, limit: int) -> String:
+	var hint: String = _missing_hint(sequence, limit)
 	var steps: Array = _steps(sequence)
 	for index: int in range(steps.size() - 1):
-		_events.flags[str(steps[index][1])] = false
+		_events.flags[str(steps[index]["flag"])] = false
 	var failure: Dictionary = sequence.get("failure", {})
 	var failure_flag: String = str(failure.get("flag", ""))
 	if failure_flag != "":
@@ -272,6 +282,8 @@ func _sequence_failure(sequence: Dictionary) -> String:
 		for stack: int in range(stacks):
 			curse.add_stack()
 		text += "血之詛咒被驚動，又加深了一層。"
+	if hint != "":
+		text += "\n提示：" + hint
 	return text
 
 
