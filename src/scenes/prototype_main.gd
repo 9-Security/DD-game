@@ -241,6 +241,7 @@ func _build_ui() -> void:
 	_ending_load_button.text = str(buttons.get("load", ""))
 	_ending_load_button.custom_minimum_size = Vector2(220, 48)
 	_ending_load_button.pressed.connect(_on_load_pressed)
+	_ending_load_button.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5))
 	_ending_panel.add_child(_ending_load_button)
 	var restart_button := Button.new()
 	restart_button.text = str(buttons.get("restart", ""))
@@ -478,6 +479,7 @@ func _refresh_status() -> void:
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
 	_ending_panel.visible = _flow.is_time_up()
 	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
+	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
 	_refresh_chapter3(approaches.is_empty() and not _flow.clock.is_expired())
 	_save_button.disabled = not _flow.can_save()
 

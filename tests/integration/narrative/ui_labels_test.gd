@@ -31,3 +31,10 @@ func test_every_story_button_matches_a_location_action_or_a_destination() -> voi
 			assert_bool(action.trim_prefix("go:") != "").is_true()
 		else:
 			assert_bool((location_actions.get(place, []) as Array).has(action)).is_true()
+
+
+func test_the_time_up_panel_does_not_repeat_the_status_line() -> void:
+	# The status line already says 時限已到 when the limit runs out, so the panel must not repeat it.
+	var text: String = str(_labels().get("time_up", ""))
+	assert_str(text).is_not_empty()
+	assert_bool(text.contains("時限已到")).is_false()
