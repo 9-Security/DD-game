@@ -7,6 +7,40 @@ framework:
   version: 1.2.0
   last_upgraded: 2026-10-19
 
+engine:
+  name: "Godot"
+  version: "4.7.2"
+  language: "GDScript"
+  # rendering: 2D web target (design/GAME_DESIGN_MASTER.md D2, D7)
+  rendering: "Compatibility"
+  # physics: 2D project; Jolt is the 3D default and does not apply
+  physics: "Godot Physics 2D"
+  # path: not set — godot is not installed or on PATH in this environment.
+  #       TODO: set the editor's full path via /settings once installed.
+
+specialists:
+  code: "godot-gdscript-specialist"
+  shader: "godot-shader-specialist"
+  ui: "godot-specialist"
+  additional: ["godot-gdextension-specialist"]
+
+naming:
+  classes: PascalCase
+  variables: snake_case
+  constants: SCREAMING_SNAKE
+  signals: past_tense
+  files: snake_case
+  scenes: snake_case
+
+commands:
+  # TODO: godot is not on PATH here — set the editor's full path via /settings.
+  #       These commands will not run until that is fixed.
+  # build: no export preset exists yet; set the preset name when one is created.
+  build: "[TO BE CONFIGURED]"
+  test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
+  run: "godot --path . --windowed --resolution 1280x720"
+  smoke: "godot --headless --quit-after 5"
+
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
 #

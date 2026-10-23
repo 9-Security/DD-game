@@ -1,0 +1,14 @@
+; Engine configuration file.
+; Written by /setup-engine (Godot 4.7.2, 2D web target, Compatibility renderer).
+; Set run/main_scene once the first scene exists (/dev-story or the developer).
+
+config_version=5
+
+[application]
+
+config/name="Seven Days Remedy"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
