@@ -25,6 +25,11 @@ const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
 const SAVE_PATH: String = "user://save_slot_1.json"
+const ENDING_ART_PATHS: Dictionary = {
+	"END_A": "res://assets/art/chapters/ending_a.png",
+	"END_B": "res://assets/art/chapters/ending_b.png",
+	"END_C": "res://assets/art/chapters/ending_c.png",
+}
 const DIFFICULTY_LABELS: Dictionary = {
 	"strict": "嚴格難度（休息消耗食糧）",
 	"assisted": "輔助難度（休息不耗食糧）",
@@ -44,6 +49,7 @@ var _labels: Dictionary = {}
 var _ending_panel: VBoxContainer
 var _ending_load_button: Button
 var _ending_label: Label
+var _ending_art: TextureRect
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -235,6 +241,11 @@ func _build_ui() -> void:
 	_ending_panel.add_theme_constant_override("separation", 12)
 	_ending_panel.visible = false
 	root.add_child(_ending_panel)
+	_ending_art = TextureRect.new()
+	_ending_art.custom_minimum_size = Vector2(0, 240)
+	_ending_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_ending_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_ending_panel.add_child(_ending_art)
 	_ending_label = Label.new()
 	_ending_label.add_theme_font_size_override("font_size", 24)
 	_ending_panel.add_child(_ending_label)
@@ -393,6 +404,14 @@ func _ending_text() -> String:
 	return str(_labels.get("time_up", ""))
 
 
+## The illustration of the ending reached. Null while the game is still running or the art is missing.
+func _ending_texture() -> Texture2D:
+	var path: String = str(ENDING_ART_PATHS.get(_flow.ending_id(), ""))
+	if path == "" or not ResourceLoader.exists(path):
+		return null
+	return load(path) as Texture2D
+
+
 ## Starts the whole game again from the beginning.
 func _on_restart_pressed() -> void:
 	get_tree().reload_current_scene()
@@ -491,6 +510,7 @@ func _refresh_status() -> void:
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
 	_ending_panel.visible = _flow.is_over()
 	_ending_label.text = _ending_text()
+	_ending_art.texture = _ending_texture()
 	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
 	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
 	_refresh_chapter3(approaches.is_empty() and not _flow.is_over())
