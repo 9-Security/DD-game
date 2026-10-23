@@ -11,15 +11,15 @@ const KIND_ENDING: String = "ending"
 const KINDS: Array[String] = [KIND_PARTY, KIND_CHAPTER, KIND_TRAVEL, KIND_CRITICAL, KIND_ENDING]
 
 ## The party gathers as the prologue ends and the first day begins.
-const PARTY_PATH: String = "res://assets/art/chapters/transition_party.png"
+const PARTY_PATH: String = "res://assets/art/chapters/transition_party.jpg"
 ## A new story day begins ("一般章節轉場").
-const CHAPTER_PATH: String = "res://assets/art/chapters/transition_book.png"
+const CHAPTER_PATH: String = "res://assets/art/chapters/transition_book.jpg"
 ## The party moves to another place.
-const TRAVEL_PATH: String = "res://assets/art/chapters/transition_map.png"
+const TRAVEL_PATH: String = "res://assets/art/chapters/transition_map.jpg"
 ## A final choice is made at the palace.
-const CRITICAL_PATH: String = "res://assets/art/chapters/transition_critical_choice.png"
+const CRITICAL_PATH: String = "res://assets/art/chapters/transition_critical_choice.jpg"
 ## An ending is reached.
-const ENDING_PATH: String = "res://assets/art/chapters/transition_ending.png"
+const ENDING_PATH: String = "res://assets/art/chapters/transition_ending.jpg"
 
 
 ## Returns the illustration path for a transition kind, or "" for an unknown kind.

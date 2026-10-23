@@ -6,17 +6,17 @@ extends RefCounted
 ## Pure logic with no scene access, so it can be unit tested.
 
 ## Illustration shown while the prologue lines are read.
-const PROLOGUE_PATH: String = "res://assets/art/chapters/prologue.png"
+const PROLOGUE_PATH: String = "res://assets/art/chapters/prologue.jpg"
 
 ## One illustration per story day, index 0 is day one.
 const CHAPTER_PATHS: Array[String] = [
-	"res://assets/art/chapters/ch01_departure.png",
-	"res://assets/art/chapters/ch02_obsidian_gate.png",
-	"res://assets/art/chapters/ch03_cursed_wall_maze.png",
-	"res://assets/art/chapters/ch04_garden_of_silence.png",
-	"res://assets/art/chapters/ch05_blood_oath_cavern.png",
-	"res://assets/art/chapters/ch06_fallen_star_heart.png",
-	"res://assets/art/chapters/ch07_abyss_wish.png",
+	"res://assets/art/chapters/ch01_departure.jpg",
+	"res://assets/art/chapters/ch02_obsidian_gate.jpg",
+	"res://assets/art/chapters/ch03_cursed_wall_maze.jpg",
+	"res://assets/art/chapters/ch04_garden_of_silence.jpg",
+	"res://assets/art/chapters/ch05_blood_oath_cavern.jpg",
+	"res://assets/art/chapters/ch06_fallen_star_heart.jpg",
+	"res://assets/art/chapters/ch07_abyss_wish.jpg",
 ]
 
 

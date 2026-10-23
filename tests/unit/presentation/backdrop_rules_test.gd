@@ -21,7 +21,7 @@ func test_day_seven_shows_the_seventh_chapter_illustration() -> void:
 
 
 func test_a_reached_ending_overrides_the_day_illustration() -> void:
-	var ending_path := "res://assets/art/chapters/ending_b.png"
+	var ending_path := "res://assets/art/chapters/ending_b.jpg"
 
 	var path := BackdropRules.path_for(false, 7, ending_path)
 

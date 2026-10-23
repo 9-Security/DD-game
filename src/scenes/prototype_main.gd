@@ -31,9 +31,9 @@ const CHARACTER_FILE_PATH: String = "res://assets/data/characters/%s.json"
 const BACKDROP_SHADE_ALPHA: float = 0.5
 const BGM_CONFIG_PATH: String = "res://assets/data/audio/bgm.json"
 const ENDING_ART_PATHS: Dictionary = {
-	"END_A": "res://assets/art/chapters/ending_a.png",
-	"END_B": "res://assets/art/chapters/ending_b.png",
-	"END_C": "res://assets/art/chapters/ending_c.png",
+	"END_A": "res://assets/art/chapters/ending_a.jpg",
+	"END_B": "res://assets/art/chapters/ending_b.jpg",
+	"END_C": "res://assets/art/chapters/ending_c.jpg",
 }
 const DIFFICULTY_LABELS: Dictionary = {
 	"strict": "嚴格難度（休息消耗食糧）",
