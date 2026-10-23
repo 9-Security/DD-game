@@ -1,6 +1,62 @@
 {
   "id": "inry",
-  "identity": {"name": "茵芮・朵維亞", "role": "summoner", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
-  "stats": {"hp": 80, "mp": 90, "atk": 6, "def": 4, "spd": 10},
-  "skills": ["summon_gray_wolf", "summon_light_eye", "magic_surge"]
+  "identity": {
+    "name": "茵芮・朵維亞",
+    "role": "summoner",
+    "background_ref": "design/narrative/STORY_MANUSCRIPT.md"
+  },
+  "stats": {
+    "hp": 80,
+    "mp": 90,
+    "atk": 6,
+    "def": 4,
+    "spd": 10
+  },
+  "skills": [
+    "summon_gray_wolf",
+    "summon_light_eye",
+    "magic_surge"
+  ],
+  "extra_skills": [
+    {
+      "id": "mirror_summon",
+      "name": "鏡影召喚",
+      "description": "投影、偵查、映照魔法痕跡",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "spirit_pact",
+      "name": "精靈契約",
+      "description": "與召喚物建立協作",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "mana_amplify",
+      "name": "魔力增幅",
+      "description": "強化召喚物能力",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "summon_relocate",
+      "name": "召喚轉移",
+      "description": "重新指定召喚物位置",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "pact_imbalance",
+      "name": "契約失衡",
+      "description": "特定條件下發生失控風險",
+      "unlock": {
+        "type": "unassigned"
+      }
+    }
+  ]
 }

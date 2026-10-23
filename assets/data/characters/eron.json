@@ -1,6 +1,65 @@
 {
   "id": "eron",
-  "identity": {"name": "艾洛恩・維斯塔", "role": "support", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
-  "stats": {"hp": 90, "mp": 60, "atk": 8, "def": 6, "spd": 9},
-  "skills": ["life_resonance", "purify_breath", "beast_speech", "all_things_resonance"]
+  "identity": {
+    "name": "艾洛恩・維斯塔",
+    "role": "support",
+    "background_ref": "design/narrative/STORY_MANUSCRIPT.md"
+  },
+  "stats": {
+    "hp": 90,
+    "mp": 60,
+    "atk": 8,
+    "def": 6,
+    "spd": 9
+  },
+  "skills": [
+    "life_resonance",
+    "purify_breath",
+    "beast_speech",
+    "all_things_resonance"
+  ],
+  "extra_skills": [
+    {
+      "id": "life_sense",
+      "name": "生命共鳴（設定集版）",
+      "description": "感知生物情緒與環境生命反應",
+      "unlock": {
+        "type": "unassigned"
+      },
+      "overlap_with": "life_resonance"
+    },
+    {
+      "id": "spirit_breath_heal",
+      "name": "靈息治癒",
+      "description": "回復生命值、治療傷勢",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "nature_purify",
+      "name": "自然淨化",
+      "description": "清除部分毒素與異常狀態",
+      "unlock": {
+        "type": "unassigned"
+      },
+      "overlap_with": "purify_breath"
+    },
+    {
+      "id": "soul_soothe",
+      "name": "靈魂安撫",
+      "description": "降低敵意、穩定失控召喚物",
+      "unlock": {
+        "type": "unassigned"
+      }
+    },
+    {
+      "id": "spirit_link",
+      "name": "生靈連結",
+      "description": "與動植物建立短暫協作關係",
+      "unlock": {
+        "type": "unassigned"
+      }
+    }
+  ]
 }

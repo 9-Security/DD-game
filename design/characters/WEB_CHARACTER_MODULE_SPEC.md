@@ -51,6 +51,20 @@
 | `skills` | array of string | 是 | 至少一個技能 ID |
 | `fixed_equipment` | array of string | 否 | 不可更換的裝備，例如芙蕾雅的「亡父之骨」 |
 
+### 3.1a 額外技能 `extra_skills`【已實作（資料與驗證）】
+
+`extra_skills` 保留角色設定集 v1.0 的技能，供日後升級或額外取得。它與起始技能 `skills` 分開：
+
+| 欄位 | 必填 | 說明 |
+|---|---|---|
+| `id` | 是 | 技能 ID，不得與 `skills` 或其他額外技能重複 |
+| `name` | 是 | 顯示名稱 |
+| `description` | 否 | 設定集中的描述，效果數值尚未定義 |
+| `unlock.type` | 是 | `level`、`story_flag`、`upgrade`，或 `unassigned`（解鎖條件尚未決定） |
+| `overlap_with` | 否 | 效果可能與某個起始技能重疊時標示，供後續決定是否合併 |
+
+目前所有額外技能的 `unlock.type` 都是 `unassigned`。解鎖條件決定後，再逐一改為對應類型。
+
 ### 3.2 驗證規則【已實作】
 
 `src/characters/character_data.gd` 的 `CharacterData.validate()` 負責驗證：
