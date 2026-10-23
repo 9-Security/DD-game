@@ -33,6 +33,8 @@ func test_every_dialogue_scene_is_started_by_a_button_action() -> void:
 	var labels_text := JSON.stringify(_json(LABELS_PATH))
 
 	for scene: Dictionary in _json(DIALOGUE_PATH)["scenes"]:
+		if not scene.has("action"):
+			continue
 		var action := str(scene["action"])
 		assert_bool(actions.has(action) or labels_text.contains("\"%s\"" % action)).is_true()
 
@@ -45,7 +47,16 @@ func test_every_required_flag_is_set_by_a_chapter_two_event_or_the_flow() -> voi
 				set_flags.append(str(effect["flag"]))
 
 	for scene: Dictionary in _json(DIALOGUE_PATH)["scenes"]:
+		if not scene.has("requires_flag"):
+			continue
 		assert_bool(set_flags.has(str(scene["requires_flag"]))).is_true()
+
+
+func test_day_two_inn_scene_starts_on_day_two() -> void:
+	var player := DialoguePlayer.new()
+	player.load_data(_json(DIALOGUE_PATH))
+
+	assert_str(player.scene_for_day(2)).is_equal("ch2_dialogue_day2_inn")
 
 
 func test_mirror_confessions_each_have_a_dialogue_scene() -> void:

@@ -537,12 +537,26 @@ func _on_action_pressed(action: String) -> void:
 ## Returns true when a scene started.
 func _start_dialogue_for(action: String) -> bool:
 	var scene_id: String = _dialogue.scene_for_action(action)
-	if scene_id == "" or _flow.dialogue_played(scene_id):
+	if scene_id == "":
 		return false
 	# The action may have been refused; the scene plays only once its event has set the flag.
 	if not _flow.event_flag(_dialogue.required_flag(scene_id)):
 		return false
-	if not _dialogue.start(scene_id):
+	return _start_dialogue(scene_id)
+
+
+## Starts the dialogue scene that belongs to a story day, unless it has already played.
+func _start_dialogue_for_day(day: int) -> bool:
+	var scene_id: String = _dialogue.scene_for_day(day)
+	if scene_id == "":
+		return false
+	return _start_dialogue(scene_id)
+
+
+## Plays a scene once: marks it played, starts it and shows its first line. Returns false when the
+## scene was already played or cannot start.
+func _start_dialogue(scene_id: String) -> bool:
+	if _flow.dialogue_played(scene_id) or not _dialogue.start(scene_id):
 		return false
 	_flow.mark_dialogue_played(scene_id)
 	_refresh_status()
@@ -598,9 +612,12 @@ func _set_portrait(path: String) -> void:
 ## A new story day, and the first reached ending, each play their transition once.
 func _check_story_transitions() -> void:
 	var day: int = _flow.clock.day
-	if _last_day != 0 and day != _last_day:
+	var day_changed: bool = day != _last_day
+	if _last_day != 0 and day_changed:
 		_play_transition(TransitionRules.KIND_CHAPTER)
 	_last_day = day
+	if day_changed:
+		_start_dialogue_for_day(day)
 	if _flow.is_ended() and not _ending_transition_played:
 		_ending_transition_played = true
 		_play_transition(TransitionRules.KIND_ENDING)
@@ -876,11 +893,12 @@ func _read_dictionary(path: String) -> Dictionary:
 
 func _refresh_status() -> void:
 	# While a dialogue scene is on screen it owns the dialogue box and hides the action bars.
+	if _flow != null and not _dialogue.is_active():
+		_dialogue_label.text = _caption()
+		# May start a day's dialogue, which then owns the dialogue box.
+		_check_story_transitions()
 	var dialogue_open: bool = _dialogue.is_active()
 	_dialogue_button.visible = dialogue_open
-	if _flow != null and not dialogue_open:
-		_dialogue_label.text = _caption()
-		_check_story_transitions()
 	var where: String = _flow.location()
 	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
 	var party_line: String = _flow.party_text()

@@ -2,14 +2,16 @@ class_name DialoguePlayer
 extends RefCounted
 ## Plays scripted dialogue scenes one line at a time.
 ##
-## A scene is started by a player action (its `action` field) and is shown once per game; the
-## caller records that in the game state. Pure logic with no scene access, so it can be unit tested.
+## A scene has exactly one trigger and is shown once per game; the caller records that in the game
+## state. An `action` scene starts when a player action is performed, and only after the action's
+## event has set `requires_flag`, so a refused action never shows it. A `day` scene starts when the
+## story reaches that day. Pure logic with no scene access, so it can be unit tested.
 ##
 ## Data format (assets/data/dialogue/*.json):
-## {"scenes": [{"id": String, "action": String, "requires_flag": String, "source_ref": String,
+## {"scenes": [{"id": String, "action": String, "requires_flag": String,
+##              "day": int, "source_ref": String,
 ##              "lines": [{"speaker": String, "text": String}]}]}
-## A scene plays only after the action's event has set `requires_flag`, so a refused action never
-## shows its dialogue.
+## A scene sets either `action` with `requires_flag`, or `day` alone.
 ## Narration uses the speaker NARRATOR. Every other speaker must have a portrait in PortraitRules.
 
 ## Speaker name for narration lines. Narration has no portrait.
@@ -19,6 +21,8 @@ const MAX_LINE_LENGTH: int = 120
 
 ## Action string to scene id. Only scenes that passed validation are stored.
 var _scene_ids_by_action: Dictionary = {}
+## Story day to scene id.
+var _scene_ids_by_day: Dictionary = {}
 ## Scene id to the story flag that must be set before the scene plays.
 var _flag_by_scene: Dictionary = {}
 ## Scene id to its lines.
@@ -46,10 +50,14 @@ static func validate(data: Dictionary) -> PackedStringArray:
 		elif seen_ids.has(scene_id):
 			errors.append("duplicate dialogue scene id: %s" % scene_id)
 		seen_ids[scene_id] = true
-		if str(scene.get("action", "")) == "":
-			errors.append("dialogue scene %s has no action" % scene_id)
-		if str(scene.get("requires_flag", "")) == "":
-			errors.append("dialogue scene %s has no requires_flag" % scene_id)
+		var has_action: bool = str(scene.get("action", "")) != ""
+		var has_day: bool = scene.has("day")
+		if has_action == has_day:
+			errors.append("dialogue scene %s needs exactly one of action or day" % scene_id)
+		elif has_action and str(scene.get("requires_flag", "")) == "":
+			errors.append("dialogue scene %s has an action but no requires_flag" % scene_id)
+		elif has_day and (not (scene["day"] is float or scene["day"] is int) or int(scene["day"]) < 1):
+			errors.append("dialogue scene %s has an invalid day" % scene_id)
 		errors.append_array(_validate_lines(scene_id, scene.get("lines", null)))
 	return errors
 
@@ -59,6 +67,7 @@ static func validate(data: Dictionary) -> PackedStringArray:
 func load_data(data: Dictionary) -> PackedStringArray:
 	var errors := validate(data)
 	_scene_ids_by_action.clear()
+	_scene_ids_by_day.clear()
 	_flag_by_scene.clear()
 	_lines_by_scene.clear()
 	_active_lines = []
@@ -67,8 +76,11 @@ func load_data(data: Dictionary) -> PackedStringArray:
 		return errors
 	for scene: Dictionary in data["scenes"]:
 		var scene_id: String = str(scene["id"])
-		_scene_ids_by_action[str(scene["action"])] = scene_id
-		_flag_by_scene[scene_id] = str(scene["requires_flag"])
+		if scene.has("day"):
+			_scene_ids_by_day[int(scene["day"])] = scene_id
+		else:
+			_scene_ids_by_action[str(scene["action"])] = scene_id
+			_flag_by_scene[scene_id] = str(scene["requires_flag"])
 		_lines_by_scene[scene_id] = scene["lines"]
 	return errors
 
@@ -76,6 +88,11 @@ func load_data(data: Dictionary) -> PackedStringArray:
 ## Returns the id of the scene that the action starts, or "" when the action has no scene.
 func scene_for_action(action: String) -> String:
 	return str(_scene_ids_by_action.get(action, ""))
+
+
+## Returns the id of the scene that starts on the given story day, or "" when the day has none.
+func scene_for_day(day: int) -> String:
+	return str(_scene_ids_by_day.get(day, ""))
 
 
 ## Returns the story flag that must be set before the scene plays, or "" for an unknown scene.

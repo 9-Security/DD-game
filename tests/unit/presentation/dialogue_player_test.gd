@@ -144,3 +144,39 @@ func test_cancel_stops_an_active_scene() -> void:
 
 	assert_bool(player.is_active()).is_false()
 	assert_dict(player.current_line()).is_empty()
+
+
+func _day_scene(id: String, day: int, lines: Array) -> Dictionary:
+	return {"id": id, "day": day, "source_ref": "test", "lines": lines}
+
+
+func test_day_scene_is_found_by_its_day() -> void:
+	var player := DialoguePlayer.new()
+	player.load_data(_data([_day_scene("d2", 2, [_line(DialoguePlayer.NARRATOR, "第二日。")])]))
+
+	assert_str(player.scene_for_day(2)).is_equal("d2")
+	assert_str(player.scene_for_day(3)).is_equal("")
+
+
+func test_scene_with_both_triggers_is_reported() -> void:
+	var scene := _scene("s1", "confess:eron", [_line("艾洛恩", "一句話。")])
+	scene["day"] = 2
+
+	var errors := DialoguePlayer.validate(_data([scene]))
+
+	assert_int(errors.size()).is_equal(1)
+
+
+func test_scene_with_no_trigger_is_reported() -> void:
+	var scene := _scene("s1", "confess:eron", [_line("艾洛恩", "一句話。")])
+	scene.erase("action")
+
+	var errors := DialoguePlayer.validate(_data([scene]))
+
+	assert_int(errors.size()).is_equal(1)
+
+
+func test_day_below_one_is_reported() -> void:
+	var errors := DialoguePlayer.validate(_data([_day_scene("d0", 0, [_line(DialoguePlayer.NARRATOR, "x")])]))
+
+	assert_int(errors.size()).is_equal(1)

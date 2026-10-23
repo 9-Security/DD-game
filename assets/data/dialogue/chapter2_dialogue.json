@@ -3,6 +3,25 @@
   "source": "design/narrative/novel/chapter02_day02.md (二、四面銀鏡；四、無法隱藏的真相；五、第一份代價)",
   "scenes": [
     {
+      "id": "ch2_dialogue_day2_inn",
+      "day": 2,
+      "source_ref": "一、沒有回聲的峽谷（旅店段落）",
+      "lines": [
+        {"speaker": "旁白", "text": "第二日的晨光，沒有照進守淵村。艾洛恩醒來時，窗外仍覆著一層濃厚的白霧。"},
+        {"speaker": "旁白", "text": "昨夜的燈靈仍在腦中重現。那道光變成了小女孩的模樣，只說了一句：「她不是第一個生病的人。」"},
+        {"speaker": "旁白", "text": "艾洛恩想起王宮藥室裡的公主，十七歲的黎安娜。她睜著眼睛，卻幾乎不記得自己是誰。"},
+        {"speaker": "旁白", "text": "旅店一樓，里克特把一張畫著王徽的紙推到桌子中央。"},
+        {"speaker": "里克特", "text": "我又確認了一次。"},
+        {"speaker": "芙蕾雅", "text": "結果？"},
+        {"speaker": "里克特", "text": "完全相同。"},
+        {"speaker": "茵芮", "text": "王室徽記可能流傳很多年。"},
+        {"speaker": "茵芮", "text": "你到底想說什麼？"},
+        {"speaker": "里克特", "text": "我想說，我們知道得太少。"},
+        {"speaker": "芙蕾雅", "text": "那就進去查。站在這裡猜，不會讓公主多活一天。"},
+        {"speaker": "旁白", "text": "沒有人反駁。他們已經失去一天，還剩六天。"}
+      ]
+    },
+    {
       "id": "ch2_dialogue_gate_arrival",
       "requires_flag": "gate_reached",
       "action": "go:黑曜石之門",
