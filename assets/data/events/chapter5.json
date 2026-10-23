@@ -1,6 +1,6 @@
 {
   "id": "chapter5",
-  "source": "design/narrative/STORY_MANUSCRIPT.md 第五日（原稿）；第五章小說尚未提供，開場以原稿為準",
+  "source": "design/narrative/STORY_MANUSCRIPT.md 第五日（原稿，優先）；design/narrative/novel/chapter05_blood_oath_cavern.md（第五章小說）；design/characters/source/CHAPTER5_SETTINGS_v1.0.md",
   "events": [
     {
       "id": "ch5_furnace_arrival",
@@ -41,10 +41,34 @@
         {
           "type": "message",
           "text": "芙蕾雅在營地裡找到一份密令。數年前，王室命令近衛隊阻止村民逃離深淵周圍的祭儀現場，因為那些村民早已被列為誓約的候補祭品。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_record_read",
+      "source_ref": "第五日：石室的處決紀錄",
+      "trigger": {
+        "action": "read:father_record",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "father_record_read",
+          "value": true
         },
         {
           "type": "message",
-          "text": "芙蕾雅的父親拒絕執行命令，最終被處決。他的遺骨被製成一柄特殊巨劍，作為束縛女兒服從的媒介。"
+          "text": "石室裡只有一張石桌、幾個空箱，以及一座已經熄滅的燈架。石桌上放著另一份文件。這一次，不是命令，是一份處決紀錄。"
+        },
+        {
+          "type": "message",
+          "text": "父親拒絕執行對村民的封鎖與押送命令，以違逆王命處決。遺骨依王室特殊處置程序移交。"
+        },
+        {
+          "type": "message",
+          "text": "後面附著一份器物製作記錄：一柄雙手巨劍，以及用以拘束持有者服從的誓約媒介。"
         },
         {
           "type": "message",
@@ -53,6 +77,196 @@
         {
           "type": "message",
           "text": "「我一直以為自己背著父親離開。」芙蕾雅摸著劍柄說。「原來他們要我背著罪。」"
+        },
+        {
+          "type": "message",
+          "text": "營地外傳來金屬摩擦的響聲。一下，又一下。一副空盔甲正在聚合。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_oath_lower",
+      "source_ref": "血誓守衛：放下亡父之骨",
+      "trigger": {
+        "action": "oath:lower",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "freya_lowered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅放下亡父之骨，劍尖拖過灼熱的石地。她不再用這把劍去攻擊守衛。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_oath_cover",
+      "source_ref": "血誓守衛：里克特牽制",
+      "trigger": {
+        "action": "oath:cover",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "richter_covered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特拔出匕首，引開鐵甲的長刃，甩出一枚符文片。金屬劃過他的外套，布料裂開。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_oath_barrier",
+      "source_ref": "血誓守衛：艾洛恩的結界",
+      "trigger": {
+        "action": "oath:barrier",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "eron_barrier",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩維持淨化結界，淡綠色的光沿著地面展開，暫時隔開鐵甲與同伴。這一次，每道光都來自他自己。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_oath_chain",
+      "source_ref": "血誓守衛：茵芮的星光鎖鏈",
+      "trigger": {
+        "action": "oath:chain",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "inry_chained",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "茵芮把魔力壓成數道細長的光線，交纏成星光鎖鏈，纏住鐵甲的手臂。「我撐不了太久！」"
+        }
+      ]
+    },
+    {
+      "id": "ch5_oath_pierce",
+      "source_ref": "斷誓：刺入誓約刻印",
+      "trigger": {
+        "action": "oath:pierce",
+        "location": "血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "oath_seal_broken",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "blood_oath_armor_destroyed",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "father_bone_fragment_recovered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅把亡父之骨刺入誓約刻印。劍身裂開，一道暗紅光芒沿著刻印向四周擴散，隨即熄滅。「我不再替王室守這個謊。」"
+        },
+        {
+          "type": "message",
+          "text": "鐵甲的胸甲從中央崩裂，頭盔、護肩與四肢一塊塊散落。這一次，再沒有血色液體把它們重新連起來。"
+        },
+        {
+          "type": "message",
+          "text": "劍柄內側，一塊細小骨片從裂開的金屬中露出。骨片上刻著一個名字：阿德里安・雷恩。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_voice_day5",
+      "source_ref": "向下石階：公主的聲音（第五日）",
+      "trigger": {
+        "action": "descend:stairs",
+        "location": "血誓熔窟",
+        "day": 5
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "descent_stairs_revealed",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "princess_voice_heard",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "守衛崩潰後，熔窟中央的石地緩慢移動，一道狹窄的石階在營地另一側展開，通往更深的黑暗。"
+        },
+        {
+          "type": "message",
+          "text": "石階深處傳來一個女孩的聲音，清晰得彷彿有人站在耳邊："
+        },
+        {
+          "type": "message",
+          "text": "「請不要救我。」"
+        },
+        {
+          "type": "message",
+          "text": "第五日，尚未結束。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_voice_later",
+      "source_ref": "向下石階：公主的聲音（之後）",
+      "trigger": {
+        "action": "descend:stairs",
+        "location": "血誓熔窟",
+        "min_day": 6
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "descent_stairs_revealed",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "princess_voice_heard",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "石階深處傳來一個女孩的聲音，清晰得彷彿有人站在耳邊："
+        },
+        {
+          "type": "message",
+          "text": "「請不要救我。」"
         }
       ]
     }

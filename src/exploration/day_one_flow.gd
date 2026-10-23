@@ -78,7 +78,9 @@ var _sequences: Array = []
 ##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
 ##     "blocked_text", "steps" ([action, flag] pairs; the last flag is set by events), and
 ##     "failure" ({"text", "flag", "segments", "curse_stacks", "curse_target"}) for an out-of-order
-##     step. "flag" is set to true when the failure happens.
+##     step. "flag" is set to true when the failure happens. Optional "unsafe" lists actions that
+##     always fail while the sequence is open, and "success" ({"curse_weaken", "curse_target"})
+##     is applied when the final step succeeds.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -132,12 +134,30 @@ func can_enter(place: String) -> bool:
 	return _entry_block(place) == ""
 
 
-## True when the step for the action has already been completed.
+## True when the action belongs to an ordered sequence (a step or an unsafe action).
+func is_step(action: String) -> bool:
+	return not _sequence_for(action).is_empty()
+
+
+## True when the step for the action has already been completed. An unsafe action counts as
+## done once the sequence's final step has been completed.
 func step_done(action: String) -> bool:
 	var sequence: Dictionary = _sequence_for(action)
 	if sequence.is_empty():
 		return false
-	return event_flag(str(_steps(sequence)[_step_index(sequence, action)][1]))
+	var index: int = _step_index(sequence, action)
+	if index < 0:
+		return event_flag(_final_flag(sequence))
+	return event_flag(str(_steps(sequence)[index][1]))
+
+
+func _final_flag(sequence: Dictionary) -> String:
+	var steps: Array = _steps(sequence)
+	return str(steps[steps.size() - 1][1])
+
+
+func _is_unsafe(sequence: Dictionary, action: String) -> bool:
+	return (sequence.get("unsafe", []) as Array).has(action)
 
 
 ## True when the action is an open, unfinished step that the party can see and try.
@@ -151,7 +171,7 @@ func step_visible(action: String) -> bool:
 ## The ordered sequence that contains the action, or an empty Dictionary.
 func _sequence_for(action: String) -> Dictionary:
 	for sequence: Dictionary in _sequences:
-		if _step_index(sequence, action) >= 0:
+		if _step_index(sequence, action) >= 0 or _is_unsafe(sequence, action):
 			return sequence
 	return {}
 
@@ -184,6 +204,8 @@ func _prior_steps_done(sequence: Dictionary, index: int) -> bool:
 ## True when the step can succeed now. Refused or failed steps run no events.
 func _sequence_ready(action: String) -> bool:
 	var sequence: Dictionary = _sequence_for(action)
+	if _is_unsafe(sequence, action):
+		return false
 	if not _location_allows(action) or not _requirement_met(sequence) or step_done(action):
 		return false
 	return _prior_steps_done(sequence, _step_index(sequence, action))
@@ -196,6 +218,10 @@ func _perform_step(action: String) -> String:
 		return WRONG_PLACE_TEXT
 	if not _requirement_met(sequence):
 		return str(sequence.get("blocked_text", "時機還未到。"))
+	if _is_unsafe(sequence, action):
+		if event_flag(_final_flag(sequence)):
+			return "守衛已經瓦解。"
+		return _sequence_failure(sequence)
 	var index: int = _step_index(sequence, action)
 	var steps: Array = _steps(sequence)
 	var step_flag: String = str(steps[index][1])
@@ -206,7 +232,19 @@ func _perform_step(action: String) -> String:
 	_at_camp = false
 	if index < steps.size() - 1:
 		_events.flags[step_flag] = true
+	else:
+		_apply_success(sequence)
 	return "你依序行動，線條隨之動了起來。"
+
+
+## Effects applied when a sequence's final step succeeds. Weakening never cures the curse.
+func _apply_success(sequence: Dictionary) -> void:
+	var success: Dictionary = sequence.get("success", {})
+	var target: String = str(success.get("curse_target", ""))
+	var weaken: int = int(success.get("curse_weaken", 0))
+	if weaken > 0 and _curses.has(target):
+		var curse: BloodCurse = _curses[target]
+		curse.weaken(weaken)
 
 
 ## Resets every step except the last, then applies the failure cost.

@@ -82,7 +82,8 @@ func test_furnace_opens_on_day_five_and_shows_the_decree() -> void:
 	assert_bool(flow.event_flag("lava_entered")).is_true()
 	assert_bool(flow.event_flag("decree_found")).is_true()
 	assert_bool(message.contains(DECREE_TEXT)).is_true()
-	assert_bool(message.contains(RELIC_TEXT)).is_true()
+	# The relic line belongs to the stone room record, which is read in chapter5_break_test.
+	assert_bool(message.contains(RELIC_TEXT)).is_false()
 
 
 func test_furnace_stays_closed_until_the_guardian_is_released() -> void:

@@ -24,6 +24,11 @@ func purify() -> void:
 	stacks = 0
 
 
+## Removes stacks without curing the curse. The stack count never goes below zero.
+func weaken(amount: int) -> void:
+	stacks = maxi(stacks - amount, 0)
+
+
 ## Multiplier applied to the base maximum HP.
 func max_hp_multiplier() -> float:
 	return 1.0 - stacks * HP_LOSS_PER_STACK

@@ -139,6 +139,16 @@
       "release:chain_one",
       "release:chain_two",
       "release:core"
+    ],
+    "血誓熔窟": [
+      "read:father_record",
+      "oath:lower",
+      "oath:cover",
+      "oath:barrier",
+      "oath:chain",
+      "oath:pierce",
+      "oath:strike",
+      "descend:stairs"
     ]
   },
   "sequences": [
@@ -204,6 +214,69 @@
         "curse_stacks": 0,
         "curse_target": ""
       }
+    },
+    {
+      "id": "record",
+      "requires": "decree_found",
+      "blocked_text": "營地還沒有可以搜索的地方。",
+      "steps": [
+        [
+          "read:father_record",
+          "father_record_read"
+        ]
+      ]
+    },
+    {
+      "id": "oath",
+      "requires": "father_record_read",
+      "blocked_text": "守衛還沒有甦醒。",
+      "steps": [
+        [
+          "oath:lower",
+          "freya_lowered"
+        ],
+        [
+          "oath:cover",
+          "richter_covered"
+        ],
+        [
+          "oath:barrier",
+          "eron_barrier"
+        ],
+        [
+          "oath:chain",
+          "inry_chained"
+        ],
+        [
+          "oath:pierce",
+          "oath_seal_broken"
+        ]
+      ],
+      "unsafe": [
+        "oath:strike"
+      ],
+      "failure": {
+        "text": "守衛抓住混亂的空檔，鐵甲重新合攏，咒痕也隨之激動。你們退後重來。",
+        "flag": "",
+        "segments": 1,
+        "curse_stacks": 1,
+        "curse_target": "freya"
+      },
+      "success": {
+        "curse_weaken": 2,
+        "curse_target": "freya"
+      }
+    },
+    {
+      "id": "stairs",
+      "requires": "oath_seal_broken",
+      "blocked_text": "通道還被封在石地之下。",
+      "steps": [
+        [
+          "descend:stairs",
+          "princess_voice_heard"
+        ]
+      ]
     }
   ]
 }

@@ -58,6 +58,14 @@ const CHAPTER3_ACTIONS: Array = [
 	["release:chain_two", "斬斷第二道石鏈", "失聲之庭"],
 	["release:core", "承受晶核之痛並解縛", "失聲之庭"],
 	["go:血誓熔窟", "走向血誓熔窟", "失聲之庭"],
+	["read:father_record", "讀取石室裡的處決紀錄", "血誓熔窟"],
+	["oath:lower", "放下亡父之骨", "血誓熔窟"],
+	["oath:cover", "牽制鐵甲的長刃", "血誓熔窟"],
+	["oath:barrier", "維持淨化結界", "血誓熔窟"],
+	["oath:chain", "召出星光鎖鏈", "血誓熔窟"],
+	["oath:pierce", "將亡父之骨刺入刻印", "血誓熔窟"],
+	["oath:strike", "揮劍攻擊鐵甲", "血誓熔窟"],
+	["descend:stairs", "走下向下的石階", "血誓熔窟"],
 ]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
@@ -411,7 +419,7 @@ func _refresh_chapter3(bar_open: bool) -> void:
 		var shown: bool = bar_open and _flow.location() == place
 		if action.begins_with("go:"):
 			shown = shown and _flow.can_enter(action.trim_prefix("go:")) and not _chapter3_done(action)
-		elif action.begins_with("read:"):
+		elif action.begins_with("read:") and not _flow.is_step(action):
 			shown = shown and _flow.can_act_here(action)
 		else:
 			shown = shown and _flow.step_visible(action)
