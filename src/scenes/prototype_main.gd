@@ -11,6 +11,7 @@ const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
 const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter1.json",
 	"res://assets/data/events/chapter2.json",
+	"res://assets/data/events/chapter3.json",
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
@@ -32,6 +33,18 @@ const NARRATIVE_ACTIONS: Array = [
 	["talk:innkeeper", "詢問旅店主人"],
 ]
 const PASSAGE_ACTION: Array = ["go:門後通道", "走入門後的通道"]
+## Chapter three actions: [action, label, place where the button is shown].
+## "go:" buttons also need the destination to be enterable; "read:" and "seal:" need the action
+## to be allowed at the current place (see DayOneFlow.can_act_here()).
+const CHAPTER3_ACTIONS: Array = [
+	["go:咒牆迷廊", "前往咒牆迷廊", "門後通道"],
+	["read:first_name", "念出刻痕中的名字", "咒牆迷廊"],
+	["read:second_name", "念出另一個名字", "咒牆迷廊"],
+	["go:名冊廊廳", "前往名冊廊廳", "咒牆迷廊"],
+	["read:kaen", "辨認凱恩・安布羅斯", "名冊廊廳"],
+	["seal:kaen", "協作解開結界", "名冊廊廳"],
+	["go:出口門廊", "走向出口門廊", "名冊廊廳"],
+]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
@@ -60,6 +73,8 @@ var _log_label: Label
 var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
+var _chapter3_bar: GridContainer
+var _chapter3_buttons: Array[Button] = []
 var _talk_bar: GridContainer
 var _gate_bar: HBoxContainer
 var _passage_button: Button
@@ -205,6 +220,22 @@ func _build_ui() -> void:
 	_passage_button.pressed.connect(_on_action_pressed.bind(str(PASSAGE_ACTION[0])))
 	_gate_bar.add_child(_passage_button)
 
+	_chapter3_bar = GridContainer.new()
+	_chapter3_bar.columns = 4
+	_chapter3_bar.add_theme_constant_override("h_separation", 12)
+	_chapter3_bar.add_theme_constant_override("v_separation", 10)
+	_chapter3_bar.visible = false
+	root.add_child(_chapter3_bar)
+	for entry: Array in CHAPTER3_ACTIONS:
+		var button := Button.new()
+		button.text = str(entry[1])
+		button.custom_minimum_size = Vector2(220, 44)
+		button.set_meta("action", str(entry[0]))
+		button.set_meta("place", str(entry[2]))
+		button.pressed.connect(_on_action_pressed.bind(str(entry[0])))
+		_chapter3_bar.add_child(button)
+		_chapter3_buttons.append(button)
+
 	_approach_bar = HBoxContainer.new()
 	_approach_bar.add_theme_constant_override("separation", 16)
 	_approach_bar.visible = false
@@ -309,6 +340,7 @@ func _ensure_flow() -> void:
 		"events": _event_data,
 		"mirror_counter": _rules.get("mirror_counter", {}),
 		"location_requirements": _rules.get("location_requirements", {}),
+		"location_actions": _rules.get("location_actions", {}),
 	})
 
 
@@ -348,6 +380,29 @@ func _on_load_pressed() -> void:
 	_log_label.text = "已讀取存檔。"
 
 
+## Shows each chapter three button only at its place and only when its action or destination is open.
+func _refresh_chapter3(bar_open: bool) -> void:
+	_chapter3_bar.visible = bar_open
+	for button: Button in _chapter3_buttons:
+		var action: String = str(button.get_meta("action"))
+		var place: String = str(button.get_meta("place"))
+		var shown: bool = bar_open and _flow.location() == place
+		if action.begins_with("go:"):
+			shown = shown and _flow.can_enter(action.trim_prefix("go:")) and not _chapter3_done(action)
+		else:
+			shown = shown and _flow.can_act_here(action)
+		if action == "seal:kaen":
+			shown = shown and _flow.event_flag("kaen_found") and not _flow.event_flag("chapter3_sealed")
+		button.visible = shown
+
+
+## True when a chapter three destination has already been reached, so its button is hidden.
+func _chapter3_done(action: String) -> bool:
+	if action == "go:出口門廊":
+		return _flow.event_flag("chapter3_exit")
+	return false
+
+
 func _refresh_status() -> void:
 	var where: String = _flow.location()
 	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
@@ -361,6 +416,7 @@ func _refresh_status() -> void:
 	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_gate_bar.visible = approaches.is_empty() and not _flow.clock.is_expired() and _flow.location() == "黑曜石之門"
 	_passage_button.visible = _flow.event_flag("obsidian_gate_open")
+	_refresh_chapter3(approaches.is_empty() and not _flow.clock.is_expired())
 	_save_button.disabled = not _flow.can_save()
 
 

@@ -96,6 +96,29 @@
     "門後通道": {
       "flag": "obsidian_gate_open",
       "blocked_text": "門後的通道仍被封印，無法通行。"
+    },
+    "咒牆迷廊": {
+      "min_day": 3,
+      "flag": "passage_entered",
+      "blocked_text": "通道內太暗，天亮前不宜深入。"
+    },
+    "名冊廊廳": {
+      "flag": "registry_route_open",
+      "blocked_text": "兩側的石壁仍然閉合，無法進入中央廊廳。"
+    },
+    "出口門廊": {
+      "flag": "chapter3_sealed",
+      "blocked_text": "門廊仍被封住，尚未能離開。"
     }
+  },
+  "location_actions": {
+    "咒牆迷廊": [
+      "read:first_name",
+      "read:second_name"
+    ],
+    "名冊廊廳": [
+      "read:kaen",
+      "seal:kaen"
+    ]
   }
 }

@@ -1,0 +1,258 @@
+{
+  "id": "chapter3",
+  "source": "design/narrative/novel/chapter03_labyrinth.md（第三章小說與設定集）",
+  "events": [
+    {
+      "id": "ch3_labyrinth_arrival",
+      "source_ref": "第三日：石台與門後通道",
+      "trigger": {
+        "action": "go:咒牆迷廊"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "labyrinth_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "通道盡頭是一片密集的刻文，從足邊一直延伸至火光照不到的高處。"
+        },
+        {
+          "type": "message",
+          "text": "茵芮舉高火把。里克特沒有立刻回答，只拓下一小段。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_first_name",
+      "source_ref": "念出第一個名字",
+      "trigger": {
+        "action": "read:first_name",
+        "location": "咒牆迷廊"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "path_left_open",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "你念出牆上的一個名字。左側的石牆緩緩退開，露出一條僅容一人通過的窄路。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_second_name",
+      "source_ref": "念出第二個名字",
+      "trigger": {
+        "action": "read:second_name",
+        "location": "咒牆迷廊"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "path_right_open",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "第二個名字落下。右前方的岔路重新出現。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_route_via_second",
+      "source_ref": "兩條路接上",
+      "trigger": {
+        "action": "read:second_name",
+        "location": "咒牆迷廊"
+      },
+      "conditions": [
+        {
+          "flag": "path_left_open"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "registry_route_open",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "兩條路在同一刻接上，通向中央的廊廳。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_route_via_first",
+      "source_ref": "兩條路接上",
+      "trigger": {
+        "action": "read:first_name",
+        "location": "咒牆迷廊"
+      },
+      "conditions": [
+        {
+          "flag": "path_right_open"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "registry_route_open",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "兩條路在同一刻接上，通向中央的廊廳。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_registry_arrival",
+      "source_ref": "名冊廊廳",
+      "trigger": {
+        "action": "go:名冊廊廳"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "registry_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "中央的石牆高得幾乎看不到頂，一行行名字排列得像一本立起來的名冊。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_oath_found",
+      "source_ref": "名冊廊廳：誓約銘文",
+      "trigger": {
+        "action": "go:名冊廊廳"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "oath_read",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "牆面最深處刻著一段古老的誓約，部分筆畫彼此相連："
+        },
+        {
+          "type": "message",
+          "text": "「以一人之魂，穩萬民之國；以王嗣之名，續墜星之燈。」"
+        }
+      ]
+    },
+    {
+      "id": "ch3_kaen_found",
+      "source_ref": "名冊廊廳：凱恩之名",
+      "trigger": {
+        "action": "read:kaen",
+        "location": "名冊廊廳"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "kaen_found",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "凱恩・安布羅斯。里克特的呼吸停了一瞬。這個名字刻在結界的支點旁。"
+        },
+        {
+          "type": "message",
+          "text": "他的工具已抵住符文線。「如果擦掉它，通道會開。」他的手卻沒有動。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_seal_collaborate",
+      "source_ref": "協作解陣",
+      "trigger": {
+        "action": "seal:kaen",
+        "location": "名冊廊廳"
+      },
+      "conditions": [
+        {
+          "flag": "kaen_found"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "chapter3_sealed",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特沒有擦去任何名字。光靈沿著筆畫描摹，茵芮與艾洛恩依序念出名字，芙蕾雅守住閉合的石壁。"
+        },
+        {
+          "type": "message",
+          "text": "最後一道符文亮起。石牆停住，一道新的門廊敞開。"
+        }
+      ]
+    },
+    {
+      "id": "ch3_dagger_engraved",
+      "source_ref": "刻名匕首",
+      "trigger": {
+        "action": "seal:kaen",
+        "location": "名冊廊廳"
+      },
+      "conditions": [
+        {
+          "flag": "chapter3_sealed"
+        }
+      ],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "dagger_engraved",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特用刻刀在匕首柄上刻下「凱恩・安布羅斯」。「就算有一天，我連自己都記不清了，也總該留下什麼東西。」"
+        }
+      ]
+    },
+    {
+      "id": "ch3_exit",
+      "source_ref": "第三日結尾",
+      "trigger": {
+        "action": "go:出口門廊"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "chapter3_exit",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "門廊後的空氣濕潤，帶著微弱的植物氣息。「有生命？」茵芮問。「或許。」"
+        },
+        {
+          "type": "message",
+          "text": "第三日即將過去。他們仍未找到神喻草。但這一次，從深淵帶走的，不只有關於王室的疑問。"
+        }
+      ]
+    }
+  ]
+}

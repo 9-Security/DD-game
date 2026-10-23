@@ -18,6 +18,7 @@ const DEFAULT_NIGHT_ENEMY_HP: int = 20
 const DEFAULT_NIGHT_ENEMY_DEF: int = 1
 
 const DEFAULT_ATTACK_TAG: String = "physical"
+const WRONG_PLACE_TEXT: String = "這裡沒有可以進行這個行動的地方。"
 const BERSERK_EFFECT: String = "berserk_block"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
@@ -54,6 +55,7 @@ var _acquired: Dictionary = {}
 var _wounds: Dictionary = {}
 var _mirror_counter: Dictionary = {}
 var _location_requirements: Dictionary = {}
+var _location_actions: Dictionary = {}
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -70,7 +72,8 @@ var _location_requirements: Dictionary = {}
 ##   "enemy_tags": tags on the tutorial enemy. Night entries may define their own.
 ##   "affinity": matchup table for Affinity.multiplier().
 ##   "attack_tags": character ID -> attack tag.
-##   "location_requirements": place name -> flag that must be set before entering that place.
+##   "location_requirements": place name -> entry rule, see _entry_block().
+##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -92,6 +95,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 		_encounters.append(Encounter.new(entry))
 	_mirror_counter = options.get("mirror_counter", {})
 	_location_requirements = options.get("location_requirements", {})
+	_location_actions = options.get("location_actions", {})
 	if options.has("events"):
 		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
@@ -118,8 +122,17 @@ func location() -> String:
 
 
 ## True when the place has no entry requirement, or the requirement is met.
-func _can_enter(place: String) -> bool:
+func can_enter(place: String) -> bool:
 	return _entry_block(place) == ""
+
+
+## True when the action is a read or seal action allowed at the current location.
+func can_act_here(action: String) -> bool:
+	return _location_allows(action)
+
+
+func _location_allows(action: String) -> bool:
+	return (_location_actions.get(_location, []) as Array).has(action)
 
 
 ## Returns the refusal text when the place cannot be entered yet, or "" when it can.
@@ -150,10 +163,12 @@ func _can_run(action: String) -> bool:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
 	if action == "rest":
 		return can_rest()
+	if action.begins_with("read:") or action.begins_with("seal:"):
+		return _location_allows(action)
 	if action.begins_with("help:") or action.begins_with("confess:") or action.begins_with("strike:"):
 		return true
 	if action.begins_with("go:"):
-		return _can_enter(action.trim_prefix("go:"))
+		return can_enter(action.trim_prefix("go:"))
 	if action.begins_with("talk:"):
 		return true
 	return ACTION_COSTS.has(action)
@@ -187,6 +202,11 @@ func _perform_action(action: String) -> String:
 		if action.begins_with("approach:"):
 			return _resolve_approach(action.trim_prefix("approach:"))
 		return "請先選擇應對方式。"
+	if action.begins_with("read:") or action.begins_with("seal:"):
+		if not _location_allows(action):
+			return WRONG_PLACE_TEXT
+		_at_camp = false
+		return "你照著刻痕行動，線條隨之動了起來。"
 	if action.begins_with("go:"):
 		if clock.is_expired():
 			return "時限已到，無法再行動。"
