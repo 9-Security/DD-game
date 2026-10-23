@@ -25,6 +25,8 @@ const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
 const SAVE_PATH: String = "user://save_slot_1.json"
+## Darkens the full-screen illustration so the text stays readable.
+const BACKDROP_SHADE_ALPHA: float = 0.5
 const ENDING_ART_PATHS: Dictionary = {
 	"END_A": "res://assets/art/chapters/ending_a.png",
 	"END_B": "res://assets/art/chapters/ending_b.png",
@@ -50,6 +52,7 @@ var _ending_panel: VBoxContainer
 var _ending_load_button: Button
 var _ending_label: Label
 var _ending_art: TextureRect
+var _backdrop: TextureRect
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -115,6 +118,19 @@ func _launch_options() -> PackedStringArray:
 
 func _build_ui() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	# Backdrop and shade come first so they sit behind the text and buttons.
+	_backdrop = TextureRect.new()
+	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_backdrop)
+	var shade := ColorRect.new()
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.color = Color(0, 0, 0, BACKDROP_SHADE_ALPHA)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(shade)
 
 	var root := VBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -317,6 +333,18 @@ func _show_next_line() -> void:
 		_line_index += 1
 	else:
 		_enter_day_one()
+	_refresh_backdrop()
+
+
+## Sets the full-screen illustration for the prologue, the current day, or the ending reached.
+func _refresh_backdrop() -> void:
+	var in_prologue: bool = _flow == null
+	var day: int = _flow.clock.day if _flow != null else 1
+	var ending_path: String = ""
+	if _flow != null and _flow.is_ended():
+		ending_path = str(ENDING_ART_PATHS.get(_flow.ending_id(), ""))
+	var path: String = BackdropRules.path_for(in_prologue, day, ending_path)
+	_backdrop.texture = load(path) as Texture2D if ResourceLoader.exists(path) else null
 
 
 func _enter_day_one() -> void:
@@ -515,6 +543,7 @@ func _refresh_status() -> void:
 	_ending_load_button.disabled = SaveRepository.read(SAVE_PATH) == null
 	_ending_load_button.modulate = Color(1, 1, 1, 0.4) if _ending_load_button.disabled else Color(1, 1, 1, 1)
 	_refresh_chapter3(approaches.is_empty() and not _flow.is_over())
+	_refresh_backdrop()
 	_save_button.disabled = not _flow.can_save()
 
 
