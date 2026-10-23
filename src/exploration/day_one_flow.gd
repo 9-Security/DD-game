@@ -21,7 +21,7 @@ const DEFAULT_ATTACK_TAG: String = "physical"
 const BERSERK_EFFECT: String = "berserk_block"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
-const SNAPSHOT_VERSION: int = 4
+const SNAPSHOT_VERSION: int = 5
 
 var clock: DayClock
 var battle_done: bool = false
@@ -47,6 +47,9 @@ var _pending: Encounter = null
 var _party_skills: Dictionary = {}
 var _approach_skills: Dictionary = {}
 var _encounter_rolls: Array = [0.0]
+var _location: String = ""
+var _events: EventRunner = null
+var _night_entered: bool = false
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -82,6 +85,8 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	_encounter_rolls = options.get("encounter_rolls", [0.0])
 	for entry: Variant in options.get("encounters", []):
 		_encounters.append(Encounter.new(entry))
+	if options.has("events"):
+		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
 	for member: Dictionary in party:
 		if bool(member.get("curse", false)):
@@ -89,11 +94,72 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 
 
 ## Performs a player action and returns a message for the log.
+## Performs a player action and returns a message for the log. Narrative events run
+## only after an action that actually happened.
 func perform(action: String) -> String:
+	var ran: bool = _can_run(action)
+	_night_entered = false
+	var text: String = _perform_action(action)
+	if ran and _events != null:
+		text += _run_events(action)
+	return text
+
+
+## Current location, empty before the first move.
+func location() -> String:
+	return _location
+
+
+## Value of a narrative flag. False when unset or when the chapter has no events.
+func event_flag(flag: String) -> bool:
+	if _events == null:
+		return false
+	return bool(_events.flags.get(flag, false))
+
+
+func _can_run(action: String) -> bool:
+	if clock.is_expired():
+		return false
+	if _pending != null:
+		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
+	if action == "rest":
+		return can_rest()
+	if action.begins_with("go:") or action.begins_with("talk:"):
+		return true
+	return ACTION_COSTS.has(action)
+
+
+func _run_events(action: String) -> String:
+	var result: Dictionary = _events.evaluate({
+		"action": action,
+		"location": _location,
+		"night_entered": _night_entered,
+	})
+	for change: Dictionary in result["trust_changes"]:
+		if _trust != null:
+			_trust.change(str(change["character"]), int(change["delta"]))
+	var text: String = ""
+	for message: String in result["messages"]:
+		text += "\n" + message
+	return text
+
+
+func _perform_action(action: String) -> String:
 	if _pending != null:
 		if action.begins_with("approach:"):
 			return _resolve_approach(action.trim_prefix("approach:"))
 		return "請先選擇應對方式。"
+	if action.begins_with("go:"):
+		if clock.is_expired():
+			return "時限已到，無法再行動。"
+		_at_camp = false
+		_location = action.trim_prefix("go:")
+		return "你前往%s。" % _location + _spend(ACTION_COSTS["move"])
+	if action.begins_with("talk:"):
+		if clock.is_expired():
+			return "時限已到，無法再行動。"
+		_at_camp = false
+		return "你開口與同伴交談。"
 	if not ACTION_COSTS.has(action):
 		return "未知行動：%s" % action
 	if clock.is_expired():
@@ -179,6 +245,9 @@ func snapshot() -> Dictionary:
 		stacks[id] = (_curses[id] as BloodCurse).stacks
 	data["curse_stacks"] = stacks
 	data["encounter_index"] = _encounter_index
+	data["location"] = _location
+	if _events != null:
+		data["events"] = _events.snapshot()
 	return data
 
 
@@ -200,6 +269,10 @@ func restore(data: Dictionary) -> bool:
 	if not (data.get("trust", {}) is Dictionary) or not (data.get("curse_stacks", {}) is Dictionary):
 		return false
 	var encounter_index: int = _as_int(data.get("encounter_index", -1))
+	if not (data.get("location", "") is String):
+		return false
+	if _events != null and data.has("events") and not _events.is_snapshot_valid(data["events"]):
+		return false
 	if encounter_index < 0 or encounter_index > _encounters.size():
 		return false
 
@@ -231,6 +304,9 @@ func restore(data: Dictionary) -> bool:
 		var curse: BloodCurse = _curses[id]
 		curse.stacks = stack_values[id]
 	_encounter_index = encounter_index
+	_location = str(data.get("location", ""))
+	if _events != null and data.has("events"):
+		_events.restore(data["events"])
 	_pending = null
 	_at_camp = false
 	return true
@@ -272,6 +348,8 @@ func _spend(cost: int) -> String:
 		text += "\n時限已到。"
 
 	var reached_night: bool = clock.segment == DayClock.SEGMENT_NIGHT and segment_before != DayClock.SEGMENT_NIGHT
+	if reached_night:
+		_night_entered = true
 	if boundaries > 0 or reached_night:
 		text += _resolve_night_event()
 	return text

@@ -8,6 +8,16 @@ const CHARACTER_DIR: String = "res://assets/data/characters/"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
 const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
+const EVENTS_PATH: String = "res://assets/data/events/chapter1.json"
+## Location and conversation actions offered on the day-one screen, with their labels.
+const NARRATIVE_ACTIONS: Array = [
+	["go:焦林", "前往焦林"],
+	["go:守淵村", "前往守淵村"],
+	["talk:freya", "與芙蕾雅交談"],
+	["talk:richter", "與里克特交談"],
+	["talk:freya_food", "遞給芙蕾雅乾糧"],
+	["talk:innkeeper", "詢問旅店主人"],
+]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
@@ -36,6 +46,8 @@ var _log_label: Label
 var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
+var _talk_bar: HBoxContainer
+var _event_data: Array = []
 var _save_button: Button
 
 
@@ -45,6 +57,7 @@ func _ready() -> void:
 	_rules = _load_rules()
 	_night_entries = _load_night_entries()
 	_encounter_entries = _load_encounter_entries()
+	_event_data = _load_event_entries()
 	_difficulty = str(_rules.get("default_difficulty", "strict"))
 
 	# Launch options for capture and review, passed after "--" on the command line:
@@ -144,6 +157,17 @@ func _build_ui() -> void:
 		button.pressed.connect(_on_action_pressed.bind(action))
 		_action_bar.add_child(button)
 		_action_buttons[action] = button
+
+	_talk_bar = HBoxContainer.new()
+	_talk_bar.add_theme_constant_override("separation", 12)
+	_talk_bar.visible = false
+	root.add_child(_talk_bar)
+	for pair: Array in NARRATIVE_ACTIONS:
+		var button := Button.new()
+		button.text = str(pair[1])
+		button.custom_minimum_size = Vector2(170, 44)
+		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
+		_talk_bar.add_child(button)
 
 	_approach_bar = HBoxContainer.new()
 	_approach_bar.add_theme_constant_override("separation", 16)
@@ -245,6 +269,7 @@ func _ensure_flow() -> void:
 		"party_skills": _party_skills(party),
 		"approach_skills": _rules.get("approach_skills", {}),
 		"encounter_rolls": _unit_rolls(),
+		"events": _event_data,
 	})
 
 
@@ -285,7 +310,8 @@ func _on_load_pressed() -> void:
 
 
 func _refresh_status() -> void:
-	_status_label.text = _flow.status_text()
+	var where: String = _flow.location()
+	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
 	var party_line: String = _flow.party_text()
 	_supply_label.text = _flow.supply_text() + ("\n" + party_line if party_line != "" else "")
 	_action_buttons["rest"].disabled = not _flow.can_rest()
@@ -293,6 +319,7 @@ func _refresh_status() -> void:
 	_rebuild_approach_bar(approaches)
 	_approach_bar.visible = not approaches.is_empty()
 	_action_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
+	_talk_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_save_button.disabled = not _flow.can_save()
 
 
@@ -410,3 +437,19 @@ func _rebuild_approach_bar(approaches: Array[String]) -> void:
 		button.custom_minimum_size = Vector2(220, 48)
 		button.pressed.connect(_on_action_pressed.bind("approach:" + approach))
 		_approach_bar.add_child(button)
+
+
+## Loads the chapter one events, keeping only valid entries.
+func _load_event_entries() -> Array:
+	var parsed: Variant = _load_json(EVENTS_PATH)
+	if not (parsed is Dictionary) or not parsed.has("events"):
+		push_error("Event data missing or malformed: %s" % EVENTS_PATH)
+		return []
+	var valid: Array = []
+	for event: Variant in parsed["events"]:
+		var errors: Array[String] = EventRunner.validate(event)
+		if errors.is_empty():
+			valid.append(event)
+		else:
+			push_error("Event invalid: %s" % ", ".join(errors))
+	return valid
