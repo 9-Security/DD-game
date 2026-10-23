@@ -29,4 +29,4 @@
 
 ## 待確認
 
-- **拼法衝突**：第六章設定集第 4.2 節寫「Servien Lord，沿用第二章設定集正式拼法」，但第二章設定集的正式拼法是 **Servien Lorde**（見 `CHARACTER_BIBLE.md`）。目前遊戲與文件統一用 **Servien Lorde**，待確認後再調整。
+- **拼法**：已決定為 **Servien Lorde**（第二章正式拼法）。第六章設定集第 4.2 節的 Servien Lord 為筆誤，設定集原文保留，不影響遊戲與文件。

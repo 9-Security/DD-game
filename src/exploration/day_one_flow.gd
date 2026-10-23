@@ -140,12 +140,13 @@ func is_time_up() -> bool:
 
 
 ## The ending reached, "END_A", "END_B", "END_C", or "" while the story continues.
+## Running out of time without another ending reaches END_C, as the manuscript's time-limit rule says.
 func ending_id() -> String:
 	if event_flag("ending_a"):
 		return "END_A"
 	if event_flag("ending_b"):
 		return "END_B"
-	if event_flag("ending_c"):
+	if event_flag("ending_c") or is_time_up():
 		return "END_C"
 	return ""
 

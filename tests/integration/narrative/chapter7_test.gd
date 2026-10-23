@@ -197,9 +197,9 @@ func test_a_and_b_exclude_each_other() -> void:
 	assert_str(flow.ending_id()).is_equal("END_A")
 
 
-func test_running_out_of_time_without_an_ending_is_still_over() -> void:
+func test_running_out_of_time_without_an_ending_becomes_ending_c() -> void:
 	var flow := _flow([0.99])
 	flow.clock.spend(DayClock.TOTAL_DAYS * DayClock.SEGMENTS_PER_DAY)
 
 	assert_bool(flow.is_over()).is_true()
-	assert_str(flow.ending_id()).is_empty()
+	assert_str(flow.ending_id()).is_equal("END_C")

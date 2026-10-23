@@ -11,7 +11,9 @@
 - **共同主線**（王宮藥室，依序）：攤出死亡名冊 → 出示封村密令與處決紀錄 → 向黎安娜說明代價 → 黎安娜作出決定。
 - **結局 A**：需要共同主線完成，且國王明示自願（`final:king_volunteers`），再進行儀式（`final:ritual_a`）。國王的姓名在遊戲中不顯示，只寫「國王的姓名」。
 - **結局 B**：需要共同主線完成，且前章成果齊備：`chapter3_sealed`、`oath_seal_broken`、`spirits_listened`、`translucent_seed_received`。
-- **結局 C**：只能由捷徑崩落觸發，不進入共同主線。
+- **結局 C**：由兩種情況觸發，皆不進入共同主線。
+  - 捷徑崩落且超過時限（`ch7_return_shortcut_late`）。
+  - 時限到期時尚未達成結局 A 或 B（`DayOneFlow.ending_id()` 的後備判定）。依原稿附錄「時限逾期：任務失敗或自動轉入結局 C」。
 - **互斥**：A 與 B 互相排除；結局確定後，所有行動都停止，只剩結局面板（可從存檔重來或重新開始）。
 
 ## 數值與時限
@@ -25,7 +27,8 @@
 - 瑟維恩的殘影與荒潮的表現（設定集未確定）。
 - 時限提示的 UI：目前只在捷徑的按鈕文字中警告。
 
-## 待確認
+## 已決定（依設計原稿為主）
 
-- 「Servien Lord／Lorde」拼法（第六章設定集與第二章設定集不一致）。
-- 英文名字（Freya Rayne／Raine、Lict Ambros／Richter Ambrose）以第七章設定集為準，尚未在其他文件統一。
+- **英文名字**：芙蕾雅・雷恩 **Freya Raine**、里克特・安布羅斯 **Richter Ambrose**，與原稿一致。設定集中的 Freya Rayne、Lict Ambros 不採用，設定集原文保留不改（見 `characters/CHARACTER_BIBLE.md` 決議 C1、C2）。
+- **瑟維恩的拼法**：**Servien Lorde**。原稿未寫出此名（只稱「導師」），第二章設定集為正式拼法；第六章設定集的 Servien Lord 為筆誤。
+- **時限逾期**：轉入結局 C，依原稿附錄。

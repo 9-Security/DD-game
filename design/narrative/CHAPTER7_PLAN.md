@@ -47,8 +47,7 @@
 
 ## 四、名字與拼法（待統一）
 
-- 第七章設定集與觸發規格使用 **Freya Rayne**、**Lict Ambros**；原稿與舊版使用 **Freya Raine**、**Richter Ambrose**。小說中文用字一致，只影響英文資料。建議統一為設定集的拼法，並更新 `design/characters/`。
-- **Servien Lorde** 與 **Servien Lord** 的拼法仍待確認（第六章設定集）。
+- **已決定**（依設計原稿為主）：英文名採 **Freya Raine**、**Richter Ambrose**；瑟維恩採 **Servien Lorde**。詳見 `CHAPTER7_EVENTS.md` 的「已決定」一節。
 
 ## 五、建議的下一步
 
