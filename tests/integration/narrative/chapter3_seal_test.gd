@@ -24,8 +24,7 @@ func _flow() -> DayOneFlow:
 		"events": events,
 		"location_requirements": balance["location_requirements"],
 		"location_actions": balance["location_actions"],
-		"seal_steps": balance["seal_steps"],
-		"seal_failure": balance["seal_failure"],
+		"sequences": balance["sequences"],
 		"event_flags": {"obsidian_gate_open": true, "passage_entered": true},
 	})
 

@@ -56,8 +56,7 @@ var _wounds: Dictionary = {}
 var _mirror_counter: Dictionary = {}
 var _location_requirements: Dictionary = {}
 var _location_actions: Dictionary = {}
-var _seal_steps: Array = []
-var _seal_failure: Dictionary = {}
+var _sequences: Array = []
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -76,8 +75,9 @@ var _seal_failure: Dictionary = {}
 ##   "attack_tags": character ID -> attack tag.
 ##   "location_requirements": place name -> entry rule, see _entry_block().
 ##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
-##   "seal_steps": [action, flag] pairs in the order the seal must be solved. The last flag is set by events.
-##   "seal_failure": {"segments", "curse_stacks", "curse_target"} applied when a step is out of order.
+##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
+##     "blocked_text", "steps" ([action, flag] pairs; the last flag is set by events), and
+##     "failure" ({"text", "segments", "curse_stacks", "curse_target"}) for an out-of-order step.
 func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	clock = DayClock.new()
 	_party = party
@@ -100,8 +100,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	_mirror_counter = options.get("mirror_counter", {})
 	_location_requirements = options.get("location_requirements", {})
 	_location_actions = options.get("location_actions", {})
-	_seal_steps = options.get("seal_steps", [])
-	_seal_failure = options.get("seal_failure", {})
+	_sequences = options.get("sequences", [])
 	if options.has("events"):
 		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
@@ -132,60 +131,95 @@ func can_enter(place: String) -> bool:
 	return _entry_block(place) == ""
 
 
-## True when the seal step for the action has already been completed.
-func seal_step_done(action: String) -> bool:
-	var index: int = _seal_index(action)
-	return index >= 0 and event_flag(str(_seal_steps[index][1]))
-
-
-## True when the seal step can succeed now. Refused or failed steps run no events.
-func _seal_ready(action: String) -> bool:
-	if not _location_allows(action) or not event_flag("kaen_found"):
+## True when the step for the action has already been completed.
+func step_done(action: String) -> bool:
+	var sequence: Dictionary = _sequence_for(action)
+	if sequence.is_empty():
 		return false
-	var index: int = _seal_index(action)
-	if index < 0 or seal_step_done(action):
+	return event_flag(str(_steps(sequence)[_step_index(sequence, action)][1]))
+
+
+## True when the action is an open, unfinished step that the party can see and try.
+func step_visible(action: String) -> bool:
+	var sequence: Dictionary = _sequence_for(action)
+	if sequence.is_empty() or not _location_allows(action) or step_done(action):
 		return false
-	for prior: int in range(index):
-		if not event_flag(str(_seal_steps[prior][1])):
-			return false
-	return true
+	return _requirement_met(sequence)
 
 
-## Runs one step of the seal. Steps are taken in order; a step out of order fails.
-func _perform_seal(action: String) -> String:
-	var index: int = _seal_index(action)
-	if index < 0 or _events == null:
-		return WRONG_PLACE_TEXT
-	if not event_flag("kaen_found"):
-		return "你還沒有辨認凱恩的名字。"
-	var step_flag: String = str(_seal_steps[index][1])
-	if event_flag(step_flag):
-		return "這一步已經完成了。"
-	for prior: int in range(index):
-		if not event_flag(str(_seal_steps[prior][1])):
-			return _seal_failure_text()
-	_at_camp = false
-	if index < _seal_steps.size() - 1:
-		_events.flags[step_flag] = true
-	return "你照著刻痕行動，線條隨之動了起來。"
+## The ordered sequence that contains the action, or an empty Dictionary.
+func _sequence_for(action: String) -> Dictionary:
+	for sequence: Dictionary in _sequences:
+		if _step_index(sequence, action) >= 0:
+			return sequence
+	return {}
 
 
-func _seal_index(action: String) -> int:
-	for index: int in range(_seal_steps.size()):
-		if str(_seal_steps[index][0]) == action:
+func _steps(sequence: Dictionary) -> Array:
+	return sequence["steps"]
+
+
+func _step_index(sequence: Dictionary, action: String) -> int:
+	var steps: Array = _steps(sequence)
+	for index: int in range(steps.size()):
+		if str(steps[index][0]) == action:
 			return index
 	return -1
 
 
-## Resets every seal step except the last, then applies the failure cost.
-func _seal_failure_text() -> String:
-	for index: int in range(_seal_steps.size() - 1):
-		_events.flags[str(_seal_steps[index][1])] = false
-	var text: String = "線條失去平衡，石壁重新逼近。你們退後重來。" + _spend(int(_seal_failure.get("segments", 0)))
-	var target: String = str(_seal_failure.get("curse_target", ""))
-	if _curses.has(target):
+func _requirement_met(sequence: Dictionary) -> bool:
+	var requires: String = str(sequence.get("requires", ""))
+	return requires == "" or event_flag(requires)
+
+
+func _prior_steps_done(sequence: Dictionary, index: int) -> bool:
+	var steps: Array = _steps(sequence)
+	for prior: int in range(index):
+		if not event_flag(str(steps[prior][1])):
+			return false
+	return true
+
+
+## True when the step can succeed now. Refused or failed steps run no events.
+func _sequence_ready(action: String) -> bool:
+	var sequence: Dictionary = _sequence_for(action)
+	if not _location_allows(action) or not _requirement_met(sequence) or step_done(action):
+		return false
+	return _prior_steps_done(sequence, _step_index(sequence, action))
+
+
+## Runs one step. A step out of order fails and resets the sequence.
+func _perform_step(action: String) -> String:
+	var sequence: Dictionary = _sequence_for(action)
+	if sequence.is_empty() or _events == null or not _location_allows(action):
+		return WRONG_PLACE_TEXT
+	if not _requirement_met(sequence):
+		return str(sequence.get("blocked_text", "時機還未到。"))
+	var index: int = _step_index(sequence, action)
+	var steps: Array = _steps(sequence)
+	var step_flag: String = str(steps[index][1])
+	if event_flag(step_flag):
+		return "這一步已經完成了。"
+	if not _prior_steps_done(sequence, index):
+		return _sequence_failure(sequence)
+	_at_camp = false
+	if index < steps.size() - 1:
+		_events.flags[step_flag] = true
+	return "你依序行動，線條隨之動了起來。"
+
+
+## Resets every step except the last, then applies the failure cost.
+func _sequence_failure(sequence: Dictionary) -> String:
+	var steps: Array = _steps(sequence)
+	for index: int in range(steps.size() - 1):
+		_events.flags[str(steps[index][1])] = false
+	var failure: Dictionary = sequence.get("failure", {})
+	var text: String = str(failure.get("text", "你們退後重來。")) + _spend(int(failure.get("segments", 0)))
+	var target: String = str(failure.get("curse_target", ""))
+	var stacks: int = int(failure.get("curse_stacks", 0))
+	if stacks > 0 and _curses.has(target):
 		var curse: BloodCurse = _curses[target]
-		for stack: int in range(int(_seal_failure.get("curse_stacks", 0))):
+		for stack: int in range(stacks):
 			curse.add_stack()
 		text += "血之詛咒被驚動，又加深了一層。"
 	return text
@@ -228,8 +262,8 @@ func _can_run(action: String) -> bool:
 		return action.begins_with("approach:") and pending_approaches().has(action.trim_prefix("approach:"))
 	if action == "rest":
 		return can_rest()
-	if action.begins_with("seal:"):
-		return _seal_ready(action)
+	if not _sequence_for(action).is_empty():
+		return _sequence_ready(action)
 	if action.begins_with("read:"):
 		return _location_allows(action)
 	if action.begins_with("help:") or action.begins_with("confess:") or action.begins_with("strike:"):
@@ -269,11 +303,11 @@ func _perform_action(action: String) -> String:
 		if action.begins_with("approach:"):
 			return _resolve_approach(action.trim_prefix("approach:"))
 		return "請先選擇應對方式。"
-	if action.begins_with("read:") or action.begins_with("seal:"):
+	if not _sequence_for(action).is_empty():
+		return _perform_step(action)
+	if action.begins_with("read:"):
 		if not _location_allows(action):
 			return WRONG_PLACE_TEXT
-		if action.begins_with("seal:"):
-			return _perform_seal(action)
 		_at_camp = false
 		return "你照著刻痕行動，線條隨之動了起來。"
 	if action.begins_with("go:"):

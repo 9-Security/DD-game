@@ -1,0 +1,164 @@
+{
+  "id": "chapter4",
+  "source": "design/narrative/novel/chapter04_garden_of_silence.md（第四章小說與設定集）",
+  "events": [
+    {
+      "id": "ch4_garden_arrival",
+      "source_ref": "第四日：失聲之庭入口",
+      "trigger": {
+        "action": "go:失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "garden_entered",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "guardian_nonhostility_recognized",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "地下河仍在流動，庭園裡卻沒有蟲鳴。葉片被河風吹得微微晃動，枝頭不發出摩擦聲。"
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩試著傾聽那片植物，只有一片空白。「它們還活著，但我聽不見。」"
+        },
+        {
+          "type": "message",
+          "text": "一頭巨獸從石像之間走出。牠看著眾人，卻沒有撲來；牠只守著通向河源的路。"
+        }
+      ]
+    },
+    {
+      "id": "ch4_tree_memory",
+      "source_ref": "古樹：獻出記憶",
+      "trigger": {
+        "action": "commune:tree",
+        "location": "失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "message",
+          "text": "艾洛恩把一段不願再碰觸的記憶，完整地攤在古樹的根系旁。樹皮下傳來一道極低的震顫。"
+        },
+        {
+          "type": "message",
+          "text": "古樹讓他看見祭司把受害者的靈魂拘束於此。古樹的聲音緩慢浮現：「你可以令我們安靜，也可以令我們自由。兩件事不是同一件事。」"
+        }
+      ]
+    },
+    {
+      "id": "ch4_release_stabilize",
+      "source_ref": "解縛：光靈穩住意識",
+      "trigger": {
+        "action": "release:stabilize",
+        "location": "失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "release_stabilized",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "茵芮召來光靈，在艾洛恩周圍形成一圈不斷流動的微光。「你還在這裡。」"
+        }
+      ]
+    },
+    {
+      "id": "ch4_release_chain_one",
+      "source_ref": "解縛：第一道石鏈",
+      "trigger": {
+        "action": "release:chain_one",
+        "location": "失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "release_chain_one",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特找到第一處扣環。芙蕾雅舉起巨劍，一劍斬斷石鏈。巨獸猛地仰頭，卻仍沒有攻擊。"
+        }
+      ]
+    },
+    {
+      "id": "ch4_release_chain_two",
+      "source_ref": "解縛：第二道石鏈",
+      "trigger": {
+        "action": "release:chain_two",
+        "location": "失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "release_chain_two",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "第二處扣環比第一處更深。石鏈裂開時，芙蕾雅踉蹌跪地，左腕的血咒劇痛。里克特伸手扶她，被她推開。"
+        }
+      ]
+    },
+    {
+      "id": "ch4_release_core",
+      "source_ref": "解縛：黑色晶核",
+      "trigger": {
+        "action": "release:core",
+        "location": "失聲之庭"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "guardian_core_broken_safely",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "translucent_seed_received",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "path_to_next_layer_open",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "guardian_survived",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩把雙手貼上黑色晶核，讓痛苦分開，與那些破碎的靈魂短暫共同承受。「我還記得……我自己。」"
+        },
+        {
+          "type": "message",
+          "text": "黑色晶核碎裂了。巨獸倒下，但仍在呼吸。背上的石花剝落，化為白光，沿著古樹的枝葉升去。"
+        },
+        {
+          "type": "message",
+          "text": "古樹把一顆透明種子落進艾洛恩掌心。「神喻草能編織靈魂，卻不能憑空創造靈魂。記住。」"
+        },
+        {
+          "type": "message",
+          "text": "他們進入深淵的第四個夜晚。距離公主靈魂徹底散失的期限，只剩三日。"
+        }
+      ]
+    }
+  ]
+}

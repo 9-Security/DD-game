@@ -12,6 +12,7 @@ const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter1.json",
 	"res://assets/data/events/chapter2.json",
 	"res://assets/data/events/chapter3.json",
+	"res://assets/data/events/chapter4.json",
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
@@ -48,6 +49,12 @@ const CHAPTER3_ACTIONS: Array = [
 	["seal:read", "全隊依序念出名字", "名冊廊廳"],
 	["seal:kaen", "以凱恩之名完成解陣", "名冊廊廳"],
 	["go:出口門廊", "走向出口門廊", "名冊廊廳"],
+	["go:失聲之庭", "走進失聲之庭", "出口門廊"],
+	["commune:tree", "向古樹獻出一段記憶", "失聲之庭"],
+	["release:stabilize", "召來光靈穩住艾洛恩", "失聲之庭"],
+	["release:chain_one", "斬斷第一道石鏈", "失聲之庭"],
+	["release:chain_two", "斬斷第二道石鏈", "失聲之庭"],
+	["release:core", "承受晶核之痛並解縛", "失聲之庭"],
 ]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
@@ -345,8 +352,7 @@ func _ensure_flow() -> void:
 		"mirror_counter": _rules.get("mirror_counter", {}),
 		"location_requirements": _rules.get("location_requirements", {}),
 		"location_actions": _rules.get("location_actions", {}),
-		"seal_steps": _rules.get("seal_steps", []),
-		"seal_failure": _rules.get("seal_failure", {}),
+		"sequences": _rules.get("sequences", []),
 	})
 
 
@@ -395,18 +401,19 @@ func _refresh_chapter3(bar_open: bool) -> void:
 		var shown: bool = bar_open and _flow.location() == place
 		if action.begins_with("go:"):
 			shown = shown and _flow.can_enter(action.trim_prefix("go:")) and not _chapter3_done(action)
-		else:
+		elif action.begins_with("read:"):
 			shown = shown and _flow.can_act_here(action)
-		if action.begins_with("seal:"):
-			shown = shown and _flow.event_flag("kaen_found") and not _flow.event_flag("chapter3_sealed")
-			shown = shown and not _flow.seal_step_done(action)
+		else:
+			shown = shown and _flow.step_visible(action)
 		button.visible = shown
 
 
-## True when a chapter three destination has already been reached, so its button is hidden.
+## True when a destination has already been reached, so its button is hidden.
 func _chapter3_done(action: String) -> bool:
 	if action == "go:出口門廊":
 		return _flow.event_flag("chapter3_exit")
+	if action == "go:失聲之庭":
+		return _flow.event_flag("garden_entered")
 	return false
 
 

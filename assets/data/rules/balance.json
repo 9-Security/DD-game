@@ -109,6 +109,11 @@
     "出口門廊": {
       "flag": "chapter3_sealed",
       "blocked_text": "門廊仍被封住，尚未能離開。"
+    },
+    "失聲之庭": {
+      "min_day": 4,
+      "flag": "chapter3_exit",
+      "blocked_text": "迷廊的出口還沒有走完，無法進入庭園。"
     }
   },
   "location_actions": {
@@ -122,29 +127,77 @@
       "seal:link",
       "seal:read",
       "seal:kaen"
+    ],
+    "失聲之庭": [
+      "commune:tree",
+      "release:stabilize",
+      "release:chain_one",
+      "release:chain_two",
+      "release:core"
     ]
   },
-  "seal_steps": [
-    [
-      "seal:draw",
-      "seal_drawn"
-    ],
-    [
-      "seal:link",
-      "seal_linked"
-    ],
-    [
-      "seal:read",
-      "seal_read"
-    ],
-    [
-      "seal:kaen",
-      "chapter3_sealed"
-    ]
-  ],
-  "seal_failure": {
-    "segments": 1,
-    "curse_stacks": 1,
-    "curse_target": "freya"
-  }
+  "sequences": [
+    {
+      "id": "seal",
+      "requires": "kaen_found",
+      "blocked_text": "你還沒有辨認凱恩的名字。",
+      "steps": [
+        [
+          "seal:draw",
+          "seal_drawn"
+        ],
+        [
+          "seal:link",
+          "seal_linked"
+        ],
+        [
+          "seal:read",
+          "seal_read"
+        ],
+        [
+          "seal:kaen",
+          "chapter3_sealed"
+        ]
+      ],
+      "failure": {
+        "text": "線條失去平衡，石壁重新逼近。你們退後重來。",
+        "segments": 1,
+        "curse_stacks": 1,
+        "curse_target": "freya"
+      }
+    },
+    {
+      "id": "release",
+      "requires": "",
+      "blocked_text": "",
+      "steps": [
+        [
+          "commune:tree",
+          "ancient_tree_memory_offered"
+        ],
+        [
+          "release:stabilize",
+          "release_stabilized"
+        ],
+        [
+          "release:chain_one",
+          "release_chain_one"
+        ],
+        [
+          "release:chain_two",
+          "release_chain_two"
+        ],
+        [
+          "release:core",
+          "guardian_core_broken_safely"
+        ]
+      ],
+      "failure": {
+        "text": "巨獸痛苦地掙扎，束縛的紋路重新收緊。你們必須退後，重新來過。",
+        "segments": 1,
+        "curse_stacks": 0,
+        "curse_target": ""
+      }
+    }
+  ]
 }
