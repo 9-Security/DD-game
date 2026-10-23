@@ -4,6 +4,7 @@ extends Control
 ## the data files; this script only builds the screen and shows what the flow returns.
 
 const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
+const CAPTIONS_PATH: String = "res://assets/data/narrative/captions.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
@@ -76,6 +77,7 @@ var _night_entries: Array = []
 var _encounter_entries: Array = []
 
 var _dialogue_label: Label
+var _captions: Dictionary = {}
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -83,6 +85,7 @@ var _difficulty_label: Label
 var _status_label: Label
 var _supply_label: Label
 var _log_label: Label
+var _log_scroll: ScrollContainer
 var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
@@ -98,6 +101,7 @@ var _save_button: Button
 func _ready() -> void:
 	_build_ui()
 	_lines = _load_prologue_lines()
+	_captions = _load_captions()
 	_rules = _load_rules()
 	_night_entries = _load_night_entries()
 	_encounter_entries = _load_encounter_entries()
@@ -142,7 +146,7 @@ func _build_ui() -> void:
 	add_child(root)
 
 	var title := Label.new()
-	title.text = "七日之藥，深淵之願 — 序章與第一日（原型）"
+	title.text = "七日之藥，深淵之願 — 原型（序章至第五日開場）"
 	title.add_theme_font_size_override("font_size", 28)
 	root.add_child(title)
 
@@ -261,11 +265,15 @@ func _build_ui() -> void:
 	_save_button.pressed.connect(_on_save_pressed)
 	_action_bar.add_child(_save_button)
 
+	_log_scroll = ScrollContainer.new()
+	_log_scroll.custom_minimum_size = Vector2(0, 160)
+	_log_scroll.visible = false
+	root.add_child(_log_scroll)
 	_log_label = Label.new()
 	_log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_log_label.add_theme_font_size_override("font_size", 20)
-	_log_label.visible = false
-	root.add_child(_log_label)
+	_log_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_log_scroll.add_child(_log_label)
 
 
 func _button_text(action: String) -> String:
@@ -307,13 +315,13 @@ func _enter_day_one() -> void:
 	_load_button.visible = false
 	_difficulty_bar.visible = false
 	_difficulty_label.visible = false
-	_dialogue_label.text = "第一日開始。四人踏入星墜之淵外圍。"
+	_dialogue_label.text = _caption()
 	_dialogue_label.custom_minimum_size = Vector2(0, 40)
 	_status_label.visible = true
 	_supply_label.visible = true
 	_action_bar.visible = true
-	_log_label.visible = true
-	_log_label.text = ""
+	_log_scroll.visible = true
+	_set_log("")
 	_refresh_status()
 
 
@@ -361,7 +369,7 @@ func _ensure_flow() -> void:
 func _on_action_pressed(action: String) -> void:
 	_ensure_flow()
 	var message: String = _flow.perform(action)
-	_log_label.text = message
+	_set_log(message)
 	_refresh_status()
 	if _flow.clock.is_expired():
 		_action_bar.visible = false
@@ -370,11 +378,11 @@ func _on_action_pressed(action: String) -> void:
 func _on_save_pressed() -> void:
 	_ensure_flow()
 	if not _flow.can_save():
-		_log_label.text = "只能在營地存檔。請先休息。"
+		_set_log("只能在營地存檔。請先休息。")
 	elif SaveRepository.write(SAVE_PATH, _flow.snapshot()):
-		_log_label.text = "已存檔。"
+		_set_log("已存檔。")
 	else:
-		_log_label.text = "存檔失敗，請檢查儲存空間。"
+		_set_log("存檔失敗，請檢查儲存空間。")
 	_refresh_status()
 
 
@@ -382,16 +390,16 @@ func _on_load_pressed() -> void:
 	_ensure_flow()
 	var data: Variant = SaveRepository.read(SAVE_PATH)
 	if data == null:
-		_log_label.text = "沒有可讀取的存檔。"
-		_log_label.visible = true
+		_set_log("沒有可讀取的存檔。")
+		_log_scroll.visible = true
 		_load_button.visible = false
 		return
 	if not _flow.restore(data):
-		_log_label.text = "存檔內容無效，無法讀取。"
-		_log_label.visible = true
+		_set_log("存檔內容無效，無法讀取。")
+		_log_scroll.visible = true
 		return
 	_enter_day_one()
-	_log_label.text = "已讀取存檔。"
+	_set_log("已讀取存檔。")
 
 
 ## Shows each chapter three button only at its place and only when its action or destination is open.
@@ -421,7 +429,36 @@ func _chapter3_done(action: String) -> bool:
 	return false
 
 
+## Shows a log message and keeps the newest line in view.
+func _set_log(text: String) -> void:
+	_log_label.text = text
+	_scroll_log_to_end.call_deferred()
+
+
+func _scroll_log_to_end() -> void:
+	_log_scroll.scroll_vertical = int(_log_scroll.get_v_scroll_bar().max_value)
+
+
+## The caption under the status line: the start text, a place caption, or the day as a fallback.
+func _caption() -> String:
+	if _flow.location() == "":
+		return str(_captions.get("start", ""))
+	var places: Dictionary = _captions.get("locations", {})
+	if places.has(_flow.location()):
+		return str(places[_flow.location()])
+	return "第 %d 日｜%s" % [_flow.clock.day, _flow.location()]
+
+
+func _load_captions() -> Dictionary:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(CAPTIONS_PATH))
+	if parsed is Dictionary:
+		return parsed
+	return {}
+
+
 func _refresh_status() -> void:
+	if _flow != null:
+		_dialogue_label.text = _caption()
 	var where: String = _flow.location()
 	_status_label.text = _flow.status_text() + ("｜地點：%s" % where if where != "" else "")
 	var party_line: String = _flow.party_text()
