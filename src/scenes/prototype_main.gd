@@ -7,9 +7,12 @@ const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CAPTIONS_PATH: String = "res://assets/data/narrative/captions.json"
 const LABELS_PATH: String = "res://assets/data/narrative/ui_labels.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
+## Size of the portrait beside the dialogue text. Portraits are 640x960, so this keeps their proportions.
+const PORTRAIT_SIZE: Vector2 = Vector2(160, 240)
 const DIALOGUE_PATHS: Array[String] = [
 	"res://assets/data/dialogue/chapter2_dialogue.json",
 	"res://assets/data/dialogue/chapter3_dialogue.json",
+	"res://assets/data/dialogue/chapter4_dialogue.json",
 ]
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
@@ -58,6 +61,8 @@ var _dialogue_button: Button
 var _dialogue: DialoguePlayer = DialoguePlayer.new()
 ## A story fight waiting for its lead-in dialogue to finish: {enemy, note}. Empty when none waits.
 var _pending_battle: Dictionary = {}
+## The action that opened the current story fight. Its dialogue can play again once the fight is won.
+var _story_action: String = ""
 var _captions: Dictionary = {}
 var _labels: Dictionary = {}
 var _ending_panel: VBoxContainer
@@ -107,17 +112,6 @@ var _slot_buttons: Array[Button] = []
 func _ready() -> void:
 	_labels = _read_dictionary(LABELS_PATH)
 	_build_ui()
-	_portrait = TextureRect.new()
-	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_portrait.offset_left = -400
-	_portrait.offset_top = -580
-	_portrait.offset_right = -40
-	_portrait.offset_bottom = -20
-	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_portrait.visible = false
-	add_child(_portrait)
 	# The transition overlay is added last, so it sits above the whole screen and ignores the mouse.
 	_transition = TextureRect.new()
 	_transition.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -202,11 +196,24 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 28)
 	root.add_child(title)
 
+	# The portrait sits beside the dialogue text, inside the dialogue row, so it never covers the
+	# status or action text. Its space stays reserved, so the text does not jump when it appears.
+	var dialogue_row := HBoxContainer.new()
+	dialogue_row.add_theme_constant_override("separation", 16)
+	root.add_child(dialogue_row)
+	_portrait = TextureRect.new()
+	_portrait.custom_minimum_size = PORTRAIT_SIZE
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait.modulate.a = 0.0
+	dialogue_row.add_child(_portrait)
 	_dialogue_label = Label.new()
 	_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_dialogue_label.add_theme_font_size_override("font_size", 24)
 	_dialogue_label.custom_minimum_size = Vector2(0, 160)
-	root.add_child(_dialogue_label)
+	_dialogue_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dialogue_row.add_child(_dialogue_label)
 
 	_dialogue_button = Button.new()
 	_dialogue_button.text = "繼續"
@@ -523,6 +530,7 @@ func _on_action_pressed(action: String) -> void:
 		# A story fight (a sequence's final step, or the mirror) is fought on the battle screen.
 		# Dialogue that leads into the fight plays first; the battle opens when it ends.
 		_show_result(message)
+		_story_action = action
 		if _start_dialogue_for(action):
 			_pending_battle = {"enemy": _flow.story_fight_enemy(), "note": message}
 			return
@@ -618,7 +626,7 @@ func _load_dialogue() -> void:
 ## Shows the portrait at path, or hides the portrait when path is empty or missing.
 func _set_portrait(path: String) -> void:
 	_portrait.texture = load(path) as Texture2D if path != "" and ResourceLoader.exists(path) else null
-	_portrait.visible = _portrait.texture != null
+	_portrait.modulate.a = 1.0 if _portrait.texture != null else 0.0
 
 
 ## A new story day, and the first reached ending, each play their transition once.
@@ -717,6 +725,9 @@ func _on_battle_finished(outcome: String) -> void:
 			_show_result(_flow.finish_encounter_fight(outcome, stacks))
 		"story":
 			_show_result(_flow.finish_story_fight(outcome, stacks))
+			# Some dialogue follows the fight's result, such as after a guardian is won.
+			_start_dialogue_for(_story_action)
+			_story_action = ""
 		_:
 			_show_result(_flow.finish_battle(outcome, stacks))
 
@@ -796,6 +807,7 @@ func _on_load_pressed() -> void:
 		return
 	_dialogue.cancel()
 	_pending_battle = {}
+	_story_action = ""
 	_set_portrait("")
 	_enter_day_one()
 	var body: String = _ending_body()
@@ -888,7 +900,8 @@ func _scroll_log_to_end() -> void:
 ## The caption under the status line: the start text, a place caption, or the day as a fallback.
 func _caption() -> String:
 	if _flow.location() == "":
-		return str(_captions.get("start", ""))
+		var days: Dictionary = _captions.get("days", {})
+		return str(days.get(str(_flow.clock.day), _captions.get("start", "")))
 	var places: Dictionary = _captions.get("locations", {})
 	if places.has(_flow.location()):
 		return str(places[_flow.location()])
