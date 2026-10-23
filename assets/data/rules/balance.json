@@ -114,6 +114,11 @@
       "min_day": 4,
       "flag": "chapter3_exit",
       "blocked_text": "迷廊的出口還沒有走完，無法進入庭園。"
+    },
+    "血誓熔窟": {
+      "min_day": 5,
+      "flag": "path_to_next_layer_open",
+      "blocked_text": "天亮前不宜深入熔窟。石牆仍然閉合，通路尚未開啟。"
     }
   },
   "location_actions": {

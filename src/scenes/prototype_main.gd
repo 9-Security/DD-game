@@ -13,6 +13,7 @@ const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter2.json",
 	"res://assets/data/events/chapter3.json",
 	"res://assets/data/events/chapter4.json",
+	"res://assets/data/events/chapter5.json",
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
@@ -55,6 +56,7 @@ const CHAPTER3_ACTIONS: Array = [
 	["release:chain_one", "斬斷第一道石鏈", "失聲之庭"],
 	["release:chain_two", "斬斷第二道石鏈", "失聲之庭"],
 	["release:core", "承受晶核之痛並解縛", "失聲之庭"],
+	["go:血誓熔窟", "走向血誓熔窟", "失聲之庭"],
 ]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
@@ -414,6 +416,8 @@ func _chapter3_done(action: String) -> bool:
 		return _flow.event_flag("chapter3_exit")
 	if action == "go:失聲之庭":
 		return _flow.event_flag("garden_entered")
+	if action == "go:血誓熔窟":
+		return _flow.event_flag("lava_entered")
 	return false
 
 

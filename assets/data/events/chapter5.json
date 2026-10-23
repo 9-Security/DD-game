@@ -1,0 +1,60 @@
+{
+  "id": "chapter5",
+  "source": "design/narrative/STORY_MANUSCRIPT.md 第五日（原稿）；第五章小說尚未提供，開場以原稿為準",
+  "events": [
+    {
+      "id": "ch5_furnace_arrival",
+      "source_ref": "第五日：血誓熔窟入口",
+      "trigger": {
+        "action": "go:血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "lava_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "第四層深淵充滿赤紅礦脈，岩漿在下方緩慢流動。熱氣從地面向上湧來，空氣裡有硫磺的味道。"
+        },
+        {
+          "type": "message",
+          "text": "熔窟中央留有古代近衛團的營地。地上散落的徽章，與芙蕾雅曾佩戴的完全相同。"
+        }
+      ]
+    },
+    {
+      "id": "ch5_decree_found",
+      "source_ref": "第五日：密令與亡父之骨",
+      "trigger": {
+        "action": "go:血誓熔窟"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "decree_found",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅在營地裡找到一份密令。數年前，王室命令近衛隊阻止村民逃離深淵周圍的祭儀現場，因為那些村民早已被列為誓約的候補祭品。"
+        },
+        {
+          "type": "message",
+          "text": "芙蕾雅的父親拒絕執行命令，最終被處決。他的遺骨被製成一柄特殊巨劍，作為束縛女兒服從的媒介。"
+        },
+        {
+          "type": "message",
+          "text": "亡父之骨不是遺物，而是刑具。"
+        },
+        {
+          "type": "message",
+          "text": "「我一直以為自己背著父親離開。」芙蕾雅摸著劍柄說。「原來他們要我背著罪。」"
+        }
+      ]
+    }
+  ]
+}
