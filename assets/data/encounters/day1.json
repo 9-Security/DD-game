@@ -1,0 +1,25 @@
+{
+  "id": "day1_encounters",
+  "source": "prototype encounters for day one. The novel describes day one without a battle; these are additions for play testing.",
+  "entries": [
+    {
+      "id": "spirit_gate",
+      "text": "一群怨靈在山路口聚集，低聲重複著某個名字。",
+      "enemy_hp": 30,
+      "enemy_def": 1,
+      "enemy_tags": ["restless_spirit"],
+      "approaches": ["combat", "persuade", "summon"],
+      "persuade_threshold": 0.5,
+      "on_loss": {"food": 1, "herbs": 0, "injury": true}
+    },
+    {
+      "id": "rune_seal",
+      "text": "路旁的石壁上刻著符文封印，光線流過刻紋後又暗了下去。",
+      "enemy_hp": 20,
+      "enemy_def": 0,
+      "enemy_tags": ["ancient_construct"],
+      "approaches": ["puzzle", "combat"],
+      "on_loss": {"food": 0, "herbs": 1, "injury": true}
+    }
+  ]
+}

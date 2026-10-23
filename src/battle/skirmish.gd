@@ -23,7 +23,8 @@ const DEFAULT_ATTACK_TAG: String = "physical"
 ## enemy_hp: enemy hit points at the start of the skirmish.
 ## enemy_def: enemy defense used by the damage formula.
 ## rolls: variance values in [-0.10, 0.10]; cycled when exhausted (empty means 0.0).
-## Returns { "won", "rounds", "enemy_hp_left", "berserk_rounds", "blocked_berserk" }.
+## Returns { "won", "rounds", "enemy_hp_left", "berserk_rounds", "blocked_berserk",
+## "weak_hits", "resist_hits" }.
 static func resolve(
 		party: Array,
 		enemy_hp: int,
@@ -38,6 +39,8 @@ static func resolve(
 	var blocked_berserk: int = 0
 	var enemy_tags: Array = options.get("enemy_tags", [])
 	var affinity: Dictionary = options.get("affinity", {})
+	var weak_hits: int = 0
+	var resist_hits: int = 0
 
 	while hp > 0 and rounds < round_limit and not party.is_empty():
 		rounds += 1
@@ -59,6 +62,10 @@ static func resolve(
 
 			var tag: String = str(member.get("attack_tag", DEFAULT_ATTACK_TAG))
 			var multiplier: float = Affinity.multiplier(tag, enemy_tags, affinity)
+			if multiplier > 1.0:
+				weak_hits += 1
+			elif multiplier < 1.0:
+				resist_hits += 1
 			hp -= DamageCalculator.calculate(int(member["atk"]), multiplier, enemy_def, roll)
 			if hp <= 0:
 				break
@@ -69,4 +76,6 @@ static func resolve(
 		"enemy_hp_left": maxi(hp, 0),
 		"berserk_rounds": berserk_rounds,
 		"blocked_berserk": blocked_berserk,
+		"weak_hits": weak_hits,
+		"resist_hits": resist_hits,
 	}

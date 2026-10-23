@@ -7,6 +7,7 @@ const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
+const ENCOUNTER_PATH: String = "res://assets/data/encounters/day1.json"
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
@@ -22,6 +23,7 @@ var _flow: DayOneFlow
 var _difficulty: String = "strict"
 var _rules: Dictionary = {}
 var _night_entries: Array = []
+var _encounter_entries: Array = []
 
 var _dialogue_label: Label
 var _next_button: Button
@@ -33,6 +35,7 @@ var _supply_label: Label
 var _log_label: Label
 var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
+var _approach_bar: HBoxContainer
 var _save_button: Button
 
 
@@ -41,6 +44,7 @@ func _ready() -> void:
 	_lines = _load_prologue_lines()
 	_rules = _load_rules()
 	_night_entries = _load_night_entries()
+	_encounter_entries = _load_encounter_entries()
 	_difficulty = str(_rules.get("default_difficulty", "strict"))
 
 	# Launch options for capture and review, passed after "--" on the command line:
@@ -141,6 +145,11 @@ func _build_ui() -> void:
 		_action_bar.add_child(button)
 		_action_buttons[action] = button
 
+	_approach_bar = HBoxContainer.new()
+	_approach_bar.add_theme_constant_override("separation", 16)
+	_approach_bar.visible = false
+	root.add_child(_approach_bar)
+
 	_save_button = Button.new()
 	_save_button.text = "存檔（需在營地）"
 	_save_button.custom_minimum_size = Vector2(200, 48)
@@ -232,6 +241,10 @@ func _ensure_flow() -> void:
 		"enemy_tags": enemy_tags,
 		"affinity": _rules.get("affinity", {}),
 		"attack_tags": _rules.get("attack_tags", {}),
+		"encounters": _encounter_entries,
+		"party_skills": _party_skills(party),
+		"approach_skills": _rules.get("approach_skills", {}),
+		"encounter_rolls": _unit_rolls(),
 	})
 
 
@@ -276,6 +289,10 @@ func _refresh_status() -> void:
 	var party_line: String = _flow.party_text()
 	_supply_label.text = _flow.supply_text() + ("\n" + party_line if party_line != "" else "")
 	_action_buttons["rest"].disabled = not _flow.can_rest()
+	var approaches: Array[String] = _flow.pending_approaches()
+	_rebuild_approach_bar(approaches)
+	_approach_bar.visible = not approaches.is_empty()
+	_action_bar.visible = approaches.is_empty() and not _flow.clock.is_expired()
 	_save_button.disabled = not _flow.can_save()
 
 
@@ -332,6 +349,7 @@ func _load_party() -> Array:
 			"name": data["identity"]["name"],
 			"atk": int(data["stats"]["atk"]),
 			"curse": (_rules.get("blood_curse_bearers", []) as Array).has(character_id),
+			"skills": data["skills"],
 		})
 	return party
 
@@ -356,3 +374,39 @@ func _unit_rolls() -> Array:
 	for index: int in range(ROLL_SAMPLES):
 		rolls.append(randf())
 	return rolls
+
+
+## Loads the day-one encounters, keeping only valid entries.
+func _load_encounter_entries() -> Array:
+	var parsed: Variant = _load_json(ENCOUNTER_PATH)
+	if not (parsed is Dictionary) or not parsed.has("entries"):
+		push_error("Encounter data missing or malformed: %s" % ENCOUNTER_PATH)
+		return []
+	var valid: Array = []
+	for entry: Variant in parsed["entries"]:
+		var errors: Array[String] = Encounter.validate(entry)
+		if errors.is_empty():
+			valid.append(entry)
+		else:
+			push_error("Encounter entry invalid: %s" % ", ".join(errors))
+	return valid
+
+
+## Skill IDs per party member, keyed by character ID.
+func _party_skills(party: Array) -> Dictionary:
+	var skills: Dictionary = {}
+	for member: Dictionary in party:
+		skills[str(member["id"])] = member["skills"]
+	return skills
+
+
+## Rebuilds the approach buttons for the pending encounter.
+func _rebuild_approach_bar(approaches: Array[String]) -> void:
+	for child: Node in _approach_bar.get_children():
+		child.queue_free()
+	for approach: String in approaches:
+		var button := Button.new()
+		button.text = DayOneFlow.APPROACH_LABELS.get(approach, approach)
+		button.custom_minimum_size = Vector2(220, 48)
+		button.pressed.connect(_on_action_pressed.bind("approach:" + approach))
+		_approach_bar.add_child(button)

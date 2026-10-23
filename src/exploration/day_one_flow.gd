@@ -21,7 +21,7 @@ const DEFAULT_ATTACK_TAG: String = "physical"
 const BERSERK_EFFECT: String = "berserk_block"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
-const SNAPSHOT_VERSION: int = 3
+const SNAPSHOT_VERSION: int = 4
 
 var clock: DayClock
 var battle_done: bool = false
@@ -41,6 +41,12 @@ var _enemy_tags: Array
 var _affinity: Dictionary
 var _attack_tags: Dictionary
 var _curses: Dictionary = {}
+var _encounters: Array = []
+var _encounter_index: int = 0
+var _pending: Encounter = null
+var _party_skills: Dictionary = {}
+var _approach_skills: Dictionary = {}
+var _encounter_rolls: Array = [0.0]
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -71,6 +77,11 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	_enemy_tags = options.get("enemy_tags", [])
 	_affinity = options.get("affinity", {})
 	_attack_tags = options.get("attack_tags", {})
+	_party_skills = options.get("party_skills", {})
+	_approach_skills = options.get("approach_skills", {})
+	_encounter_rolls = options.get("encounter_rolls", [0.0])
+	for entry: Variant in options.get("encounters", []):
+		_encounters.append(Encounter.new(entry))
 
 	for member: Dictionary in party:
 		if bool(member.get("curse", false)):
@@ -79,6 +90,10 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 
 ## Performs a player action and returns a message for the log.
 func perform(action: String) -> String:
+	if _pending != null:
+		if action.begins_with("approach:"):
+			return _resolve_approach(action.trim_prefix("approach:"))
+		return "請先選擇應對方式。"
 	if not ACTION_COSTS.has(action):
 		return "未知行動：%s" % action
 	if clock.is_expired():
@@ -96,7 +111,10 @@ func perform(action: String) -> String:
 	_at_camp = false
 	if action == "battle":
 		return _perform_battle()
-	return _action_label(action) + _spend(ACTION_COSTS[action])
+	var text: String = _action_label(action) + _spend(ACTION_COSTS[action])
+	if action == "explore":
+		text = _start_encounter(text)
+	return text
 
 
 ## True when the party has enough food for a rest.
@@ -160,6 +178,7 @@ func snapshot() -> Dictionary:
 	for id: String in _curses:
 		stacks[id] = (_curses[id] as BloodCurse).stacks
 	data["curse_stacks"] = stacks
+	data["encounter_index"] = _encounter_index
 	return data
 
 
@@ -179,6 +198,9 @@ func restore(data: Dictionary) -> bool:
 	if herbs < 0 or food < 0:
 		return false
 	if not (data.get("trust", {}) is Dictionary) or not (data.get("curse_stacks", {}) is Dictionary):
+		return false
+	var encounter_index: int = _as_int(data.get("encounter_index", -1))
+	if encounter_index < 0 or encounter_index > _encounters.size():
 		return false
 
 	# Validate every value before changing any state.
@@ -208,6 +230,8 @@ func restore(data: Dictionary) -> bool:
 	for id: String in stack_values:
 		var curse: BloodCurse = _curses[id]
 		curse.stacks = stack_values[id]
+	_encounter_index = encounter_index
+	_pending = null
 	_at_camp = false
 	return true
 
@@ -230,8 +254,8 @@ func _perform_battle() -> String:
 		_battle_members(), TUTORIAL_ENEMY_HP, TUTORIAL_ENEMY_DEF, _rolls, Skirmish.DEFAULT_ROUND_LIMIT,
 		{"enemy_tags": _enemy_tags, "affinity": _affinity})
 	if result["won"]:
-		return "戰鬥勝利，共 %d 回合。" % result["rounds"] + _reward_victory() + spend_text
-	return "戰鬥失敗，敵人剩餘 %d 點生命。" % result["enemy_hp_left"] + spend_text
+		return "戰鬥勝利，共 %d 回合。" % result["rounds"] + _hit_text(result) + _reward_victory() + spend_text
+	return "戰鬥失敗，敵人剩餘 %d 點生命。" % result["enemy_hp_left"] + _hit_text(result) + spend_text
 
 
 ## Spends time. Returns day-end text when a night finished, and the night event
@@ -333,3 +357,77 @@ func _as_int(value: Variant) -> int:
 	if value is float and is_equal_approx(value, floorf(value)):
 		return int(value)
 	return -1
+
+
+## Approaches the player may choose for the pending encounter. Empty when none is pending.
+func pending_approaches() -> Array[String]:
+	if _pending == null:
+		return []
+	return _pending.available(_party_skill_ids(), _approach_skills)
+
+
+## Labels for the approach buttons and the log.
+const APPROACH_LABELS: Dictionary = {
+	"combat": "戰鬥",
+	"persuade": "說服",
+	"puzzle": "解謎",
+	"summon": "召喚",
+}
+
+
+## Log text for weakness and resistance hits in a skirmish result.
+func _hit_text(result: Dictionary) -> String:
+	var text: String = ""
+	if int(result.get("weak_hits", 0)) > 0:
+		text += "\n弱點命中 %d 次。" % int(result["weak_hits"])
+	if int(result.get("resist_hits", 0)) > 0:
+		text += "\n抗性減傷 %d 次。" % int(result["resist_hits"])
+	return text
+
+
+## Starts the next encounter after an explore. Returns the text with the encounter and
+## its approaches, or the text unchanged when no encounter is left.
+func _start_encounter(text: String) -> String:
+	if _encounter_index >= _encounters.size():
+		return text
+	_pending = _encounters[_encounter_index]
+	_encounter_index += 1
+	var labels: Array[String] = []
+	for approach: String in pending_approaches():
+		labels.append(APPROACH_LABELS.get(approach, approach))
+	return text + "\n遭遇：%s\n可選擇：%s" % [_pending.text, "、".join(labels)]
+
+
+## Resolves the pending encounter with a chosen approach.
+func _resolve_approach(approach: String) -> String:
+	if not pending_approaches().has(approach):
+		return "無法使用這種應對方式。"
+
+	var encounter: Encounter = _pending
+	_pending = null
+	var result: Dictionary = encounter.resolve(approach, _battle_members(), _encounter_rolls, _affinity, {})
+
+	var text: String = ""
+	if result.get("persuade_failed", false):
+		text += "說服失敗，怨靈發動攻擊。"
+	match str(result["outcome"]):
+		"solved":
+			return "你解開了封印，隊伍得以通過。"
+		"persuaded":
+			return "說服成功，怨靈停止了低語，隊伍得以通過。"
+		"won":
+			return text + "戰鬥勝利，共 %d 回合。" % int(result["rounds"]) + _hit_text(result) + _reward_victory()
+		_:
+			var injured: bool = false
+			if _supply != null:
+				injured = NightEventPool.resolve_loss({"on_loss": encounter.on_loss}, _supply)
+			return text + "戰鬥失敗，敵人剩餘 %d 點生命。" % int(result["enemy_hp_left"]) + _hit_text(result) + ("\n隊伍受傷。" if injured else "")
+
+
+## Skill IDs of every party member, flattened for approach checks.
+func _party_skill_ids() -> Array:
+	var ids: Array = []
+	for member: Dictionary in _party:
+		for skill_id: Variant in _party_skills.get(str(member.get("id", "")), []):
+			ids.append(skill_id)
+	return ids

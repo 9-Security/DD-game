@@ -72,3 +72,16 @@ func test_synergy_block_prevents_berserk_and_is_reported() -> void:
 	# Assert
 	assert_int(result["berserk_rounds"]).is_equal(0)
 	assert_int(result["blocked_berserk"]).is_equal(1)
+
+
+func test_weakness_hits_are_counted() -> void:
+	# Arrange: purify against a restless spirit is weak on every hit
+	var party: Array = [{"atk": 10, "attack_tag": "purify"}]
+	var options := {"enemy_tags": ["restless_spirit"], "affinity": TABLE}
+
+	# Act
+	var result := Skirmish.resolve(party, 30, 0, [0.0], 20, options)
+
+	# Assert
+	assert_int(result["weak_hits"]).is_equal(2)
+	assert_int(result["resist_hits"]).is_equal(0)
