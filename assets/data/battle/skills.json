@@ -1,0 +1,15 @@
+{
+  "source": "First-version skills (design/V1_SCOPE.md section 3). Costs and effects are provisional and need balance review.",
+  "skills": {
+    "life_resonance": {"cost": 15, "kind": "heal", "amount": 20},
+    "iron_guard": {"cost": 10, "kind": "guard", "multiplier": 0.25},
+    "rune_trap": {"cost": 15, "kind": "mark", "multiplier": 1.5},
+    "magic_surge": {"cost": 40, "kind": "attack", "multiplier": 2.0}
+  },
+  "representative": {
+    "eron": "life_resonance",
+    "freya": "iron_guard",
+    "richter": "rune_trap",
+    "inry": "magic_surge"
+  }
+}
