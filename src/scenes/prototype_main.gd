@@ -16,6 +16,7 @@ const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter3.json",
 	"res://assets/data/events/chapter4.json",
 	"res://assets/data/events/chapter5.json",
+	"res://assets/data/events/chapter6.json",
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
@@ -431,6 +432,8 @@ func _chapter3_done(action: String) -> bool:
 		return _flow.event_flag("garden_entered")
 	if action == "go:血誓熔窟":
 		return _flow.event_flag("lava_entered")
+	if action == "go:墜星之心":
+		return _flow.event_flag("heart_entered")
 	return false
 
 

@@ -1,0 +1,166 @@
+{
+  "id": "chapter6",
+  "source": "design/narrative/STORY_MANUSCRIPT.md 第六日（原稿，優先）；design/narrative/novel/chapter06_heart_of_the_fallen_star.md；design/characters/source/CHAPTER6_SETTINGS_v1.0.md",
+  "events": [
+    {
+      "id": "ch6_heart_arrival",
+      "source_ref": "第六日：墜星之心入口",
+      "trigger": {
+        "action": "go:墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "heart_entered",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "漂浮石階在眼前斷開。深藍色的空無裡沒有地面，也沒有天空。"
+        },
+        {
+          "type": "message",
+          "text": "中央懸著一顆巨大的結晶，像一顆被剖開的星，也像某種透明的心臟。柔白與暗藍交錯的光在其中緩慢流動。"
+        },
+        {
+          "type": "message",
+          "text": "從結晶底部伸出的根鬚托起一株植物，只有七片葉子，每片都薄得近乎透明。茵芮低聲念出：神喻草。"
+        }
+      ]
+    },
+    {
+      "id": "ch6_cross_done",
+      "source_ref": "浮空斷階：跨越",
+      "trigger": {
+        "action": "cross:go",
+        "location": "墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "steps_crossed",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "四人依序跨過斷層。芙蕾雅一次只越過一道裂縫，茵芮緊跟艾洛恩。身後那級石階緩慢轉入黑暗。"
+        }
+      ]
+    },
+    {
+      "id": "ch6_spirits_listened",
+      "source_ref": "群靈：真名傾聽",
+      "trigger": {
+        "action": "inry:listen",
+        "location": "墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "spirits_listened",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "茵芮閉上眼睛。最靠近她的一道魂影緩慢停住，一個破碎的音節從混亂中浮出。她試著重複，再聽一次，然後把名字輕輕念出。"
+        },
+        {
+          "type": "message",
+          "text": "靈影不再掙扎，另一個聲音隨後出現。群靈安靜下來，不是消失，也不是被迫沉默，只是終於不再互相推擠。"
+        }
+      ]
+    },
+    {
+      "id": "ch6_truth_read",
+      "source_ref": "王室誓約的真相",
+      "trigger": {
+        "action": "read:oath_truth",
+        "location": "墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "royal_oath_truth_confirmed",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "星核中的影像顯示，古代王室的人圍在墜星之心旁，以誓詞維持護界的光幕。"
+        },
+        {
+          "type": "message",
+          "text": "里克特對照第三日的誓約抄本：「以一人之魂，穩萬民之國；以王嗣之名，續墜星之燈。」"
+        },
+        {
+          "type": "message",
+          "text": "誓約要求定期以王室繼承人完整的靈魂作為錨點。為延後代價，負擔被轉嫁到深淵附近的居民身上。"
+        },
+        {
+          "type": "message",
+          "text": "碎魂熱不是普通疾病，而是曾被延後、曾被轉嫁的代價，開始回到王室血脈。"
+        }
+      ]
+    },
+    {
+      "id": "ch6_herb_secured",
+      "source_ref": "完整取得神喻草",
+      "trigger": {
+        "action": "harvest:whole",
+        "location": "墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "herb_secured",
+          "value": true
+        },
+        {
+          "type": "set_flag",
+          "flag": "herb_seven_leaves_preserved",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "艾洛恩雙手托住神喻草，連同根部一併取出。七片葉子都還完整。"
+        },
+        {
+          "type": "message",
+          "text": "離開根鬚原本的位置後，星核仍在脈動，那道由葉片牽動造成的細裂痕仍留在表面。"
+        },
+        {
+          "type": "message",
+          "text": "他把整株神喻草安置在保護袋中，確保葉片沒有受到擠壓。"
+        }
+      ]
+    },
+    {
+      "id": "ch6_depart",
+      "source_ref": "返程：第七日將至",
+      "trigger": {
+        "action": "depart:return",
+        "location": "墜星之心"
+      },
+      "conditions": [],
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag": "returned_from_star_heart",
+          "value": true
+        },
+        {
+          "type": "message",
+          "text": "里克特望向仍在脈動的墜星之心。「我們只剩第七日了。」"
+        },
+        {
+          "type": "message",
+          "text": "墜星之心沒有追趕他們，也沒有阻止他們離開。只是像一顆背負太多記憶的心，繼續維持不知還能延續多久的脈動。"
+        }
+      ]
+    }
+  ]
+}

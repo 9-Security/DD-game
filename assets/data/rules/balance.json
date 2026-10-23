@@ -119,6 +119,11 @@
       "min_day": 5,
       "flag": "path_to_next_layer_open",
       "blocked_text": "今日不宜深入熔窟，石牆仍然閉合。"
+    },
+    "墜星之心": {
+      "min_day": 6,
+      "flag": "descent_stairs_revealed",
+      "blocked_text": "石階之後的虛空，今日還不能抵達。"
     }
   },
   "location_actions": {
@@ -149,6 +154,18 @@
       "oath:pierce",
       "oath:strike",
       "descend:stairs"
+    ],
+    "墜星之心": [
+      "cross:test",
+      "cross:go",
+      "inry:stop_force",
+      "inry:seal_force",
+      "inry:listen",
+      "read:oath_truth",
+      "harvest:assess",
+      "harvest:pluck",
+      "harvest:whole",
+      "depart:return"
     ]
   },
   "sequences": [
@@ -312,6 +329,110 @@
           "action": "descend:stairs",
           "flag": "princess_voice_heard",
           "hint": "斷誓之後，才能走下石階。"
+        }
+      ]
+    },
+    {
+      "id": "cross",
+      "requires": "",
+      "blocked_text": "",
+      "steps": [
+        {
+          "action": "cross:test",
+          "flag": "stone_tested",
+          "text": "里克特先拋出一枚薄符片。金屬落上最近的浮石，沿表面滑出數寸，停在裂縫旁。「別一起過來。先試重量。」",
+          "hint": "先用符片試探浮石的重量，確認落腳點。"
+        },
+        {
+          "action": "cross:go",
+          "flag": "steps_crossed",
+          "hint": "依序跨過斷層，不要同時移動。"
+        }
+      ],
+      "failure": {
+        "text": "石階在腳下轉開，你們退回原處，重新找過路線。",
+        "flag": "",
+        "segments": 1,
+        "curse_stacks": 0,
+        "curse_target": ""
+      }
+    },
+    {
+      "id": "spirits",
+      "requires": "steps_crossed",
+      "blocked_text": "先跨過浮空的石階。",
+      "steps": [
+        {
+          "action": "inry:stop_force",
+          "flag": "force_stopped",
+          "text": "茵芮放下強制封閉的手勢，慢慢降低魔力。「我想試一件事。有危險，但我不會再假裝沒有。」",
+          "hint": "先停止強制封閉，改為傾聽。"
+        },
+        {
+          "action": "inry:listen",
+          "flag": "spirits_listened",
+          "hint": "逐一聆聽群靈的回應，念出聽見的名字。"
+        }
+      ],
+      "unsafe": [
+        "inry:seal_force"
+      ],
+      "failure": {
+        "text": "茵芮再次施展強制封閉。符文亮起，裂隙卻更多了，群靈的聲音更亂了。",
+        "flag": "",
+        "segments": 1,
+        "curse_stacks": 0,
+        "curse_target": ""
+      }
+    },
+    {
+      "id": "truth",
+      "requires": "spirits_listened",
+      "blocked_text": "群靈還沒有平息，影像無法穩定。",
+      "steps": [
+        {
+          "action": "read:oath_truth",
+          "flag": "royal_oath_truth_confirmed",
+          "hint": "對照星核中的影像與誓約抄本。"
+        }
+      ]
+    },
+    {
+      "id": "harvest",
+      "requires": "royal_oath_truth_confirmed",
+      "blocked_text": "還不能取下神喻草，誓約的影像尚未看清。",
+      "steps": [
+        {
+          "action": "harvest:assess",
+          "flag": "roots_assessed",
+          "text": "里克特蹲在根鬚旁，仔細辨認它們與結晶交會的位置。「慢一點。」",
+          "hint": "先確認根鬚與星核的連結，再取下整株草。"
+        },
+        {
+          "action": "harvest:whole",
+          "flag": "herb_secured",
+          "hint": "連同根部一併取出整株神喻草。"
+        }
+      ],
+      "unsafe": [
+        "harvest:pluck"
+      ],
+      "failure": {
+        "text": "艾洛恩捏住最外側的葉片，根部剛被拉動，星核便傳來碎裂聲，表面出現一道細裂縫。你們不能再碰葉子。",
+        "flag": "",
+        "segments": 1,
+        "curse_stacks": 0,
+        "curse_target": ""
+      }
+    },
+    {
+      "id": "depart",
+      "requires": "herb_secured",
+      "blocked_text": "神喻草還沒有完整取得。",
+      "steps": [
+        {
+          "action": "depart:return",
+          "flag": "returned_from_star_heart"
         }
       ]
     }
