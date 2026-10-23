@@ -11,6 +11,11 @@
       "conditions": [],
       "effects": [
         {
+          "type": "set_flag",
+          "flag": "gate_reached",
+          "value": true
+        },
+        {
           "type": "message",
           "text": "峽谷沒有回聲。黑牆中央的門上嵌著四面銀鏡，其中一面率先亮起。"
         }

@@ -3,6 +3,26 @@
   "source": "design/narrative/novel/chapter02_day02.md (二、四面銀鏡；四、無法隱藏的真相；五、第一份代價)",
   "scenes": [
     {
+      "id": "ch2_dialogue_gate_arrival",
+      "requires_flag": "gate_reached",
+      "action": "go:黑曜石之門",
+      "source_ref": "一、沒有回聲的峽谷",
+      "lines": [
+        {"speaker": "旁白", "text": "峽谷盡頭矗立著一面由整塊黑色岩石雕成的巨牆，牆中央嵌著四面銀鏡。"},
+        {"speaker": "茵芮", "text": "黑曜石之門……"},
+        {"speaker": "旁白", "text": "她的聲音在峽谷裡傳開，卻沒有回聲。里克特扔出的碎石落地，聲響同樣沒有回來。"},
+        {"speaker": "茵芮", "text": "我沒有召喚那個女孩。"},
+        {"speaker": "艾洛恩", "text": "我知道。"},
+        {"speaker": "茵芮", "text": "我真的沒有。"},
+        {"speaker": "艾洛恩", "text": "我相信你。"},
+        {"speaker": "茵芮", "text": "你不覺得是我失控了嗎？"},
+        {"speaker": "艾洛恩", "text": "我不知道。"},
+        {"speaker": "芙蕾雅", "text": "古代封印？"},
+        {"speaker": "里克特", "text": "不太正常。先別靠近。"},
+        {"speaker": "旁白", "text": "但已經太遲了。第一面銀鏡亮了起來。"}
+      ]
+    },
+    {
       "id": "ch2_dialogue_confess_eron",
       "requires_flag": "mirror_eron_acknowledged",
       "action": "confess:eron",
