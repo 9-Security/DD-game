@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Engine Version** | Godot 4.7 (project pinned at patch 4.7.2) |
-| **Installed at pin time** | NOT DETERMINED — `/setup-engine` §3 probed for `godot` on PATH and found none on 2026-10-23. Absence is unconfirmed, not established. |
+| **Installed at pin time** | 4.7.2.stable.official.ed1daf0bf — detected 2026-10-23 in the development sandbox (binary at `/home/user/tools/godot/`, linked as `godot` on PATH there only). Headless `--import` of the project exited 0 with no `ERROR` lines. |
 | **Release Date** | June 2026 (latest patch: 4.7.2, August 2026) |
 | **Project Pinned** | 2026-10-23 (4.7.2 chosen in /setup-engine; previously 2026-10-17) |
 | **Last Docs Verified** | 2026-10-17 (release timeline and 4.7 changes); 2026-02-12 (4.4-4.6 content) |

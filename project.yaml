@@ -33,8 +33,8 @@ naming:
   scenes: snake_case
 
 commands:
-  # TODO: godot is not on PATH here — set the editor's full path via /settings.
-  #       These commands will not run until that is fixed.
+  # godot is on PATH in the development sandbox only. On any other machine, set the
+  # editor's full path via /settings. Bare `godot` in these values relies on PATH.
   # build: no export preset exists yet; set the preset name when one is created.
   build: "[TO BE CONFIGURED]"
   test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
