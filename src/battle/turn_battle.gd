@@ -91,6 +91,11 @@ func member_hp(member_id: String) -> int:
 	return int(_find(member_id).get("hp", 0))
 
 
+## Current MP of a party member, or 0 when the id is unknown.
+func member_mp(member_id: String) -> int:
+	return int(_find(member_id).get("mp", 0))
+
+
 ## Current HP of the enemy.
 func enemy_hp() -> int:
 	return int(_enemy["hp"])

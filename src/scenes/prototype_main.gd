@@ -23,6 +23,9 @@ const EVENTS_PATHS: Array[String] = [
 ## Confessions offered at the Obsidian Gate, one per party member.
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
+const BATTLE_SKILLS_PATH: String = "res://assets/data/battle/skills.json"
+const BATTLE_ENEMIES_PATH: String = "res://assets/data/battle/enemies.json"
+const CHARACTER_FILE_PATH: String = "res://assets/data/characters/%s.json"
 ## Single save slot for the prototype. The design calls for three slots later.
 ## Darkens the full-screen illustration so the text stays readable.
 const BACKDROP_SHADE_ALPHA: float = 0.5
@@ -72,6 +75,7 @@ var _gate_bar: GridContainer
 var _passage_button: Button
 var _event_data: Array = []
 var _save_button: Button
+var _battle_panel: BattlePanel
 var _slot: int = 1
 var _slot_bar: HBoxContainer
 var _slot_buttons: Array[Button] = []
@@ -431,12 +435,56 @@ func _ensure_flow() -> void:
 
 func _on_action_pressed(action: String) -> void:
 	_ensure_flow()
-	var message: String = _flow.perform(action)
+	if action == "battle" and _flow.can_start_battle():
+		_open_battle()
+		return
+	_show_result(_flow.perform(action))
+
+
+## Shows the result of an action in the log and refreshes the screen.
+func _show_result(message: String) -> void:
 	_set_log(message)
 	_refresh_status()
 	if _flow.is_over():
 		_action_bar.visible = false
 		_slot_bar.visible = false
+
+
+## Opens the interactive battle screen for the tutorial battle.
+func _open_battle() -> void:
+	if _battle_panel == null:
+		_battle_panel = BattlePanel.new()
+		_battle_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_battle_panel.offset_left = 48
+		_battle_panel.offset_top = 32
+		_battle_panel.offset_right = -48
+		_battle_panel.offset_bottom = -32
+		_battle_panel.finished.connect(_on_battle_finished)
+		add_child(_battle_panel)
+	var skill_file: Dictionary = _read_dictionary(BATTLE_SKILLS_PATH)
+	var skills: Dictionary = skill_file.get("skills", {})
+	var representative: Dictionary = skill_file.get("representative", {})
+	var party: Array = []
+	for id: String in CHARACTER_IDS:
+		var character: Dictionary = _read_dictionary(CHARACTER_FILE_PATH % id)
+		party.append(BattleSetup.party_member(character, str(representative.get(id, ""))))
+	var enemy: Dictionary = _read_dictionary(BATTLE_ENEMIES_PATH).get("tutorial", {})
+	_battle_panel.start(party, enemy.duplicate(true), _battle_rolls(), skills, Skirmish.DEFAULT_ROUND_LIMIT)
+	_battle_panel.visible = true
+
+
+## Variance values in [-0.10, 0.10] for the battle damage formula.
+func _battle_rolls() -> Array:
+	var rolls: Array = []
+	for index: int in range(ROLL_SAMPLES):
+		rolls.append(randf() * 0.2 - 0.1)
+	return rolls
+
+
+## Applies the battle result to the day and closes the battle screen.
+func _on_battle_finished(outcome: String) -> void:
+	_battle_panel.visible = false
+	_show_result(_flow.finish_battle(outcome))
 
 
 func _on_save_pressed() -> void:

@@ -1,0 +1,4 @@
+{
+  "source": "Enemies used by the interactive battle. The tutorial enemy must match the flow constants (DayOneFlow.TUTORIAL_ENEMY_HP and TUTORIAL_ENEMY_DEF); atk is provisional.",
+  "tutorial": {"name": "影子守衛", "hp": 30, "max_hp": 30, "def": 2, "atk": 6}
+}

@@ -154,3 +154,11 @@ func test_an_action_out_of_turn_is_refused() -> void:
 	var result := battle.act("slow", "defend")
 
 	assert_bool(result["ok"]).is_false()
+
+
+func test_member_mp_reports_the_mp_left_after_a_skill() -> void:
+	var battle := _battle([_member("inry", 10, 80, 10, 4, "mana_surge")], _enemy(500, 1))
+
+	battle.act("inry", "skill")
+
+	assert_int(battle.member_mp("inry")).is_equal(60 - 40)

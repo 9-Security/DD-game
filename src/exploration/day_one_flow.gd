@@ -136,6 +136,31 @@ func perform(action: String) -> String:
 	return text
 
 
+## True when the tutorial battle can still be started: not yet fought, the story is not over, and
+## the battle action is open here. The interactive battle screen checks this before it opens.
+func can_start_battle() -> bool:
+	return not battle_done and not is_over() and _can_run("battle")
+
+
+## Applies the result of an interactive battle. outcome is "won", "lost" or "fled".
+## Spends the battle's time, marks the tutorial battle as done, and grants the victory reward
+## only when the party won. Returns the text for the log.
+func finish_battle(outcome: String) -> String:
+	if battle_done:
+		return "教學戰鬥已結束。"
+	if is_over():
+		return "時限已到，無法再行動。" if is_time_up() else "結局已定，無法再行動。"
+	var spend_text: String = _spend(ACTION_COSTS["battle"])
+	battle_done = true
+	_battle_this_action = true
+	match outcome:
+		"won":
+			return "戰鬥勝利。" + _reward_victory() + spend_text
+		"fled":
+			return "你撤出了戰鬥。" + spend_text
+	return "戰鬥失敗，隊伍退出了這場戰鬥。" + spend_text
+
+
 ## The mood of the current moment for the music: "battle" while the last action fought,
 ## "night" during the night segment, and "" otherwise. A battle mood ends with the next action.
 func mood() -> String:
