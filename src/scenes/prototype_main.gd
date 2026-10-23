@@ -77,7 +77,7 @@ func _ready() -> void:
 	#   --difficulty=<strict|assisted>  choose the difficulty before the day starts
 	#   --demo-load                  load the save slot at launch
 	#   --demo-action=<action>       perform one action at launch (move, explore, rest, battle, save)
-	var options: PackedStringArray = OS.get_cmdline_user_args()
+	var options: PackedStringArray = _launch_options()
 	for option: String in options:
 		if option.begins_with("--difficulty="):
 			_set_difficulty(option.trim_prefix("--difficulty="))
@@ -95,6 +95,13 @@ func _ready() -> void:
 				_on_save_pressed()
 			else:
 				_on_action_pressed(action)
+
+
+## Desktop reads the command line; the web build reads the page URL (see LaunchOptions).
+func _launch_options() -> PackedStringArray:
+	if OS.has_feature("web"):
+		return LaunchOptions.from_query(str(JavaScriptBridge.eval("window.location.search", true)))
+	return OS.get_cmdline_user_args()
 
 
 func _build_ui() -> void:
