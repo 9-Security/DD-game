@@ -674,6 +674,7 @@ func _refresh_status() -> void:
 	var party_line: String = _flow.party_text()
 	_supply_label.text = _flow.supply_text() + ("\n" + party_line if party_line != "" else "")
 	_action_buttons["rest"].disabled = not _flow.can_rest()
+	_action_buttons["battle"].disabled = not _flow.can_start_battle()
 	var approaches: Array[String] = _flow.pending_approaches()
 	_rebuild_approach_bar(approaches)
 	_approach_bar.visible = not approaches.is_empty()
