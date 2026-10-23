@@ -180,66 +180,6 @@
       ]
     },
     {
-      "id": "ch3_seal_draw",
-      "source_ref": "協作解陣：光靈描摹",
-      "trigger": {
-        "action": "seal:draw",
-        "location": "名冊廊廳"
-      },
-      "conditions": [],
-      "effects": [
-        {
-          "type": "set_flag",
-          "flag": "seal_drawn",
-          "value": true
-        },
-        {
-          "type": "message",
-          "text": "茵芮召出光靈，它們沿著結界的線條一隻隻散開，在半空描出凱恩之名的筆畫。"
-        }
-      ]
-    },
-    {
-      "id": "ch3_seal_link",
-      "source_ref": "協作解陣：重排連線",
-      "trigger": {
-        "action": "seal:link",
-        "location": "名冊廊廳"
-      },
-      "conditions": [],
-      "effects": [
-        {
-          "type": "set_flag",
-          "flag": "seal_linked",
-          "value": true
-        },
-        {
-          "type": "message",
-          "text": "里克特依照光線重排閉鎖的關聯。「左上方的第三個接到第二列尾端，不要碰主線。」"
-        }
-      ]
-    },
-    {
-      "id": "ch3_seal_read",
-      "source_ref": "協作解陣：全隊讀名",
-      "trigger": {
-        "action": "seal:read",
-        "location": "名冊廊廳"
-      },
-      "conditions": [],
-      "effects": [
-        {
-          "type": "set_flag",
-          "flag": "seal_read",
-          "value": true
-        },
-        {
-          "type": "message",
-          "text": "艾洛恩與茵芮依序念出名字，芙蕾雅守住閉合的石壁。石牆與光線的節奏相互呼應。"
-        }
-      ]
-    },
-    {
       "id": "ch3_seal_collaborate",
       "source_ref": "協作解陣：凱恩之名",
       "trigger": {

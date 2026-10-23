@@ -5,6 +5,7 @@ extends Control
 
 const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CAPTIONS_PATH: String = "res://assets/data/narrative/captions.json"
+const LABELS_PATH: String = "res://assets/data/narrative/ui_labels.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
@@ -18,55 +19,6 @@ const EVENTS_PATHS: Array[String] = [
 ]
 ## Location and conversation actions offered on the day-one screen, with their labels.
 ## Confessions offered at the Obsidian Gate, one per party member.
-const GATE_ACTIONS: Array = [
-	["confess:eron", "承認：艾洛恩的枯林"],
-	["confess:freya", "承認：芙蕾雅的封村"],
-	["confess:richter", "承認：里克特的兄長"],
-	["confess:inry", "承認：茵芮的失控"],
-	["strike:mirror", "攻擊銀鏡（芙蕾雅）"],
-]
-const NARRATIVE_ACTIONS: Array = [
-	["go:焦林", "前往焦林"],
-	["help:sapling", "幫助焦林的幼樹"],
-	["go:守淵村", "前往守淵村"],
-	["go:黑曜石之門", "前往黑曜石之門"],
-	["talk:freya", "與芙蕾雅交談"],
-	["talk:richter", "與里克特交談"],
-	["talk:freya_food", "遞給芙蕾雅乾糧"],
-	["talk:innkeeper", "詢問旅店主人"],
-]
-const PASSAGE_ACTION: Array = ["go:門後通道", "走入門後的通道"]
-## Chapter three actions: [action, label, place where the button is shown].
-## "go:" buttons also need the destination to be enterable; "read:" and "seal:" need the action
-## to be allowed at the current place (see DayOneFlow.can_act_here()). Seal steps must be taken in
-## order; a wrong one resets the seal, so every step stays visible until it is done.
-const CHAPTER3_ACTIONS: Array = [
-	["go:咒牆迷廊", "前往咒牆迷廊", "門後通道"],
-	["read:first_name", "念出刻痕中的名字", "咒牆迷廊"],
-	["read:second_name", "念出另一個名字", "咒牆迷廊"],
-	["go:名冊廊廳", "前往名冊廊廳", "咒牆迷廊"],
-	["read:kaen", "辨認凱恩・安布羅斯", "名冊廊廳"],
-	["seal:draw", "召喚光靈描摹刻痕", "名冊廊廳"],
-	["seal:link", "重排結界的連線", "名冊廊廳"],
-	["seal:read", "全隊依序念出名字", "名冊廊廳"],
-	["seal:kaen", "以凱恩之名完成解陣", "名冊廊廳"],
-	["go:出口門廊", "走向出口門廊", "名冊廊廳"],
-	["go:失聲之庭", "走進失聲之庭", "出口門廊"],
-	["commune:tree", "向古樹獻出一段記憶", "失聲之庭"],
-	["release:stabilize", "召來光靈穩住艾洛恩", "失聲之庭"],
-	["release:chain_one", "斬斷第一道石鏈", "失聲之庭"],
-	["release:chain_two", "斬斷第二道石鏈", "失聲之庭"],
-	["release:core", "承受晶核之痛並解縛", "失聲之庭"],
-	["go:血誓熔窟", "走向血誓熔窟", "失聲之庭"],
-	["read:father_record", "讀取石室裡的處決紀錄", "血誓熔窟"],
-	["oath:lower", "放下亡父之骨", "血誓熔窟"],
-	["oath:cover", "牽制鐵甲的長刃", "血誓熔窟"],
-	["oath:barrier", "維持淨化結界", "血誓熔窟"],
-	["oath:chain", "召出星光鎖鏈", "血誓熔窟"],
-	["oath:pierce", "將亡父之骨刺入刻印", "血誓熔窟"],
-	["oath:strike", "揮劍攻擊鐵甲", "血誓熔窟"],
-	["descend:stairs", "走下向下的石階", "血誓熔窟"],
-]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
 ## Single save slot for the prototype. The design calls for three slots later.
@@ -86,6 +38,7 @@ var _encounter_entries: Array = []
 
 var _dialogue_label: Label
 var _captions: Dictionary = {}
+var _labels: Dictionary = {}
 var _next_button: Button
 var _load_button: Button
 var _difficulty_bar: HBoxContainer
@@ -107,9 +60,10 @@ var _save_button: Button
 
 
 func _ready() -> void:
+	_labels = _read_dictionary(LABELS_PATH)
 	_build_ui()
 	_lines = _load_prologue_lines()
-	_captions = _load_captions()
+	_captions = _read_dictionary(CAPTIONS_PATH)
 	_rules = _load_rules()
 	_night_entries = _load_night_entries()
 	_encounter_entries = _load_encounter_entries()
@@ -154,7 +108,7 @@ func _build_ui() -> void:
 	add_child(root)
 
 	var title := Label.new()
-	title.text = "七日之藥，深淵之願 — 原型（序章至第五日開場）"
+	title.text = str(_labels.get("title", ""))
 	title.add_theme_font_size_override("font_size", 28)
 	root.add_child(title)
 
@@ -221,7 +175,7 @@ func _build_ui() -> void:
 	_talk_bar.add_theme_constant_override("v_separation", 10)
 	_talk_bar.visible = false
 	root.add_child(_talk_bar)
-	for pair: Array in NARRATIVE_ACTIONS:
+	for pair: Array in _labels.get("narrative_actions", []):
 		var button := Button.new()
 		button.text = str(pair[1])
 		button.custom_minimum_size = Vector2(150, 44)
@@ -232,17 +186,18 @@ func _build_ui() -> void:
 	_gate_bar.add_theme_constant_override("separation", 12)
 	_gate_bar.visible = false
 	root.add_child(_gate_bar)
-	for pair: Array in GATE_ACTIONS:
+	for pair: Array in _labels.get("gate_actions", []):
 		var button := Button.new()
 		button.text = str(pair[1])
 		button.custom_minimum_size = Vector2(220, 44)
 		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
 		_gate_bar.add_child(button)
+	var passage: Array = _labels.get("passage_action", ["", ""])
 	_passage_button = Button.new()
-	_passage_button.text = str(PASSAGE_ACTION[1])
+	_passage_button.text = str(passage[1])
 	_passage_button.custom_minimum_size = Vector2(220, 44)
 	_passage_button.visible = false
-	_passage_button.pressed.connect(_on_action_pressed.bind(str(PASSAGE_ACTION[0])))
+	_passage_button.pressed.connect(_on_action_pressed.bind(str(passage[0])))
 	_gate_bar.add_child(_passage_button)
 
 	_chapter3_bar = GridContainer.new()
@@ -251,7 +206,7 @@ func _build_ui() -> void:
 	_chapter3_bar.add_theme_constant_override("v_separation", 10)
 	_chapter3_bar.visible = false
 	root.add_child(_chapter3_bar)
-	for entry: Array in CHAPTER3_ACTIONS:
+	for entry: Array in _labels.get("story_actions", []):
 		var button := Button.new()
 		button.text = str(entry[1])
 		button.custom_minimum_size = Vector2(220, 44)
@@ -457,8 +412,9 @@ func _caption() -> String:
 	return "第 %d 日｜%s" % [_flow.clock.day, _flow.location()]
 
 
-func _load_captions() -> Dictionary:
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(CAPTIONS_PATH))
+## Reads a JSON file whose root is an object. Returns an empty Dictionary if it is not.
+func _read_dictionary(path: String) -> Dictionary:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if parsed is Dictionary:
 		return parsed
 	return {}

@@ -100,6 +100,17 @@ func test_breaking_the_oath_in_order_weakens_the_curse_without_curing_it() -> vo
 	assert_int(flow.curse_stacks("freya")).is_equal(1)
 
 
+func test_lowering_the_sword_again_after_a_reset_replays_its_text() -> void:
+	var flow := _flow()
+	_read_record(flow)
+	flow.perform("oath:lower")
+	flow.perform("oath:pierce")
+
+	var message: String = flow.perform("oath:lower")
+
+	assert_bool(message.contains("放下亡父之骨")).is_true()
+
+
 func test_piercing_before_the_chains_is_a_wrong_step() -> void:
 	var flow := _flow()
 	_read_record(flow)

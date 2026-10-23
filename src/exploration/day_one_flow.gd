@@ -76,7 +76,8 @@ var _sequences: Array = []
 ##   "location_requirements": place name -> entry rule, see _entry_block().
 ##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
 ##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
-##     "blocked_text", "steps" ([action, flag] pairs; the last flag is set by events), and
+##     "blocked_text", "steps" ([action, flag, text] triples; text is optional and the last flag is
+##     set by events), and
 ##     "failure" ({"text", "flag", "segments", "curse_stacks", "curse_target"}) for an out-of-order
 ##     step. "flag" is set to true when the failure happens. Optional "unsafe" lists actions that
 ##     always fail while the sequence is open, and "success" ({"curse_weaken", "curse_target"})
@@ -232,9 +233,16 @@ func _perform_step(action: String) -> String:
 	_at_camp = false
 	if index < steps.size() - 1:
 		_events.flags[step_flag] = true
-	else:
-		_apply_success(sequence)
+		var text: String = _step_text(sequence, index)
+		return text if text != "" else "你依序行動，線條隨之動了起來。"
+	_apply_success(sequence)
 	return "你依序行動，線條隨之動了起來。"
+
+
+## The narration for a step. It is in the sequence data, so it repeats when the step is redone.
+func _step_text(sequence: Dictionary, index: int) -> String:
+	var step: Array = _steps(sequence)[index]
+	return str(step[2]) if step.size() > 2 else ""
 
 
 ## Effects applied when a sequence's final step succeeds. Weakening never cures the curse.

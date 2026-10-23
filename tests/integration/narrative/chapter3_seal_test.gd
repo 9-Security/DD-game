@@ -95,6 +95,17 @@ func test_kaen_seal_before_its_name_is_read_is_refused_without_penalty() -> void
 	assert_int(flow.curse_stacks("freya")).is_equal(stacks)
 
 
+func test_redoing_a_step_after_a_reset_replays_its_text() -> void:
+	var flow := _flow()
+	_reach_hall_with_kaen(flow)
+	flow.perform("seal:draw")
+	flow.perform("seal:read")
+
+	var message: String = flow.perform("seal:draw")
+
+	assert_bool(message.contains("光靈")).is_true()
+
+
 func test_repeating_a_finished_step_costs_nothing() -> void:
 	var flow := _flow()
 	_reach_hall_with_kaen(flow)
