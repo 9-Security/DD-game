@@ -333,8 +333,24 @@ project.godot              Godot 專案設定（repo 根目錄）
 | 第二章：黑曜石之門（承認、鏡像反擊、第二日開放） | 已實作並測試（超出第一版範圍） | `src/exploration/day_one_flow.gd`，`assets/data/events/chapter2.json`，`tests/unit/narrative/mirror_*` |
 | 第二章：門後通道（抵達文字依日數分支） | 已實作並測試（超出第一版範圍） | `tests/integration/narrative/passage_day_test.gd` |
 | 網頁版匯出與瀏覽器驗證 | 已驗證 | `production/qa/evidence/chapter1-prototype/` |
+| 第三章：咒牆迷廊（符文解讀、名冊、封印、事件順序） | 已實作並測試 | `assets/data/events/chapter3.json`，`tests/integration/narrative/chapter3_flow_test.gd`，`chapter3_seal_test.gd` |
+| 第四章：失聲之庭（庭園、群靈釋放、透明種子） | 已實作並測試 | `assets/data/events/chapter4.json`，`tests/integration/narrative/chapter4_garden_test.gd` |
+| 第五章：血誓熔窟（父親紀錄、誓約破除、第六日推進） | 已實作並測試 | `assets/data/events/chapter5.json`，`chapter5_break_test.gd`，`chapter5_opening_test.gd` |
+| 第六章：墜星之心（神喻草、群靈傾聽、真相） | 已實作並測試 | `assets/data/events/chapter6.json`，`tests/integration/narrative/chapter6_heart_test.gd` |
+| 第七章：返程路線、共同主線、結局 A／B／C | 已實作並測試 | `assets/data/events/chapter7.json`，`tests/integration/narrative/chapter7_test.gd` |
+| 時限逾期 → 結局 C（依原稿附錄） | 已實作並測試 | `src/exploration/day_one_flow.gd`（`ending_id()`），`tests/integration/narrative/chapter7_test.gd` |
+| 結局畫面（插圖、標題、結局文字、重來／讀檔） | 已實作，桌面與網頁版截圖 | `production/qa/evidence/chapter1-prototype/31-ending-a.png`、`33-ending-b.png`、`34-ending-c.png` |
+| 存檔快照讀回（第三至第七章狀態） | 已實作並測試 | `tests/integration/narrative/chapter_save_restore_test.gd` |
+| 網頁版字型子集（1011 個非 ASCII 字元） | 已重新產生 | `tools/asset-pipeline/subset_font.py`，`assets/fonts/NotoSansTC-Subset.ttf` |
 
-**尚未完成**：三個存檔格（目前只有一格）、地圖與角色立繪（目前只有文字介面）、鏡影精靈的出場與退場演出、鏡像反擊的 HP 數值（目前只記錄傷害，尚無 HP 系統）、幼樹的 spirit_link 效果（尚未套用到戰鬥）、第三日以後的內容（咒牆迷廊起）。
+**尚未完成**：
+- 三個存檔格（目前只有一格）。
+- 地圖與角色立繪（目前只有文字介面）；章節插圖已入庫（`assets/art/chapters/`），尚未接到封面、序章與轉場。
+- 鏡影精靈的出場與退場演出。
+- 鏡像反擊的 HP 數值（目前只記錄傷害，尚無 HP 系統）、幼樹的 spirit_link 效果（尚未套用到戰鬥）。
+- 荒潮與瑟維恩殘影的演出（原稿與設定集未定義具體表現）。
+- 讀取已結束的存檔時，結局面板只顯示結局標題，正文不會重現（正文保存於事件紀錄，存檔不保留）。
+- 結局判定與原稿的時限規則已統一（時限逾期 → 結局 C）；觸發規格 `ENDING_TRIGGER_DESIGN_v1.0.md` 第 18 行仍寫「C 只限返程逾期」，待你確認以哪一份為準。
 
 **第一版之後已先行實作**：第二章的黑曜石之門與門後通道，因為第二章的事件已確定，且它們是第一版之後的首批內容。第二日的時間線已與小說一致（門在第二日開放）。
 
