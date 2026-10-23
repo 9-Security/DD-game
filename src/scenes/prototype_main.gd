@@ -6,6 +6,8 @@ const PROLOGUE_PATH: String = "res://assets/data/narrative/prologue.json"
 const CHARACTER_DIR: String = "res://assets/data/characters/"
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
 const ROLL_SAMPLES: int = 16
+## Single save slot for the prototype. The design calls for three slots later.
+const SAVE_PATH: String = "user://save_slot_1.json"
 
 var _lines: Array = []
 var _line_index: int = 0
@@ -14,9 +16,11 @@ var _flow: DayOneFlow
 var _title_label: Label
 var _dialogue_label: Label
 var _next_button: Button
+var _load_button: Button
 var _status_label: Label
 var _log_label: Label
 var _action_bar: HBoxContainer
+var _save_button: Button
 
 
 func _ready() -> void:
@@ -27,15 +31,22 @@ func _ready() -> void:
 
 	# Launch options for capture and review, passed after "--" on the command line:
 	#   --skip-prologue            open directly on the day-one screen
-	#   --demo-action=<action>     perform one action at launch (move, explore, rest, battle)
+	#   --demo-load                load the save slot at launch
+	#   --demo-action=<action>     perform one action at launch (move, explore, rest, battle, save)
 	var options: PackedStringArray = OS.get_cmdline_user_args()
 	if options.has("--skip-prologue"):
 		_enter_day_one()
 	else:
 		_show_next_line()
+	if options.has("--demo-load"):
+		_on_load_pressed()
 	for option: String in options:
 		if option.begins_with("--demo-action="):
-			_on_action_pressed(option.trim_prefix("--demo-action="))
+			var action: String = option.trim_prefix("--demo-action=")
+			if action == "save":
+				_on_save_pressed()
+			else:
+				_on_action_pressed(action)
 
 
 func _build_ui() -> void:
@@ -67,6 +78,13 @@ func _build_ui() -> void:
 	_next_button.pressed.connect(_show_next_line)
 	root.add_child(_next_button)
 
+	_load_button = Button.new()
+	_load_button.text = "讀取存檔"
+	_load_button.custom_minimum_size = Vector2(200, 48)
+	_load_button.pressed.connect(_on_load_pressed)
+	_load_button.visible = SaveRepository.read(SAVE_PATH) != null
+	root.add_child(_load_button)
+
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 22)
 	_status_label.visible = false
@@ -82,6 +100,13 @@ func _build_ui() -> void:
 		button.custom_minimum_size = Vector2(160, 48)
 		button.pressed.connect(_on_action_pressed.bind(action))
 		_action_bar.add_child(button)
+
+	_save_button = Button.new()
+	_save_button.text = "存檔（需在營地）"
+	_save_button.custom_minimum_size = Vector2(200, 48)
+	_save_button.disabled = true
+	_save_button.pressed.connect(_on_save_pressed)
+	_action_bar.add_child(_save_button)
 
 	_log_label = Label.new()
 	_log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -114,6 +139,7 @@ func _show_next_line() -> void:
 
 func _enter_day_one() -> void:
 	_next_button.visible = false
+	_load_button.visible = false
 	_dialogue_label.text = "第一日開始。四人踏入星墜之淵外圍。"
 	_status_label.visible = true
 	_action_bar.visible = true
@@ -130,8 +156,34 @@ func _on_action_pressed(action: String) -> void:
 		_action_bar.visible = false
 
 
+func _on_save_pressed() -> void:
+	if not _flow.can_save():
+		_log_label.text = "只能在營地存檔。請先休息。"
+	elif SaveRepository.write(SAVE_PATH, _flow.snapshot()):
+		_log_label.text = "已存檔。"
+	else:
+		_log_label.text = "存檔失敗，請檢查儲存空間。"
+	_refresh_status()
+
+
+func _on_load_pressed() -> void:
+	var data: Variant = SaveRepository.read(SAVE_PATH)
+	if data == null:
+		_log_label.text = "沒有可讀取的存檔。"
+		_log_label.visible = true
+		_load_button.visible = false
+		return
+	if not _flow.restore(data):
+		_log_label.text = "存檔內容無效，無法讀取。"
+		_log_label.visible = true
+		return
+	_enter_day_one()
+	_log_label.text = "已讀取存檔。"
+
+
 func _refresh_status() -> void:
 	_status_label.text = _flow.status_text()
+	_save_button.disabled = not _flow.can_save()
 
 
 ## Loads the prologue lines. Returns an empty array and logs an error when missing.
