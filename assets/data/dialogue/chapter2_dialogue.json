@@ -23,6 +23,21 @@
       ]
     },
     {
+      "id": "ch2_dialogue_mirror_strike",
+      "requires_flag": "mirror_strike_started",
+      "action": "strike:mirror",
+      "source_ref": "三、鏡影精靈",
+      "lines": [
+        {"speaker": "旁白", "text": "那道影子最初並沒有形體。它像是從四面銀鏡中流出的光，在黑色地面上緩慢聚集。"},
+        {"speaker": "旁白", "text": "鏡影精靈的身體表面浮現細小的鏡面碎片，每一片都映照著不同景象：森林、封閉的村莊、死亡名冊。"},
+        {"speaker": "旁白", "text": "它開口時，聲音像數個人同時說話：「要過門，就留下你們最不願承認的事。」"},
+        {"speaker": "芙蕾雅", "text": "少說謎語。開門。"},
+        {"speaker": "旁白", "text": "鏡影精靈沒有動：「你可以離開。只要留下真實。」"},
+        {"speaker": "芙蕾雅", "text": "我只留下劍。"},
+        {"speaker": "旁白", "text": "她猛然衝向第二面銀鏡，巨大的黑色劍刃在空中劃出沉重的弧線。"}
+      ]
+    },
+    {
       "id": "ch2_dialogue_confess_eron",
       "requires_flag": "mirror_eron_acknowledged",
       "action": "confess:eron",

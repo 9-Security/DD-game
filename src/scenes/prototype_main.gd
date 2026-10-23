@@ -53,6 +53,8 @@ var _dialogue_label: Label
 var _dialogue_button: Button
 ## Scripted dialogue scenes that play after a player action.
 var _dialogue: DialoguePlayer = DialoguePlayer.new()
+## A story fight waiting for its lead-in dialogue to finish: {enemy, note}. Empty when none waits.
+var _pending_battle: Dictionary = {}
 var _captions: Dictionary = {}
 var _labels: Dictionary = {}
 var _ending_panel: VBoxContainer
@@ -516,10 +518,12 @@ func _on_action_pressed(action: String) -> void:
 	var message: String = _flow.perform(action)
 	if _flow.story_fight_pending():
 		# A story fight (a sequence's final step, or the mirror) is fought on the battle screen.
-		_battle_source = "story"
+		# Dialogue that leads into the fight plays first; the battle opens when it ends.
 		_show_result(message)
-		_open_battle(_flow.story_fight_enemy(), [])
-		_battle_panel.add_note(message)
+		if _start_dialogue_for(action):
+			_pending_battle = {"enemy": _flow.story_fight_enemy(), "note": message}
+			return
+		_open_story_battle(_flow.story_fight_enemy(), message)
 		return
 	_show_result(message)
 	if action.begins_with("final:"):
@@ -530,18 +534,27 @@ func _on_action_pressed(action: String) -> void:
 
 
 ## Starts the dialogue scene that the action triggers, unless that scene has already played.
-func _start_dialogue_for(action: String) -> void:
+## Returns true when a scene started.
+func _start_dialogue_for(action: String) -> bool:
 	var scene_id: String = _dialogue.scene_for_action(action)
 	if scene_id == "" or _flow.dialogue_played(scene_id):
-		return
+		return false
 	# The action may have been refused; the scene plays only once its event has set the flag.
 	if not _flow.event_flag(_dialogue.required_flag(scene_id)):
-		return
+		return false
 	if not _dialogue.start(scene_id):
-		return
+		return false
 	_flow.mark_dialogue_played(scene_id)
 	_refresh_status()
 	_show_dialogue_line()
+	return true
+
+
+## Opens the battle screen for a story fight, with the flow's message noted on it.
+func _open_story_battle(enemy: Dictionary, message: String) -> void:
+	_battle_source = "story"
+	_open_battle(enemy, [])
+	_battle_panel.add_note(message)
 
 
 ## Shows the line on screen: speaker, text and portrait. Narration has no portrait.
@@ -560,6 +573,10 @@ func _on_dialogue_next_pressed() -> void:
 		return
 	_set_portrait("")
 	_refresh_status()
+	if not _pending_battle.is_empty():
+		var pending: Dictionary = _pending_battle
+		_pending_battle = {}
+		_open_story_battle(pending["enemy"], str(pending["note"]))
 
 
 ## Loads the dialogue scene data, logging every validation error. A file with errors plays nothing.
@@ -749,6 +766,7 @@ func _on_load_pressed() -> void:
 		_log_scroll.visible = true
 		return
 	_dialogue.cancel()
+	_pending_battle = {}
 	_set_portrait("")
 	_enter_day_one()
 	var body: String = _ending_body()

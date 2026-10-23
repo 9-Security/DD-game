@@ -22,6 +22,8 @@ const WRONG_PLACE_TEXT: String = "這裡沒有可以進行這個行動的地方�
 const BERSERK_EFFECT: String = "berserk_block"
 ## Prefix of the saved flag that records a played dialogue scene, e.g. "dialogue:ch2_dialogue_confess_eron".
 const DIALOGUE_FLAG_PREFIX: String = "dialogue:"
+## Set when the player strikes a mirror, before its fight opens. Dialogue before the fight depends on it.
+const MIRROR_STRIKE_FLAG: String = "mirror_strike_started"
 
 ## Version of the snapshot format written by snapshot(). Bump on any change.
 const SNAPSHOT_VERSION: int = 7
@@ -597,6 +599,8 @@ func _perform_action(action: String) -> String:
 		var enemy_id: String = str(_mirror_counter.get("enemy", ""))
 		if _has_enemy(enemy_id):
 			_story_fight = {"kind": "mirror", "enemy": enemy_id, "action": action}
+			if _events != null:
+				_events.flags[MIRROR_STRIKE_FLAG] = true
 			return "你揮劍擊向銀鏡，鏡中的芙蕾雅舉劍擋下。"
 		var damage: int = int(_mirror_counter.get("damage", 0))
 		var stacks: int = int(_mirror_counter.get("curse_stacks", 0))

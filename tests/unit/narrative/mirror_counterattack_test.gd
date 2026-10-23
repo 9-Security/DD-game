@@ -113,3 +113,20 @@ func test_retreating_from_the_mirror_costs_one_segment_and_wounds_nobody() -> vo
 
 	assert_int(flow.clock.get_elapsed()).is_equal(start + 1)
 	assert_int(flow.wounds("freya")).is_equal(0)
+
+
+func test_striking_a_mirror_sets_the_strike_flag() -> void:
+	var flow := _flow()
+	flow.perform("go:黑曜石之門")
+
+	flow.perform("strike:mirror")
+
+	assert_bool(flow.event_flag(DayOneFlow.MIRROR_STRIKE_FLAG)).is_true()
+
+
+func test_refused_strike_does_not_set_the_strike_flag() -> void:
+	var flow := _flow()
+
+	flow.perform("strike:mirror")
+
+	assert_bool(flow.event_flag(DayOneFlow.MIRROR_STRIKE_FLAG)).is_false()
