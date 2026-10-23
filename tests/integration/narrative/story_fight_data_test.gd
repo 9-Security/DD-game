@@ -82,3 +82,32 @@ func test_losing_the_guardian_fight_resets_the_release_sequence() -> void:
 
 	assert_bool(flow.event_flag("release_chain_two")).is_false()
 	assert_bool(flow.event_flag("guardian_core_broken_safely")).is_false()
+
+
+func test_the_armour_fight_opens_on_the_final_oath_step() -> void:
+	var flow := _flow({"father_record_read": true, "path_to_next_layer_open": true}, DayClock.SEGMENTS_PER_DAY * 4)
+	flow.perform("go:血誓熔窟")
+	flow.perform("oath:lower")
+	flow.perform("oath:cover")
+	flow.perform("oath:barrier")
+	flow.perform("oath:chain")
+
+	flow.perform("oath:pierce")
+
+	assert_bool(flow.story_fight_pending()).is_true()
+	assert_str(str(flow.story_fight_enemy()["name"])).is_equal("血誓鐵甲守衛")
+	assert_bool(flow.event_flag("oath_seal_broken")).is_false()
+
+
+func test_winning_the_armour_fight_breaks_the_oath_seal() -> void:
+	var flow := _flow({"father_record_read": true, "path_to_next_layer_open": true}, DayClock.SEGMENTS_PER_DAY * 4)
+	flow.perform("go:血誓熔窟")
+	flow.perform("oath:lower")
+	flow.perform("oath:cover")
+	flow.perform("oath:barrier")
+	flow.perform("oath:chain")
+	flow.perform("oath:pierce")
+
+	flow.finish_story_fight("won")
+
+	assert_bool(flow.event_flag("oath_seal_broken")).is_true()
