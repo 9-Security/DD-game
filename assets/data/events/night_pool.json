@@ -1,6 +1,6 @@
 {
   "id": "night_pool_chapter1",
-  "source": "design/narrative/novel/chapter01_day01.md (五、無光的道路)",
+  "source": "Prototype night events for play testing. The novel's day one has no ambush (see design/GAME_DESIGN_MASTER.md section 4.2); the ambush outcome is a design addition.",
   "entries": [
     {
       "id": "lamp_spirit_flicker",
