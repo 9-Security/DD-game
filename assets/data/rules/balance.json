@@ -118,7 +118,33 @@
     ],
     "名冊廊廳": [
       "read:kaen",
+      "seal:draw",
+      "seal:link",
+      "seal:read",
       "seal:kaen"
     ]
+  },
+  "seal_steps": [
+    [
+      "seal:draw",
+      "seal_drawn"
+    ],
+    [
+      "seal:link",
+      "seal_linked"
+    ],
+    [
+      "seal:read",
+      "seal_read"
+    ],
+    [
+      "seal:kaen",
+      "chapter3_sealed"
+    ]
+  ],
+  "seal_failure": {
+    "segments": 1,
+    "curse_stacks": 1,
+    "curse_target": "freya"
   }
 }

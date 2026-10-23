@@ -35,14 +35,18 @@ const NARRATIVE_ACTIONS: Array = [
 const PASSAGE_ACTION: Array = ["go:門後通道", "走入門後的通道"]
 ## Chapter three actions: [action, label, place where the button is shown].
 ## "go:" buttons also need the destination to be enterable; "read:" and "seal:" need the action
-## to be allowed at the current place (see DayOneFlow.can_act_here()).
+## to be allowed at the current place (see DayOneFlow.can_act_here()). Seal steps must be taken in
+## order; a wrong one resets the seal, so every step stays visible until it is done.
 const CHAPTER3_ACTIONS: Array = [
 	["go:咒牆迷廊", "前往咒牆迷廊", "門後通道"],
 	["read:first_name", "念出刻痕中的名字", "咒牆迷廊"],
 	["read:second_name", "念出另一個名字", "咒牆迷廊"],
 	["go:名冊廊廳", "前往名冊廊廳", "咒牆迷廊"],
 	["read:kaen", "辨認凱恩・安布羅斯", "名冊廊廳"],
-	["seal:kaen", "協作解開結界", "名冊廊廳"],
+	["seal:draw", "召喚光靈描摹刻痕", "名冊廊廳"],
+	["seal:link", "重排結界的連線", "名冊廊廳"],
+	["seal:read", "全隊依序念出名字", "名冊廊廳"],
+	["seal:kaen", "以凱恩之名完成解陣", "名冊廊廳"],
 	["go:出口門廊", "走向出口門廊", "名冊廊廳"],
 ]
 const CHARACTER_IDS: Array[String] = ["eron", "freya", "richter", "inry"]
@@ -341,6 +345,8 @@ func _ensure_flow() -> void:
 		"mirror_counter": _rules.get("mirror_counter", {}),
 		"location_requirements": _rules.get("location_requirements", {}),
 		"location_actions": _rules.get("location_actions", {}),
+		"seal_steps": _rules.get("seal_steps", []),
+		"seal_failure": _rules.get("seal_failure", {}),
 	})
 
 
@@ -391,8 +397,9 @@ func _refresh_chapter3(bar_open: bool) -> void:
 			shown = shown and _flow.can_enter(action.trim_prefix("go:")) and not _chapter3_done(action)
 		else:
 			shown = shown and _flow.can_act_here(action)
-		if action == "seal:kaen":
+		if action.begins_with("seal:"):
 			shown = shown and _flow.event_flag("kaen_found") and not _flow.event_flag("chapter3_sealed")
+			shown = shown and not _flow.seal_step_done(action)
 		button.visible = shown
 
 

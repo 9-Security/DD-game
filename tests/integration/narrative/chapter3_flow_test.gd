@@ -21,6 +21,8 @@ func _flow() -> DayOneFlow:
 		"events": events,
 		"location_requirements": balance["location_requirements"],
 		"location_actions": balance["location_actions"],
+		"seal_steps": balance["seal_steps"],
+		"seal_failure": balance["seal_failure"],
 		"event_flags": {"obsidian_gate_open": true, "passage_entered": true},
 	})
 
@@ -63,6 +65,9 @@ func test_sealing_keeps_the_name_and_opens_the_exit() -> void:
 	flow.perform("go:名冊廊廳")
 
 	var oath_message: String = flow.perform("read:kaen")
+	flow.perform("seal:draw")
+	flow.perform("seal:link")
+	flow.perform("seal:read")
 	var elapsed: int = flow.clock.get_elapsed()
 	var seal_message: String = flow.perform("seal:kaen")
 
