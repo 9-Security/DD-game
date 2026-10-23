@@ -17,6 +17,7 @@ const DEFAULT_ENEMY_ATK: int = 5
 var id: String
 var text: String
 var enemy_name: String
+var sprite: String
 var enemy_hp: int
 var enemy_def: int
 var enemy_atk: int
@@ -30,6 +31,7 @@ func _init(entry: Dictionary) -> void:
 	id = str(entry.get("id", ""))
 	text = str(entry.get("text", ""))
 	enemy_name = str(entry.get("name", "敵人"))
+	sprite = str(entry.get("sprite", ""))
 	enemy_hp = int(entry.get("enemy_hp", 0))
 	enemy_def = int(entry.get("enemy_def", 0))
 	enemy_atk = int(entry.get("enemy_atk", DEFAULT_ENEMY_ATK))

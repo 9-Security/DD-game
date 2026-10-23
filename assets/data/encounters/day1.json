@@ -30,7 +30,8 @@
         "injury": true
       },
       "name": "怨靈",
-      "enemy_atk": 57
+      "enemy_atk": 57,
+      "sprite": "res://assets/art/enemies/enemy_restless_spirit.png"
     },
     {
       "id": "rune_seal",

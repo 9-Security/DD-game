@@ -12,20 +12,23 @@
     "hp": 160,
     "max_hp": 160,
     "def": 4,
-    "atk": 59
+    "atk": 59,
+    "sprite": "res://assets/art/enemies/enemy_stone_flower_beast.png"
   },
   "blood_oath_armor": {
     "name": "血誓鐵甲守衛",
     "hp": 160,
     "max_hp": 160,
     "def": 6,
-    "atk": 55
+    "atk": 55,
+    "sprite": "res://assets/art/enemies/enemy_blood_oath_armor.png"
   },
   "mirror_freya": {
     "name": "鏡中芙蕾雅",
     "hp": 80,
     "max_hp": 80,
     "def": 3,
-    "atk": 57
+    "atk": 57,
+    "sprite": "res://assets/art/enemies/enemy_mirror_spirit.png"
   }
 }

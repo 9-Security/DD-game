@@ -14,6 +14,7 @@ const COMMANDS: Array[Array] = [
 ]
 const LOG_LIMIT: int = 8
 const LOG_HEIGHT: int = 200
+const ENEMY_PICTURE_SIZE: int = 180
 
 var _battle: TurnBattle
 var _skills: Dictionary = {}
@@ -27,6 +28,7 @@ var _status_label: Label
 var _members_label: Label
 var _log_label: Label
 var _log_scroll: ScrollContainer
+var _enemy_picture: TextureRect
 var _command_bar: HBoxContainer
 var _target_bar: HBoxContainer
 var _prompt_label: Label
@@ -41,13 +43,25 @@ func _init() -> void:
 	box.add_theme_constant_override("separation", 10)
 	add_child(box)
 
+	# The enemy picture sits to the right of the status and the party lines, when the enemy has one.
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 24)
+	box.add_child(top)
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(info)
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 24)
-	box.add_child(_status_label)
-
+	info.add_child(_status_label)
 	_members_label = Label.new()
 	_members_label.add_theme_font_size_override("font_size", 20)
-	box.add_child(_members_label)
+	info.add_child(_members_label)
+	_enemy_picture = TextureRect.new()
+	_enemy_picture.custom_minimum_size = Vector2(ENEMY_PICTURE_SIZE, ENEMY_PICTURE_SIZE)
+	_enemy_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_enemy_picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_enemy_picture.visible = false
+	top.add_child(_enemy_picture)
 
 	# The log has a fixed height and scrolls, so the command buttons stay in place as lines are added.
 	_log_scroll = ScrollContainer.new()
@@ -85,6 +99,9 @@ func _init() -> void:
 func start(party: Array, enemy: Dictionary, rolls: Array, skills: Dictionary, round_limit: int) -> void:
 	_party = party
 	_enemy_name = str(enemy.get("name", "敵人"))
+	var sprite: String = str(enemy.get("sprite", ""))
+	_enemy_picture.texture = load(sprite) as Texture2D if sprite != "" and ResourceLoader.exists(sprite) else null
+	_enemy_picture.visible = _enemy_picture.texture != null
 	_skills = skills
 	_battle = TurnBattle.new(party, enemy, rolls, round_limit, skills)
 	_done = false

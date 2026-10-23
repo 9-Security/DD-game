@@ -961,6 +961,7 @@ func encounter_enemy() -> Dictionary:
 		return {}
 	return {
 		"name": _pending.enemy_name,
+		"sprite": _pending.sprite,
 		"hp": _pending.enemy_hp,
 		"max_hp": _pending.enemy_hp,
 		"def": _pending.enemy_def,

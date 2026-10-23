@@ -5,6 +5,7 @@ extends GdUnitTestSuite
 const ENCOUNTER: Dictionary = {
 	"id": "spirit_gate",
 	"name": "怨靈",
+	"sprite": "res://assets/art/enemies/enemy_restless_spirit.png",
 	"text": "怨靈擋住去路。",
 	"enemy_hp": 30,
 	"enemy_def": 0,
@@ -65,6 +66,7 @@ func test_the_encounter_enemy_carries_its_stats() -> void:
 	var enemy := flow.encounter_enemy()
 
 	assert_str(str(enemy["name"])).is_equal("怨靈")
+	assert_str(str(enemy["sprite"])).is_equal("res://assets/art/enemies/enemy_restless_spirit.png")
 	assert_int(int(enemy["hp"])).is_equal(30)
 	assert_int(int(enemy["def"])).is_equal(0)
 	assert_int(int(enemy["atk"])).is_equal(6)
