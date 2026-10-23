@@ -248,14 +248,18 @@ func _build_ui() -> void:
 	_dialogue_button.custom_minimum_size = Vector2(200, 48)
 	_dialogue_button.visible = false
 	_dialogue_button.pressed.connect(_on_dialogue_next_pressed)
-	root.add_child(_dialogue_button)
+	# Continue and skip sit side by side in one row, so the dialogue controls stay together.
+	var dialogue_buttons := HBoxContainer.new()
+	dialogue_buttons.add_theme_constant_override("separation", 16)
+	root.add_child(dialogue_buttons)
+	dialogue_buttons.add_child(_dialogue_button)
 
 	_dialogue_skip_button = Button.new()
 	_dialogue_skip_button.text = "略過"
 	_dialogue_skip_button.custom_minimum_size = Vector2(200, 48)
 	_dialogue_skip_button.visible = false
 	_dialogue_skip_button.pressed.connect(_on_dialogue_skip_pressed)
-	root.add_child(_dialogue_skip_button)
+	dialogue_buttons.add_child(_dialogue_skip_button)
 
 	_next_button = Button.new()
 	_next_button.text = "下一句"
