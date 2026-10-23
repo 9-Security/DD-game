@@ -55,7 +55,7 @@ var _approach_bar: HBoxContainer
 var _chapter3_bar: GridContainer
 var _chapter3_buttons: Array[Button] = []
 var _talk_bar: GridContainer
-var _gate_bar: HBoxContainer
+var _gate_bar: GridContainer
 var _passage_button: Button
 var _event_data: Array = []
 var _save_button: Button
@@ -191,8 +191,10 @@ func _build_ui() -> void:
 		button.pressed.connect(_on_action_pressed.bind(str(pair[0])))
 		_talk_bar.add_child(button)
 
-	_gate_bar = HBoxContainer.new()
-	_gate_bar.add_theme_constant_override("separation", 12)
+	_gate_bar = GridContainer.new()
+	_gate_bar.columns = 3
+	_gate_bar.add_theme_constant_override("h_separation", 12)
+	_gate_bar.add_theme_constant_override("v_separation", 10)
 	_gate_bar.visible = false
 	root.add_child(_gate_bar)
 	for pair: Array in _labels.get("gate_actions", []):
@@ -218,7 +220,7 @@ func _build_ui() -> void:
 	for entry: Array in _labels.get("story_actions", []):
 		var button := Button.new()
 		button.text = str(entry[1])
-		button.custom_minimum_size = Vector2(220, 44)
+		button.custom_minimum_size = Vector2(280, 44)
 		button.set_meta("action", str(entry[0]))
 		button.set_meta("place", str(entry[2]))
 		button.set_meta("label", str(entry[1]))
@@ -417,7 +419,7 @@ func _refresh_chapter3(bar_open: bool) -> void:
 		button.visible = shown
 		var base: String = str(button.get_meta("label"))
 		var risk: float = _flow.step_curse_risk(action) if shown else 0.0
-		button.text = base if risk <= 0.0 else "%s｜血咒干擾：約 %d%%" % [base, roundi(risk * 100.0)]
+		button.text = base if risk <= 0.0 else "%s｜血咒 %d%%" % [base, roundi(risk * 100.0)]
 
 
 ## True when a destination has already been reached, so its button is hidden.
