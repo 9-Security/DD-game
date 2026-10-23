@@ -414,6 +414,21 @@ func _curse_risk(sequence: Dictionary, action: String) -> float:
 	return minf(float(risk_data.get("max", 0.0)), stacks * float(risk_data.get("per_stack", 0.0)))
 
 
+## True when the action is listed as unsafe in its sequence, so the buttons can mark it.
+func is_unsafe_action(action: String) -> bool:
+	var sequence: Dictionary = _sequence_for(action)
+	return not sequence.is_empty() and _is_unsafe(sequence, action)
+
+
+## True when the player should confirm before the action runs: an unsafe action, or a step that
+## carries a blood-curse risk right now. Other actions run at once.
+func needs_confirmation(action: String) -> bool:
+	var sequence: Dictionary = _sequence_for(action)
+	if sequence.is_empty():
+		return false
+	return _is_unsafe(sequence, action) or _curse_risk(sequence, action) > 0.0
+
+
 ## Public chance that the step fails because of the curse, for the buttons. Zero for other actions.
 func step_curse_risk(action: String) -> float:
 	var sequence: Dictionary = _sequence_for(action)

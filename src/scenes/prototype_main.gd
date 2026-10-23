@@ -69,6 +69,10 @@ var _action_bar: HBoxContainer
 var _action_buttons: Dictionary = {}
 var _approach_bar: HBoxContainer
 var _chapter3_bar: GridContainer
+## Confirmation shown before an unsafe or curse-risk chapter action runs; "" when none is waiting.
+var _confirm_bar: HBoxContainer
+var _confirm_label: Label
+var _confirm_action: String = ""
 var _chapter3_buttons: Array[Button] = []
 var _talk_bar: GridContainer
 var _gate_bar: GridContainer
@@ -263,9 +267,27 @@ func _build_ui() -> void:
 		button.set_meta("action", str(entry[0]))
 		button.set_meta("place", str(entry[2]))
 		button.set_meta("label", str(entry[1]))
-		button.pressed.connect(_on_action_pressed.bind(str(entry[0])))
+		button.pressed.connect(_on_chapter_pressed.bind(str(entry[0])))
 		_chapter3_bar.add_child(button)
 		_chapter3_buttons.append(button)
+
+	_confirm_bar = HBoxContainer.new()
+	_confirm_bar.add_theme_constant_override("separation", 16)
+	_confirm_bar.visible = false
+	root.add_child(_confirm_bar)
+	_confirm_label = Label.new()
+	_confirm_label.add_theme_font_size_override("font_size", 20)
+	_confirm_bar.add_child(_confirm_label)
+	var confirm_button := Button.new()
+	confirm_button.text = "確定"
+	confirm_button.custom_minimum_size = Vector2(140, 44)
+	confirm_button.pressed.connect(_on_confirm_pressed)
+	_confirm_bar.add_child(confirm_button)
+	var cancel_button := Button.new()
+	cancel_button.text = "取消"
+	cancel_button.custom_minimum_size = Vector2(140, 44)
+	cancel_button.pressed.connect(_on_cancel_pressed)
+	_confirm_bar.add_child(cancel_button)
 
 	_ending_panel = VBoxContainer.new()
 	_ending_panel.add_theme_constant_override("separation", 12)
@@ -608,21 +630,62 @@ func _on_load_pressed() -> void:
 
 ## Shows each chapter three button only at its place and only when its action or destination is open.
 func _refresh_chapter3(bar_open: bool) -> void:
-	_chapter3_bar.visible = bar_open
+	# Buttons keep their places: a location shows all of its buttons, and those not available now are
+	# disabled rather than hidden, so the buttons never move while the story advances.
+	_chapter3_bar.visible = bar_open and _confirm_action == ""
 	for button: Button in _chapter3_buttons:
 		var action: String = str(button.get_meta("action"))
 		var place: String = str(button.get_meta("place"))
-		var shown: bool = bar_open and _flow.location() == place
+		var at_place: bool = bar_open and _flow.location() == place
+		button.visible = _flow.location() == place
+		var done: bool = false
+		var available: bool = at_place
 		if action.begins_with("go:"):
-			shown = shown and _flow.can_enter(action.trim_prefix("go:")) and not _chapter3_done(action)
+			done = _chapter3_done(action)
+			available = available and _flow.can_enter(action.trim_prefix("go:")) and not done
 		elif action.begins_with("read:") and not _flow.is_step(action):
-			shown = shown and _flow.can_act_here(action)
+			available = available and _flow.can_act_here(action)
 		else:
-			shown = shown and _flow.step_visible(action)
-		button.visible = shown
+			done = _flow.step_done(action)
+			available = available and _flow.step_visible(action)
+		button.disabled = not available
 		var base: String = str(button.get_meta("label"))
-		var risk: float = _flow.step_curse_risk(action) if shown else 0.0
-		button.text = base if risk <= 0.0 else "%s｜血咒 %d%%" % [base, roundi(risk * 100.0)]
+		var risk: float = _flow.step_curse_risk(action) if available else 0.0
+		var text: String = base
+		if _flow.is_unsafe_action(action):
+			text = "危險：" + text
+		if risk > 0.0:
+			text += "｜血咒 %d%%" % roundi(risk * 100.0)
+		if done:
+			text = "已完成：" + base
+		button.text = text
+
+
+## A chapter button: runs the action, or asks for confirmation first when the action is unsafe or
+## carries a blood-curse risk.
+func _on_chapter_pressed(action: String) -> void:
+	if not _flow.needs_confirmation(action):
+		_on_action_pressed(action)
+		return
+	_confirm_action = action
+	var risk: int = roundi(_flow.step_curse_risk(action) * 100.0)
+	var warning: String = "這一步有危險" if _flow.is_unsafe_action(action) else "血咒可能擾亂這一步"
+	_confirm_label.text = "%s（血咒風險 %d%%）。確定要行動嗎？" % [warning, risk]
+	_chapter3_bar.visible = false
+	_confirm_bar.visible = true
+
+
+func _on_confirm_pressed() -> void:
+	var action: String = _confirm_action
+	_confirm_action = ""
+	_confirm_bar.visible = false
+	_on_action_pressed(action)
+
+
+func _on_cancel_pressed() -> void:
+	_confirm_action = ""
+	_confirm_bar.visible = false
+	_refresh_status()
 
 
 ## True when a destination has already been reached, so its button is hidden.
