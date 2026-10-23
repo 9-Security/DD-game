@@ -1,0 +1,26 @@
+{
+  "difficulty": {
+    "strict": {"starting_herbs": 3, "starting_food": 4, "rest_food_cost": 1},
+    "assisted": {"starting_herbs": 6, "starting_food": 8, "rest_food_cost": 0}
+  },
+  "default_difficulty": "strict",
+  "affinity": {
+    "weak_multiplier": 1.5,
+    "resist_multiplier": 0.5,
+    "matchups": {
+      "light": {"weak": ["ancient_construct"], "resist": []},
+      "rune": {"weak": [], "resist": ["ancient_construct"]},
+      "purify": {"weak": ["restless_spirit"], "resist": []}
+    }
+  },
+  "approach_skills": {
+    "persuade": ["beast_speech"],
+    "puzzle": ["rune_trap", "rune_analysis"],
+    "stealth": ["unlock", "trap_sense"],
+    "summon": ["summon_gray_wolf", "summon_light_eye", "mirror_summon"]
+  },
+  "trust": {"min": 0, "max": 100, "start": 50},
+  "synergies": [
+    {"members": ["eron", "freya"], "min_trust": 60, "effect": "berserk_block"}
+  ]
+}
