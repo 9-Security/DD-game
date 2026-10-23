@@ -106,6 +106,24 @@ func test_the_route_reaches_ending_a_within_time() -> void:
 	assert_bool(flow.is_time_up()).is_false()
 
 
+## Ending C is the time running out before the seventh night's bell, with the herb not yet returned.
+func test_running_out_of_time_before_returning_reaches_ending_c() -> void:
+	var flow := _flow()
+	var route: Array[String] = []
+	for action: String in LATER_ROUTE:
+		if action == "return:safe" or action.begins_with("palace:") or action.begins_with("final:"):
+			break
+		route.append(action)
+	_perform_all(flow, route)
+	flow.perform("harvest:assess")
+	flow.perform("harvest:whole")
+
+	while not flow.is_time_up():
+		flow.clock.spend(1)
+
+	assert_str(flow.ending_id()).is_equal("END_C")
+
+
 ## Endings B and C belong to other routes, so this route checks every scene except theirs.
 func test_the_route_reaches_ending_b_when_the_oath_is_broken() -> void:
 	var flow := _flow()
