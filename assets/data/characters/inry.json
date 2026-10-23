@@ -1,0 +1,6 @@
+{
+  "id": "inry",
+  "identity": {"name": "茵芮・朵維亞", "role": "summoner", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
+  "stats": {"hp": 80, "mp": 90, "atk": 6, "def": 4, "spd": 10},
+  "skills": ["summon_gray_wolf", "summon_light_eye", "magic_surge"]
+}

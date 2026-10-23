@@ -1,0 +1,7 @@
+{
+  "id": "freya",
+  "identity": {"name": "芙蕾雅・雷恩", "role": "frontline", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
+  "stats": {"hp": 130, "mp": 20, "atk": 16, "def": 10, "spd": 6},
+  "skills": ["greatsword_slash", "blood_rage", "iron_guard", "ancestral_shield"],
+  "fixed_equipment": ["greatsword_father_bone"]
+}

@@ -1,0 +1,6 @@
+{
+  "id": "eron",
+  "identity": {"name": "艾洛恩・維斯塔", "role": "support", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
+  "stats": {"hp": 90, "mp": 60, "atk": 8, "def": 6, "spd": 9},
+  "skills": ["life_resonance", "purify_breath", "beast_speech", "all_things_resonance"]
+}

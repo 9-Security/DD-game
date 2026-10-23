@@ -1,0 +1,6 @@
+{
+  "id": "richter",
+  "identity": {"name": "里克特・安布羅斯", "role": "trap_explorer", "background_ref": "design/narrative/STORY_MANUSCRIPT.md"},
+  "stats": {"hp": 85, "mp": 50, "atk": 10, "def": 5, "spd": 13},
+  "skills": ["rune_trap", "barrier_ward", "unlock", "pickpocket"]
+}
