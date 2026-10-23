@@ -581,6 +581,8 @@ func _show_dialogue_line() -> void:
 	var text: String = str(line.get("text", ""))
 	_dialogue_label.text = text if speaker == DialoguePlayer.NARRATOR else "%s：%s" % [speaker, text]
 	_set_portrait(PortraitRules.path_for_speaker(speaker))
+	# Focus the continue button so Enter or Space advances the dialogue without a mouse.
+	_dialogue_button.grab_focus()
 
 
 ## Moves to the next dialogue line, or closes the scene after its last line.
