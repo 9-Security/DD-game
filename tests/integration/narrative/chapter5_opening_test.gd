@@ -9,7 +9,7 @@ const EVENTS_PATHS: Array[String] = [
 	"res://assets/data/events/chapter4.json",
 	"res://assets/data/events/chapter5.json",
 ]
-const FURNACE_REFUSAL: String = "天亮前不宜深入熔窟"
+const FURNACE_REFUSAL: String = "今日不宜深入熔窟"
 const DECREE_TEXT: String = "一份密令"
 const RELIC_TEXT: String = "亡父之骨不是遺物，而是刑具。"
 

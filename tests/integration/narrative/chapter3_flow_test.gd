@@ -38,7 +38,7 @@ func test_labyrinth_is_refused_on_day_two() -> void:
 
 	var message: String = flow.perform("go:咒牆迷廊")
 
-	assert_bool(message.contains("天亮前不宜深入")).is_true()
+	assert_bool(message.contains("今日不宜深入")).is_true()
 	assert_str(flow.location()).is_empty()
 
 
@@ -80,6 +80,7 @@ func test_sealing_keeps_the_name_and_opens_the_exit() -> void:
 	var exit_message: String = flow.perform("go:出口門廊")
 	assert_bool(flow.event_flag("chapter3_exit")).is_true()
 	assert_bool(exit_message.contains("植物氣息")).is_true()
+	assert_bool(exit_message.contains("即將過去")).is_false()
 
 
 func test_oath_is_read_on_entering_the_hall_with_its_original_wording() -> void:

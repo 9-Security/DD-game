@@ -91,7 +91,7 @@
   "location_requirements": {
     "黑曜石之門": {
       "min_day": 2,
-      "blocked_text": "夜色已深，黑曜石之門太遠，今夜無法抵達。"
+      "blocked_text": "今日無法抵達黑曜石之門，等到第二日再出發。"
     },
     "門後通道": {
       "flag": "obsidian_gate_open",
@@ -100,7 +100,7 @@
     "咒牆迷廊": {
       "min_day": 3,
       "flag": "passage_entered",
-      "blocked_text": "通道內太暗，天亮前不宜深入。"
+      "blocked_text": "今日不宜深入迷廊，等到第三日再說。"
     },
     "名冊廊廳": {
       "flag": "registry_route_open",
@@ -118,7 +118,7 @@
     "血誓熔窟": {
       "min_day": 5,
       "flag": "path_to_next_layer_open",
-      "blocked_text": "天亮前不宜深入熔窟。石牆仍然閉合，通路尚未開啟。"
+      "blocked_text": "今日不宜深入熔窟，石牆仍然閉合。"
     }
   },
   "location_actions": {

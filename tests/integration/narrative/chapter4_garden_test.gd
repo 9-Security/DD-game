@@ -88,6 +88,8 @@ func test_release_in_order_breaks_the_core_and_keeps_the_guardian_alive() -> voi
 	assert_bool(flow.event_flag("translucent_seed_received")).is_true()
 	assert_bool(message.contains("黑色晶核碎裂了")).is_true()
 	assert_bool(message.contains("神喻草能編織靈魂")).is_true()
+	assert_bool(message.contains("第四個夜晚")).is_false()
+	assert_bool(message.contains("第四日")).is_true()
 
 
 func test_a_skipped_step_resets_the_release_and_costs_time_without_a_curse() -> void:

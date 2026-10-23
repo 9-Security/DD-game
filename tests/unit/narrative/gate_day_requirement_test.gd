@@ -2,7 +2,7 @@ extends GdUnitTestSuite
 # Unit tests for day-based entry requirements: the Obsidian Gate is reached on day two, so the
 # first day must be spent before the party can travel there.
 
-const BLOCKED_TEXT: String = "夜色已深，黑曜石之門太遠，今夜無法抵達。"
+const BLOCKED_TEXT: String = "今日無法抵達黑曜石之門，等到第二日再出發。"
 const REQUIREMENTS: Dictionary = {
 	"黑曜石之門": {"min_day": 2, "blocked_text": BLOCKED_TEXT},
 }
