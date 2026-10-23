@@ -35,8 +35,8 @@ naming:
 commands:
   # godot is on PATH in the development sandbox only. On any other machine, set the
   # editor's full path via /settings. Bare `godot` in these values relies on PATH.
-  # build: no export preset exists yet; set the preset name when one is created.
-  build: "[TO BE CONFIGURED]"
+  # build: exports the "Web" preset from export_presets.cfg to build/web/.
+  build: "godot --headless --export-release 'Web' build/web/index.html"
   test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
   run: "godot --path . --windowed --resolution 1280x720"
   smoke: "godot --headless --quit-after 5"
