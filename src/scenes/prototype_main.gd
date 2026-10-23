@@ -13,6 +13,7 @@ const DIALOGUE_PATHS: Array[String] = [
 	"res://assets/data/dialogue/chapter2_dialogue.json",
 	"res://assets/data/dialogue/chapter3_dialogue.json",
 	"res://assets/data/dialogue/chapter4_dialogue.json",
+	"res://assets/data/dialogue/chapter5_dialogue.json",
 ]
 const BALANCE_PATH: String = "res://assets/data/rules/balance.json"
 const NIGHT_POOL_PATH: String = "res://assets/data/events/night_pool.json"
