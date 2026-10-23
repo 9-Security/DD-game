@@ -321,6 +321,7 @@ func _ensure_flow() -> void:
 		"party_skills": _party_skills(party),
 		"approach_skills": _rules.get("approach_skills", {}),
 		"encounter_rolls": _unit_rolls(),
+		"step_rolls": _unit_rolls(),
 		"events": _event_data,
 		"mirror_counter": _rules.get("mirror_counter", {}),
 		"location_requirements": _rules.get("location_requirements", {}),

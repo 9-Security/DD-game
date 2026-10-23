@@ -57,6 +57,9 @@ var _mirror_counter: Dictionary = {}
 var _location_requirements: Dictionary = {}
 var _location_actions: Dictionary = {}
 var _sequences: Array = []
+var _step_rolls: Array = []
+var _step_roll_index: int = 0
+var _step_failed: bool = false
 
 
 ## party: Array of Dictionaries with "id", "name", "atk" keys. A member with "curse": true
@@ -75,6 +78,8 @@ var _sequences: Array = []
 ##   "attack_tags": character ID -> attack tag.
 ##   "location_requirements": place name -> entry rule, see _entry_block().
 ##   "location_actions": place name -> Array of "read:" or "seal:" actions allowed there.
+##   "step_rolls": rolls in [0, 1) that decide curse-raised step failures, cycled. Empty means no
+##     roll-based failure.
 ##   "sequences": ordered step lists. Each has "id", "requires" (flag, or "" for none),
 ##     "blocked_text", "steps" ([{"action", "flag", "text", "hint"}]; text is optional, hint names
 ##     the step for the player after a failure, and the last flag is set by events), and
@@ -105,6 +110,7 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 	_location_requirements = options.get("location_requirements", {})
 	_location_actions = options.get("location_actions", {})
 	_sequences = options.get("sequences", [])
+	_step_rolls = options.get("step_rolls", [])
 	if options.has("events"):
 		_events = EventRunner.new(options["events"], options.get("event_flags", {}))
 
@@ -119,8 +125,9 @@ func _init(party: Array, rolls: Array, options: Dictionary = {}) -> void:
 func perform(action: String) -> String:
 	var ran: bool = _can_run(action)
 	_night_entered = false
+	_step_failed = false
 	var text: String = _perform_action(action)
-	if ran and _events != null:
+	if ran and not _step_failed and _events != null:
 		text += _run_events(action)
 	return text
 
@@ -239,6 +246,10 @@ func _perform_step(action: String) -> String:
 		return "這一步已經完成了。"
 	if not _prior_steps_done(sequence, index):
 		return _sequence_failure(sequence, index)
+	var risk: float = _curse_risk(sequence)
+	if risk > 0.0 and _next_step_roll() < risk:
+		var curse_text: String = str(sequence["curse_risk"].get("text", "血之詛咒擾亂了你的動作。"))
+		return _sequence_failure(sequence, 0, curse_text, false)
 	_at_camp = false
 	if index < steps.size() - 1:
 		_events.flags[step_flag] = true
@@ -263,9 +274,29 @@ func _apply_success(sequence: Dictionary) -> void:
 		curse.weaken(weaken)
 
 
+## Chance that a step fails because of the curse: stacks times the per-stack chance, capped.
+func _curse_risk(sequence: Dictionary) -> float:
+	var risk_data: Dictionary = sequence.get("curse_risk", {})
+	if risk_data.is_empty():
+		return 0.0
+	var stacks: int = maxi(curse_stacks(str(risk_data.get("character", ""))), 0)
+	return minf(float(risk_data.get("max", 0.0)), stacks * float(risk_data.get("per_stack", 0.0)))
+
+
+## The next roll for a curse-raised failure. With no rolls given, the step never fails this way.
+func _next_step_roll() -> float:
+	if _step_rolls.is_empty():
+		return 1.0
+	var roll: float = float(_step_rolls[_step_roll_index % _step_rolls.size()])
+	_step_roll_index += 1
+	return roll
+
+
 ## Resets every step except the last, then applies the failure cost. The hint names the first
-## step before the given limit that is not done, so the player knows what to do next.
-func _sequence_failure(sequence: Dictionary, limit: int) -> String:
+## step before the given limit that is not done, so the player knows what to do next. A text
+## override replaces the sequence's failure text; stack_penalty false skips the curse stack.
+func _sequence_failure(sequence: Dictionary, limit: int, text_override: String = "", stack_penalty: bool = true) -> String:
+	_step_failed = true
 	var hint: String = _missing_hint(sequence, limit)
 	var steps: Array = _steps(sequence)
 	for index: int in range(steps.size() - 1):
@@ -274,9 +305,10 @@ func _sequence_failure(sequence: Dictionary, limit: int) -> String:
 	var failure_flag: String = str(failure.get("flag", ""))
 	if failure_flag != "":
 		_events.flags[failure_flag] = true
-	var text: String = str(failure.get("text", "你們退後重來。")) + _spend(int(failure.get("segments", 0)))
+	var failure_text: String = text_override if text_override != "" else str(failure.get("text", "你們退後重來。"))
+	var text: String = failure_text + _spend(int(failure.get("segments", 0)))
 	var target: String = str(failure.get("curse_target", ""))
-	var stacks: int = int(failure.get("curse_stacks", 0))
+	var stacks: int = int(failure.get("curse_stacks", 0)) if stack_penalty else 0
 	if stacks > 0 and _curses.has(target):
 		var curse: BloodCurse = _curses[target]
 		for stack: int in range(stacks):
