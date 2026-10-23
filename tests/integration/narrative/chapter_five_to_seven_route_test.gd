@@ -44,7 +44,9 @@ func _events() -> Array:
 	return events
 
 
-func _flow() -> DayOneFlow:
+## step_rolls decide the curse-raised step failures and the shortcut's late chance, in the order the
+## steps consume them. Empty means no roll-based failure or delay.
+func _flow(step_rolls: Array = []) -> DayOneFlow:
 	var balance := _json(BALANCE_PATH)
 	var flow := DayOneFlow.new([
 		{"id": "freya", "name": "f", "atk": 16, "curse": true},
@@ -58,6 +60,7 @@ func _flow() -> DayOneFlow:
 		"events": _events(),
 		"battle_enemies": _json(ENEMIES_PATH),
 		"mirror_counter": balance["mirror_counter"],
+		"step_rolls": step_rolls,
 		"event_flags": {},
 	})
 	flow.clock.spend(DayClock.SEGMENTS_PER_DAY)
@@ -149,3 +152,41 @@ func test_every_later_scene_on_this_route_has_its_flag_set() -> void:
 			if not scene.has("requires_flag") or id.contains("ending_b") or id.contains("ending_c"):
 				continue
 			assert_bool(flow.event_flag(str(scene["requires_flag"]))).is_true()
+
+
+## The shortcut's late chance is 0.5, and it is the only roll this route takes, so a roll of 0.0 makes
+## the return late for certain.
+func test_a_late_shortcut_return_sets_the_late_flag_and_reaches_ending_c() -> void:
+	var flow := _flow([0.0])
+	var route: Array[String] = []
+	for action: String in LATER_ROUTE:
+		if action == "return:shortcut" or action == "return:safe" or action.begins_with("palace:") or action.begins_with("final:"):
+			break
+		route.append(action)
+	_perform_all(flow, route)
+	flow.perform("harvest:assess")
+	flow.perform("harvest:whole")
+
+	flow.perform("return:shortcut")
+
+	assert_bool(flow.event_flag("return_late")).is_true()
+	assert_bool(flow.event_flag("ending_c")).is_true()
+
+
+## A roll above the late chance returns on time: the palace is reached and ending C does not follow.
+func test_an_on_time_shortcut_return_reaches_the_palace_without_the_late_flag() -> void:
+	var flow := _flow([0.99])
+	var route: Array[String] = []
+	for action: String in LATER_ROUTE:
+		if action == "return:shortcut" or action == "return:safe" or action.begins_with("palace:") or action.begins_with("final:"):
+			break
+		route.append(action)
+	_perform_all(flow, route)
+	flow.perform("harvest:assess")
+	flow.perform("harvest:whole")
+
+	flow.perform("return:shortcut")
+
+	assert_bool(flow.event_flag("return_late")).is_false()
+	assert_bool(flow.event_flag("palace_arrived")).is_true()
+	assert_bool(flow.event_flag("ending_c")).is_false()
